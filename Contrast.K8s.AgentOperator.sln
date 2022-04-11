@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32210.238
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contrast.K8s.AgentOperator.Host", "src\Contrast.K8s.AgentOperator.Host\Contrast.K8s.AgentOperator.Host.csproj", "{913C1CDC-1294-4793-9347-46B44BC33281}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Contrast.K8s.AgentOperator", "src\Contrast.K8s.AgentOperator\Contrast.K8s.AgentOperator.csproj", "{913C1CDC-1294-4793-9347-46B44BC33281}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contrast.K8s.AgentOperator.Host.Tests", "tests\Contrast.K8s.AgentOperator.Host.Tests\Contrast.K8s.AgentOperator.Host.Tests.csproj", "{E1EEA671-A656-4947-A0D4-A8BD4404BBCD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Contrast.K8s.AgentOperator.Tests", "tests\Contrast.K8s.AgentOperator.Tests\Contrast.K8s.AgentOperator.Tests.csproj", "{E1EEA671-A656-4947-A0D4-A8BD4404BBCD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

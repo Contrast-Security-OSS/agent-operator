@@ -2,8 +2,11 @@ FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
 WORKDIR /app
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
-COPY src/Contrast.K8s.AgentOperator.Host/Contrast.K8s.AgentOperator.Host.csproj /source/src/Contrast.K8s.AgentOperator.Host/
-WORKDIR /source/src/Contrast.K8s.AgentOperator.Host/
+COPY src/Contrast.K8s.AgentOperator/Contrast.K8s.AgentOperator.csproj /source/src/Contrast.K8s.AgentOperator/
+COPY tests/Contrast.K8s.AgentOperator.Tests/Contrast.K8s.AgentOperator.Tests.csproj /source/tests/Contrast.K8s.AgentOperator.Tests/
+COPY Contrast.K8s.AgentOperator.sln /source/
+
+WORKDIR /source/src/
 RUN dotnet restore
 
 COPY . /source/
@@ -14,7 +17,15 @@ RUN set -xe \
     && dotnet publish -c Release -o /app -p:Version=${BUILD_VERSION}
 
 FROM base AS final
+
+RUN set -xe \
+    && addgroup operator-group \
+    && useradd -G operator-group operator-user
+
 WORKDIR /app
 COPY --from=build /app .
+RUN chown operator-user:operator-group -R .
 
-ENTRYPOINT ["dotnet", "Contrast.K8s.AgentOperator.Host.dll"]
+USER operator-user
+
+ENTRYPOINT ["dotnet", "Contrast.K8s.AgentOperator.dll"]

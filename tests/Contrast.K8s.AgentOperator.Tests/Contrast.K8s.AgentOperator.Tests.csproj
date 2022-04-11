@@ -26,4 +26,8 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Contrast.K8s.AgentOperator\Contrast.K8s.AgentOperator.csproj" />
+  </ItemGroup>
+
 </Project>
