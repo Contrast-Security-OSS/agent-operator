@@ -8,7 +8,10 @@ RUN dotnet restore
 
 COPY . /source/
 ARG BUILD_VERSION=0.0.1
-RUN dotnet publish -c Release -o /app -p:Version=${BUILD_VERSION}
+
+RUN set -xe \
+    && dotnet test -c Release -p:Version=${BUILD_VERSION} \
+    && dotnet publish -c Release -o /app -p:Version=${BUILD_VERSION}
 
 FROM base AS final
 WORKDIR /app
