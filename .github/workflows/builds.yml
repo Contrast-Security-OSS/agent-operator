@@ -1,0 +1,68 @@
+name: "Build"
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+    tags:
+      - "v*"
+
+jobs:
+  app:
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_NAME: contrastdotnet.azurecr.io/agent-operator/operator
+      IMAGE_REGISTRY: contrastdotnet.azurecr.io
+    steps:
+      - uses: actions/checkout@v2
+      - uses: docker/setup-buildx-action@v1
+        id: buildx
+        with:
+          install: true
+          version: latest
+
+      - name: Detect Version
+        run: |
+          $ref = '${{ github.ref }}'
+          if ($ref.StartsWith('refs/tags/v'))
+          {
+              $version = ($ref -split '/v' | Select-Object -Last 1)
+          }
+          else
+          {
+              $version = "0.0.1"
+          }
+          Write-Host "Detected version: '$version'."
+          "BUILD_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        shell: pwsh
+
+      - name: Docker Meta
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=ref,event=branch
+            type=ref,event=pr
+            type=edge,branch=master
+      - uses: docker/login-action@v1
+        if: ${{ github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/') || github.actor != 'dependabot[bot]' }}
+        with:
+          registry: ${{ env.IMAGE_REGISTRY }}
+          username: ${{ secrets.AZURE_CLIENT_ID }}
+          password: ${{ secrets.AZURE_CLIENT_SECRET }}
+
+      - uses: docker/build-push-action@v2
+        with:
+          file: ${{ matrix.variant.dockerfile }}
+          context: .
+          push: ${{ github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/') }}
+          cache-from: ${{ github.actor != 'dependabot[bot]' && format('{0}:cache', env.IMAGE_NAME) || ''}}
+          cache-to: ${{ github.actor != 'dependabot[bot]' && format('{0}:cache', env.IMAGE_NAME) || ''}}
+          build-args: |
+            BUILD_VERSION=${{ env.BUILD_VERSION }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
