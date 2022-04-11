@@ -8,6 +8,11 @@
         <IsPackable>false</IsPackable>
     </PropertyGroup>
 
+    <PropertyGroup>
+        <KubeOpsConfigRoot>$(MSBuildProjectDirectory)\Generated</KubeOpsConfigRoot>
+        <KubeOpsSkipDockerfile>true</KubeOpsSkipDockerfile>
+    </PropertyGroup>
+
     <ItemGroup>
         <PackageReference Include="KubeOps" Version="6.2.13" />
         <PackageReference Include="Autofac" Version="6.3.0" />
