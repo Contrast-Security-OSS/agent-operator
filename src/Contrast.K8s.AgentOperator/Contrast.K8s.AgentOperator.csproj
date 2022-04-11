@@ -11,6 +11,12 @@
     <PropertyGroup>
         <KubeOpsConfigRoot>$(MSBuildProjectDirectory)\Generated</KubeOpsConfigRoot>
         <KubeOpsSkipDockerfile>true</KubeOpsSkipDockerfile>
+
+        <SkipKubeOpsGen Condition="'$(SkipKubeOpsGen)' == ''">true</SkipKubeOpsGen>
+        <KubeOpsSkipCrds>$(SkipKubeOpsGen)</KubeOpsSkipCrds>
+        <KubeOpsSkipRbac>$(SkipKubeOpsGen)</KubeOpsSkipRbac>
+        <KubeOpsSkipOperator>$(SkipKubeOpsGen)</KubeOpsSkipOperator>
+        <KubeOpsSkipInstaller>$(SkipKubeOpsGen)</KubeOpsSkipInstaller>
     </PropertyGroup>
 
     <ItemGroup>
