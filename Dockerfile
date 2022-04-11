@@ -6,7 +6,7 @@ COPY src/Contrast.K8s.AgentOperator/Contrast.K8s.AgentOperator.csproj /source/sr
 COPY tests/Contrast.K8s.AgentOperator.Tests/Contrast.K8s.AgentOperator.Tests.csproj /source/tests/Contrast.K8s.AgentOperator.Tests/
 COPY Contrast.K8s.AgentOperator.sln /source/
 
-WORKDIR /source/src/
+WORKDIR /source
 RUN dotnet restore
 
 COPY . /source/
