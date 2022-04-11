@@ -273,3 +273,4 @@ publish*/
 
 # Dotcover snapshots.
 *.dcvr
+/src/Contrast.K8s.AgentOperator/Generated
