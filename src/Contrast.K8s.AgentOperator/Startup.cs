@@ -1,6 +1,7 @@
 ﻿using Autofac;
 using Contrast.K8s.AgentOperator.Autofac;
 using DotnetKubernetesClient;
+using k8s;
 using KubeOps.Operator;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -37,7 +38,9 @@ namespace Contrast.K8s.AgentOperator
         {
             builder.ApplyContrastConventions(typeof(Startup).Assembly);
 
-            builder.Register(_ => new KubernetesClient()).As<IKubernetesClient>();
+            builder.Register(_ => KubernetesClientConfiguration.BuildDefaultConfig()).AsSelf().SingleInstance();
+            builder.Register(x => new KubernetesClient(x.Resolve<KubernetesClientConfiguration>())).As<IKubernetesClient>();
+            builder.Register(x => x.Resolve<IKubernetesClient>().ApiClient).As<IKubernetes>();
         }
 
         public void Configure(IApplicationBuilder app)
