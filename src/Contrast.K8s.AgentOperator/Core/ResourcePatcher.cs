@@ -33,9 +33,11 @@ namespace Contrast.K8s.AgentOperator.Core
 
         public async Task Patch<T>(T entity, Action<T> mutator) where T : IKubernetesObject<V1ObjectMeta>
         {
-            var currentVersion = _jsonSerializer.ToJToken(entity);
-            mutator.Invoke(entity);
-            var nextVersion = _jsonSerializer.ToJToken(entity);
+            var entityCopy = _jsonSerializer.DeepClone(entity);
+
+            var currentVersion = _jsonSerializer.ToJToken(entityCopy);
+            mutator.Invoke(entityCopy);
+            var nextVersion = _jsonSerializer.ToJToken(entityCopy);
 
             var diff = _jsonDiffer.Diff(currentVersion, nextVersion, false);
             if (diff.Operations.Any())

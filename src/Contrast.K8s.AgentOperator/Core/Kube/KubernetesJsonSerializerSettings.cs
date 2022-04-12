@@ -40,7 +40,12 @@ namespace Contrast.K8s.AgentOperator.Core.Kube
             return JToken.Parse(SerializeObject(entity));
         }
 
-        internal class NamingConvention : CamelCasePropertyNamesContractResolver, INamingConvention
+        public T DeepClone<T>(T entity)
+        {
+            return DeserializeObject<T>(SerializeObject(entity));
+        }
+
+        private class NamingConvention : CamelCasePropertyNamesContractResolver, INamingConvention
         {
             // https://github.com/buehler/dotnet-operator-sdk/blob/cde5ef889787f51ddba8944e28702b94d1bc4681/src/KubeOps/Operator/Serialization/NamingConvention.cs
 
