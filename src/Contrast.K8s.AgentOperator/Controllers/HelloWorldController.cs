@@ -9,11 +9,11 @@ using NLog;
 
 namespace Contrast.K8s.AgentOperator.Controllers
 {
-    [EntityRbac(typeof(V1Deployment), Verbs = RbacVerb.All)]
+    [EntityRbac(typeof(V1Deployment), Verbs = VerbConstants.ReadAndPatch)]
     public class HelloWorldController : IResourceController<V1Deployment>
     {
-        private readonly IResourcePatcher _patcher;
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        private readonly IResourcePatcher _patcher;
 
         public HelloWorldController(IResourcePatcher patcher)
         {
