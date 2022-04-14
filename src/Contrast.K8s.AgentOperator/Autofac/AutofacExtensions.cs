@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Autofac;
@@ -30,6 +31,19 @@ namespace Contrast.K8s.AgentOperator.Autofac
             return registration.PublicOnly()
                                .Where(x => GetDefaultInterface(x) != null)
                                .As(x => GetDefaultInterface(x)!);
+        }
+
+        public static IRegistrationBuilder<TLimit, TScanningActivatorData, TRegistrationStyle> AssignableToOpenType
+            <TLimit, TScanningActivatorData, TRegistrationStyle>(this IRegistrationBuilder<TLimit, TScanningActivatorData, TRegistrationStyle> registration,
+                                                                 Type openType)
+            where TScanningActivatorData : ScanningActivatorData
+        {
+            if (registration == null)
+            {
+                throw new ArgumentNullException(nameof(registration));
+            }
+
+            return registration.Where(x => x.GetInterfaces().Any(t => t.IsGenericType && t.GetGenericTypeDefinition() == openType));
         }
 
         private static Type? GetDefaultInterface(Type type)

@@ -31,6 +31,9 @@
         <PackageReference Include="NLog.Web.AspNetCore" Version="4.14.0" />
 
         <PackageReference Include="Glob" Version="1.1.9" />
+        <PackageReference Include="MediatR" Version="10.0.1" />
+
+        <PackageReference Include="JetBrains.Annotations" Version="2021.3.0" />
     </ItemGroup>
 
 </Project>

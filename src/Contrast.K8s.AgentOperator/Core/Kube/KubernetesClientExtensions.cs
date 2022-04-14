@@ -1,4 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
 using DotnetKubernetesClient;
 using DotnetKubernetesClient.Entities;
 using JsonDiffPatch;
@@ -38,6 +41,14 @@ namespace Contrast.K8s.AgentOperator.Core.Kube
                     fieldManager: "foobar2"
                 );
             }
+        }
+    }
+
+    public static class KubernetesModelExtensions
+    {
+        public static IReadOnlyCollection<MetadataLabel> GetLabels(this V1ObjectMeta meta)
+        {
+            return meta.EnsureLabels().Select(x => new MetadataLabel(x.Key, x.Value)).ToList();
         }
     }
 }
