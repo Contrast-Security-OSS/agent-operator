@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
-using MediatR;
 
 namespace Contrast.K8s.AgentOperator.Core.State
 {
@@ -32,12 +31,6 @@ namespace Contrast.K8s.AgentOperator.Core.State
     {
         private readonly SemaphoreSlim _lock = new(1, 1);
         private readonly Dictionary<NamespacedResourceIdentity, NamespacedResource> _resources = new();
-        private readonly IMediator _mediator;
-
-        public StateContainer(IMediator mediator)
-        {
-            _mediator = mediator;
-        }
 
         public ValueTask AddOrReplaceById<T>(string name, string @namespace, T resource, CancellationToken cancellationToken = default)
             where T : NamespacedResource

@@ -20,6 +20,14 @@ namespace Contrast.K8s.AgentOperator.Core.Mutators
             _stateContainer = stateContainer;
         }
 
+        public async Task<Unit> Handle(EntityReconciled<V1Deployment> request, CancellationToken cancellationToken)
+        {
+            var entity = request.Entity;
+            await _stateContainer.RemoveById<DeploymentResource>(entity.Name(), entity.Namespace(), cancellationToken);
+
+            return Unit.Value;
+        }
+
         public async Task<Unit> Handle(EntityDeleted<V1Deployment> request, CancellationToken cancellationToken)
         {
             var entity = request.Entity;
@@ -29,14 +37,6 @@ namespace Contrast.K8s.AgentOperator.Core.Mutators
             );
 
             await _stateContainer.AddOrReplaceById(entity.Name(), entity.Namespace(), resource, cancellationToken);
-
-            return Unit.Value;
-        }
-
-        public async Task<Unit> Handle(EntityReconciled<V1Deployment> request, CancellationToken cancellationToken)
-        {
-            var entity = request.Entity;
-            await _stateContainer.RemoveById<DeploymentResource>(entity.Name(), entity.Namespace(), cancellationToken);
 
             return Unit.Value;
         }
