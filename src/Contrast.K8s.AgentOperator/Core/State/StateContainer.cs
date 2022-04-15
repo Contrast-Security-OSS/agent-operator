@@ -8,19 +8,13 @@ namespace Contrast.K8s.AgentOperator.Core.State
 {
     public interface IStateContainer
     {
-        ValueTask AddOrReplaceById<T>(string name, string @namespace, T resource, CancellationToken cancellationToken = default)
+        ValueTask<StateUpdateResult<T>> AddOrReplaceById<T>(string name, string @namespace, T resource, CancellationToken cancellationToken = default)
             where T : NamespacedResource;
 
-        ValueTask AddOrReplaceById<T>(NamespacedResourceIdentity<T> identity, T resource, CancellationToken cancellationToken = default)
+        ValueTask<StateUpdateResult<T>> RemoveById<T>(string name, string @namespace, CancellationToken cancellationToken = default)
             where T : NamespacedResource;
 
-        ValueTask RemoveById<T>(string name, string @namespace, CancellationToken cancellationToken = default)
-            where T : NamespacedResource;
-
-        ValueTask RemoveById<T>(NamespacedResourceIdentity<T> identity, CancellationToken cancellationToken = default)
-            where T : NamespacedResource;
-
-        ValueTask<T> GetById<T>(NamespacedResourceIdentity<T> identity, CancellationToken cancellationToken = default)
+        ValueTask<T> GetById<T>(string name, string @namespace, CancellationToken cancellationToken = default)
             where T : NamespacedResource;
 
         ValueTask<IReadOnlyCollection<T>> GetByType<T>(CancellationToken cancellationToken = default)
@@ -32,19 +26,29 @@ namespace Contrast.K8s.AgentOperator.Core.State
         private readonly SemaphoreSlim _lock = new(1, 1);
         private readonly Dictionary<NamespacedResourceIdentity, NamespacedResource> _resources = new();
 
-        public ValueTask AddOrReplaceById<T>(string name, string @namespace, T resource, CancellationToken cancellationToken = default)
-            where T : NamespacedResource
-        {
-            return AddOrReplaceById(NamespacedResourceIdentity.Create<T>(name, @namespace), resource, cancellationToken);
-        }
-
-        public async ValueTask AddOrReplaceById<T>(NamespacedResourceIdentity<T> identity, T resource, CancellationToken cancellationToken = default)
+        public async ValueTask<StateUpdateResult<T>> AddOrReplaceById<T>(string name, string @namespace, T resource,
+                                                                         CancellationToken cancellationToken = default)
             where T : NamespacedResource
         {
             await _lock.WaitAsync(cancellationToken);
             try
             {
-                _resources[identity] = resource;
+                var identity = NamespacedResourceIdentity.Create<T>(name, @namespace);
+                if (_resources.TryGetValue(identity, out var existing))
+                {
+                    if (!existing.Equals(resource))
+                    {
+                        _resources[identity] = resource;
+                        return new StateUpdateResult<T>(true, (T)existing, resource);
+                    }
+
+                    return new StateUpdateResult<T>(false, null, (T)existing);
+                }
+                else
+                {
+                    _resources[identity] = resource;
+                    return new StateUpdateResult<T>(true, null, resource);
+                }
             }
             finally
             {
@@ -52,19 +56,20 @@ namespace Contrast.K8s.AgentOperator.Core.State
             }
         }
 
-        public ValueTask RemoveById<T>(string name, string @namespace, CancellationToken cancellationToken = default)
-            where T : NamespacedResource
-        {
-            return RemoveById(NamespacedResourceIdentity.Create<T>(name, @namespace), cancellationToken);
-        }
-
-        public async ValueTask RemoveById<T>(NamespacedResourceIdentity<T> identity, CancellationToken cancellationToken = default)
+        public async ValueTask<StateUpdateResult<T>> RemoveById<T>(string name, string @namespace, CancellationToken cancellationToken = default)
             where T : NamespacedResource
         {
             await _lock.WaitAsync(cancellationToken);
             try
             {
-                _resources.Remove(identity);
+                var identity = NamespacedResourceIdentity.Create<T>(name, @namespace);
+                if (_resources.TryGetValue(identity, out var existing))
+                {
+                    _resources.Remove(identity);
+                    return new StateUpdateResult<T>(true, (T)existing, null);
+                }
+
+                return new StateUpdateResult<T>(false, null, null);
             }
             finally
             {
@@ -72,13 +77,13 @@ namespace Contrast.K8s.AgentOperator.Core.State
             }
         }
 
-        public async ValueTask<T> GetById<T>(NamespacedResourceIdentity<T> identity, CancellationToken cancellationToken = default)
+        public async ValueTask<T> GetById<T>(string name, string @namespace, CancellationToken cancellationToken = default)
             where T : NamespacedResource
         {
             await _lock.WaitAsync(cancellationToken);
             try
             {
-                return (T)_resources[identity];
+                return (T)_resources[NamespacedResourceIdentity.Create<T>(name, @namespace)];
             }
             finally
             {
@@ -93,8 +98,7 @@ namespace Contrast.K8s.AgentOperator.Core.State
             try
             {
                 return _resources.Where(x => x.Key.Type == typeof(T))
-                                 .Select(x => x.Value)
-                                 .Cast<T>()
+                                 .Select(x => (T)x.Value)
                                  .ToList();
             }
             finally
@@ -103,4 +107,6 @@ namespace Contrast.K8s.AgentOperator.Core.State
             }
         }
     }
+
+    public record StateUpdateResult<T>(bool Modified, T? Previous, T? Current) where T : NamespacedResource;
 }

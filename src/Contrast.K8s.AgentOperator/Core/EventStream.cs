@@ -37,7 +37,7 @@ namespace Contrast.K8s.AgentOperator.Core
 
         private static void ItemDropped(IBaseRequest obj)
         {
-            Logger.Error("Unable to process events quick enough, dropping events for safety. Cluster snapshot will be out of date until restarting.");
+            Logger.Error("Unable to process events quick enough, dropping events for safety. Cluster snapshot will be out of date until this operator is restarted.");
         }
     }
 }
