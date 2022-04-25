@@ -1,26 +1,19 @@
 ﻿using Contrast.K8s.AgentOperator.Core.State.Resources.Interfaces;
-using k8s;
-using k8s.Models;
 using MediatR;
 
 namespace Contrast.K8s.AgentOperator.Core.Events
 {
-    public record StateModified<TResource, TKubernetesObject>(TResource? Previous,
-                                                              TResource? Current,
-                                                              TKubernetesObject RelevantKubernetesObject)
+    public record StateModified<TResource>(TResource? Previous, TResource? Current)
         : INotification
-        where TResource : INamespacedResource
-        where TKubernetesObject : IKubernetesObject<V1ObjectMeta>;
+        where TResource : INamespacedResource;
 
     public class StateModified
     {
-        public static StateModified<TResource, TKubernetesObject> Create<TResource, TKubernetesObject>(TResource? previous,
-                                                                                                       TResource? current,
-                                                                                                       TKubernetesObject relevantKubernetesObject)
+        public static StateModified<TResource> Create<TResource>(TResource? previous,
+                                                                 TResource? current)
             where TResource : INamespacedResource
-            where TKubernetesObject : IKubernetesObject<V1ObjectMeta>
         {
-            return new StateModified<TResource, TKubernetesObject>(previous, current, relevantKubernetesObject);
+            return new StateModified<TResource>(previous, current);
         }
     }
 }

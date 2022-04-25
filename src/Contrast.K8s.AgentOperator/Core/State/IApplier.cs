@@ -41,7 +41,7 @@ namespace Contrast.K8s.AgentOperator.Core.State
             if (modified)
             {
                 Logger.Debug($"Resource '{ns}/{name}' of kind '{typeof(TResource).Name}'' was reconciled.");
-                await _mediator.Publish(StateModified.Create(previous, current, entity), cancellationToken);
+                await _mediator.Publish(StateModified.Create(previous, current), cancellationToken);
             }
 
             return Unit.Value;
@@ -56,7 +56,7 @@ namespace Contrast.K8s.AgentOperator.Core.State
             if (modified)
             {
                 Logger.Debug($"Resource '{ns}/{name}' of type '{typeof(TResource).Name}' was deleted.");
-                await _mediator.Publish(StateModified.Create(previous, current, entity), cancellationToken);
+                await _mediator.Publish(StateModified.Create(previous, current), cancellationToken);
             }
 
             return Unit.Value;
