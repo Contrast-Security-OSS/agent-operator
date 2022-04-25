@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,14 +20,22 @@ namespace Contrast.K8s.AgentOperator.Core.State
 
         ValueTask<IReadOnlyCollection<T>> GetByType<T>(CancellationToken cancellationToken = default)
             where T : class, INamespacedResource;
+
+        ValueTask MarkAsDirty<T>(string name, string @namespace, CancellationToken cancellationToken = default)
+            where T : class, INamespacedResource, IMutableResource;
+
+        ValueTask<bool> GetIsDirty<T>(string name, string @namespace, CancellationToken cancellationToken = default)
+            where T : class, INamespacedResource, IMutableResource;
     }
 
     public class StateContainer : IStateContainer
     {
         private readonly SemaphoreSlim _lock = new(1, 1);
-        private readonly Dictionary<NamespacedResourceIdentity, INamespacedResource> _resources = new();
+        private readonly Dictionary<NamespacedResourceIdentity, ResourceHolder> _resources = new();
 
-        public async ValueTask<StateUpdateResult<T>> AddOrReplaceById<T>(string name, string @namespace, T resource,
+        public async ValueTask<StateUpdateResult<T>> AddOrReplaceById<T>(string name,
+                                                                         string @namespace,
+                                                                         T resource,
                                                                          CancellationToken cancellationToken = default)
             where T : class, INamespacedResource
         {
@@ -36,17 +45,18 @@ namespace Contrast.K8s.AgentOperator.Core.State
                 var identity = NamespacedResourceIdentity.Create<T>(name, @namespace);
                 if (_resources.TryGetValue(identity, out var existing))
                 {
-                    if (!existing.Equals(resource))
+                    if (existing.Resource.Equals(resource))
                     {
-                        _resources[identity] = resource;
-                        return new StateUpdateResult<T>(true, (T)existing, resource);
+                        // No change.
+                        return new StateUpdateResult<T>(false, null, (T)existing.Resource);
                     }
 
-                    return new StateUpdateResult<T>(false, null, (T)existing);
+                    _resources[identity] = new ResourceHolder(resource);
+                    return new StateUpdateResult<T>(true, (T)existing.Resource, resource);
                 }
                 else
                 {
-                    _resources[identity] = resource;
+                    _resources[identity] = new ResourceHolder(resource);
                     return new StateUpdateResult<T>(true, null, resource);
                 }
             }
@@ -56,7 +66,9 @@ namespace Contrast.K8s.AgentOperator.Core.State
             }
         }
 
-        public async ValueTask<StateUpdateResult<T>> RemoveById<T>(string name, string @namespace, CancellationToken cancellationToken = default)
+        public async ValueTask<StateUpdateResult<T>> RemoveById<T>(string name,
+                                                                   string @namespace,
+                                                                   CancellationToken cancellationToken = default)
             where T : class, INamespacedResource
         {
             await _lock.WaitAsync(cancellationToken);
@@ -66,7 +78,7 @@ namespace Contrast.K8s.AgentOperator.Core.State
                 if (_resources.TryGetValue(identity, out var existing))
                 {
                     _resources.Remove(identity);
-                    return new StateUpdateResult<T>(true, (T)existing, null);
+                    return new StateUpdateResult<T>(true, (T)existing.Resource, null);
                 }
 
                 return new StateUpdateResult<T>(false, null, null);
@@ -77,13 +89,15 @@ namespace Contrast.K8s.AgentOperator.Core.State
             }
         }
 
-        public async ValueTask<T> GetById<T>(string name, string @namespace, CancellationToken cancellationToken = default)
+        public async ValueTask<T> GetById<T>(string name,
+                                             string @namespace,
+                                             CancellationToken cancellationToken = default)
             where T : class, INamespacedResource
         {
             await _lock.WaitAsync(cancellationToken);
             try
             {
-                return (T)_resources[NamespacedResourceIdentity.Create<T>(name, @namespace)];
+                return (T)_resources[NamespacedResourceIdentity.Create<T>(name, @namespace)].Resource;
             }
             finally
             {
@@ -98,7 +112,7 @@ namespace Contrast.K8s.AgentOperator.Core.State
             try
             {
                 return _resources.Where(x => x.Key.Type == typeof(T))
-                                 .Select(x => (T)x.Value)
+                                 .Select(x => (T)x.Value.Resource)
                                  .ToList();
             }
             finally
@@ -106,6 +120,52 @@ namespace Contrast.K8s.AgentOperator.Core.State
                 _lock.Release();
             }
         }
+
+        public async ValueTask MarkAsDirty<T>(string name,
+                                              string @namespace,
+                                              CancellationToken cancellationToken = default)
+            where T : class, INamespacedResource, IMutableResource
+        {
+            await _lock.WaitAsync(cancellationToken);
+            try
+            {
+                var identity = NamespacedResourceIdentity.Create<T>(name, @namespace);
+                if (_resources.ContainsKey(identity))
+                {
+                    _resources[identity] = _resources[identity] with
+                    {
+                        IsDirty = true
+                    };
+                }
+                else
+                {
+                    throw new Exception("Cannot mark a resource as dirty that does not exist.");
+                }
+            }
+            finally
+            {
+                _lock.Release();
+            }
+        }
+
+        public async ValueTask<bool> GetIsDirty<T>(string name,
+                                                   string @namespace,
+                                                   CancellationToken cancellationToken = default)
+            where T : class, INamespacedResource, IMutableResource
+        {
+            await _lock.WaitAsync(cancellationToken);
+            try
+            {
+                var identity = NamespacedResourceIdentity.Create<T>(name, @namespace);
+                return _resources[identity].IsDirty;
+            }
+            finally
+            {
+                _lock.Release();
+            }
+        }
+
+        private record ResourceHolder(INamespacedResource Resource, bool IsDirty = false);
     }
 
     public record StateUpdateResult<T>(bool Modified, T? Previous, T? Current) where T : class, INamespacedResource;
