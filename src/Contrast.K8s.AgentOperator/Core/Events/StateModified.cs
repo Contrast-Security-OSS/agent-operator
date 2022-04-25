@@ -3,11 +3,9 @@ using MediatR;
 
 namespace Contrast.K8s.AgentOperator.Core.Events
 {
-    public record StateModified<TResource>(TResource? Previous, TResource? Current)
-        : INotification
-        where TResource : INamespacedResource;
+    public record StateModified<TResource>(TResource? Previous, TResource? Current) : StateModified where TResource : INamespacedResource;
 
-    public class StateModified
+    public record StateModified : INotification
     {
         public static StateModified<TResource> Create<TResource>(TResource? previous,
                                                                  TResource? current)
