@@ -111,7 +111,7 @@ namespace Contrast.K8s.AgentOperator.Core.State
             await _lock.WaitAsync(cancellationToken);
             try
             {
-                return _resources.Where(x => x.Key.Type == typeof(T))
+                return _resources.Where(x => x.Key.Type.IsAssignableTo(typeof(T)))
                                  .Select(x => (T)x.Value.Resource)
                                  .ToList();
             }

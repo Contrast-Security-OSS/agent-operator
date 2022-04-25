@@ -1,8 +1,12 @@
-﻿using System.Threading;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
+using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
 using Contrast.K8s.AgentOperator.Entities;
 using JetBrains.Annotations;
+using k8s.Models;
 using MediatR;
 
 namespace Contrast.K8s.AgentOperator.Core.State.Appliers
@@ -14,10 +18,58 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers
         {
         }
 
-        protected override ValueTask<AgentInjectorResource> CreateFrom(V1Beta1AgentInjector entity, CancellationToken cancellationToken = default)
+        protected override async ValueTask<AgentInjectorResource> CreateFrom(V1Beta1AgentInjector entity, CancellationToken cancellationToken = default)
         {
-            var resource = new AgentInjectorResource();
-            return ValueTask.FromResult(resource);
+            var spec = entity.Spec;
+            var @namespace = entity.Namespace()!;
+
+            var type = spec.Type switch
+            {
+                "dotnet-core" => AgentInjectionType.DotNetCore,
+                _ => throw new ArgumentOutOfRangeException()
+            };
+            var image = await CalculateImage(spec, cancellationToken);
+            var selector = new ResourceWithPodSpecSelector(
+                spec.Selector.Images,
+                spec.Selector.Labels,
+                new List<string>
+                {
+                    @namespace
+                }
+            );
+            var connectionReference = new AgentInjectorConnectionReference(@namespace, spec.Connection.Name);
+            var configurationReference = new AgentConfigurationReference(@namespace, spec.Connection.Name);
+
+            var resource = new AgentInjectorResource(
+                type,
+                image,
+                selector,
+                connectionReference,
+                configurationReference
+            );
+            return resource;
+        }
+
+        private static ValueTask<ContainerImageReference> CalculateImage(V1Beta1AgentInjector.AgentInjectorSpec spec,
+                                                                         CancellationToken cancellationToken = default)
+        {
+            // TODO Validation, reach out and get images based on version, etc.
+            // TODO Need defaults.
+            // TODO Regex validation of image and repository.
+
+            var version = spec.Version ?? "latest";
+            if (version != "latest")
+            {
+                throw new NotImplementedException("Only latest version is currently supported.");
+            }
+
+            var image = new ContainerImageReference(
+                spec.Image.Repository ?? throw new NotImplementedException("Repository has not defaults."),
+                spec.Image.Name ?? throw new Exception(),
+                version
+            );
+
+            return ValueTask.FromResult(image);
         }
     }
 }

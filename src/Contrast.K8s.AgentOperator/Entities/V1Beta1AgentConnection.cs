@@ -22,40 +22,36 @@ namespace Contrast.K8s.AgentOperator.Entities
             /// The API Key to use for this connection.
             /// </summary>
             [Required]
-            public ValueOrSecretRef ApiKey { get; set; } = new();
+            public SecretRef ApiKey { get; set; } = new();
 
             /// <summary>
             /// The Service Key to use for this connection.
             /// </summary>
             [Required]
-            public ValueOrSecretRef ServiceKey { get; set; } = new();
+            public SecretRef ServiceKey { get; set; } = new();
 
             /// <summary>
             /// The User Name to use for this connection.
             /// </summary>
             [Required]
-            public ValueOrSecretRef UserName { get; set; } = new();
+            public SecretRef UserName { get; set; } = new();
         }
 
-        public class ValueOrSecretRef
+        public class SecretRef
         {
             /// <summary>
-            /// The plaintext value.
-            /// Required if secretName or secretKey are empty.
-            /// </summary>
-            public string? Value { get; set; }
-
-            /// <summary>
             /// The name of the secret to reference. Must exist in the same namespace as the AgentConnection.
-            /// Required if value is empty.
+            /// Required.
             /// </summary>
-            public string? SecretName { get; set; }
+            [Required]
+            public string SecretName { get; set; } = null!;
 
             /// <summary>
             /// The key in the secret to access the value for. Must exist in the same namespace as the AgentConnection.
-            /// Required if secretName is set.
+            /// Required.
             /// </summary>
-            public string? SecretKey { get; set; }
+            [Required]
+            public string SecretKey { get; set; } = null!;
         }
     }
 }

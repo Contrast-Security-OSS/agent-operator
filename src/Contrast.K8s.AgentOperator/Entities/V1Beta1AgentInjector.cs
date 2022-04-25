@@ -24,13 +24,14 @@ namespace Contrast.K8s.AgentOperator.Entities
             /// The version of the agent to inject. The literal 'latest' will inject the latest version detected.
             /// Defaults to 'latest'.
             /// </summary>
+            [Pattern(RegexConstants.AgentTypeRegex)]
             public string? Version { get; set; }
 
             /// <summary>
             /// The type of agent to inject. Can be one of ['dotnet-core'].
             /// Required.
             /// </summary>
-            [Required]
+            [Required, Pattern(RegexConstants.AgentTypeRegex)]
             public string Type { get; set; } = null!;
 
             /// <summary>
@@ -48,6 +49,11 @@ namespace Contrast.K8s.AgentOperator.Entities
             /// </summary>
             [Required]
             public AgentInjectorConnectionSpec Connection { get; set; } = new();
+
+            /// <summary>
+            /// The configuration the injected agent will use.
+            /// </summary>
+            public AgentInjectorConfigurationSpec Configuration { get; set; } = new();
         }
 
         public class AgentInjectorImageSpec
@@ -83,11 +89,19 @@ namespace Contrast.K8s.AgentOperator.Entities
         public class AgentInjectorConnectionSpec
         {
             /// <summary>
-            /// The name of AgentConnection resource.
+            /// The name of AgentConnection resource. Must exist within the same namespace.
             /// Required.
             /// </summary>
             [Required]
             public string Name { get; set; } = null!;
+        }
+
+        public class AgentInjectorConfigurationSpec
+        {
+            /// <summary>
+            /// The name of a AgentConfiguration resource. Must exist within the same namespace.
+            /// </summary>
+            public string? Name { get; set; }
         }
     }
 }
