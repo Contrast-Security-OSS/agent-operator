@@ -10,6 +10,11 @@ namespace Contrast.K8s.AgentOperator.Core.State
         {
             return new NamespacedResourceIdentity<T>(name, @namespace);
         }
+
+        public override string ToString()
+        {
+            return $"{Type.Name}/{Namespace}/{Name}";
+        }
     }
 
     public record NamespacedResourceIdentity<T>(string Name, string Namespace)

@@ -18,7 +18,7 @@ namespace Contrast.K8s.AgentOperator.Core.State
         ValueTask<T> GetById<T>(string name, string @namespace, CancellationToken cancellationToken = default)
             where T : class, INamespacedResource;
 
-        ValueTask<IReadOnlyCollection<T>> GetByType<T>(CancellationToken cancellationToken = default)
+        ValueTask<IReadOnlyCollection<ResourceIdentityPair<T>>> GetByType<T>(CancellationToken cancellationToken = default)
             where T : class, INamespacedResource;
 
         ValueTask MarkAsDirty<T>(string name, string @namespace, CancellationToken cancellationToken = default)
@@ -105,14 +105,14 @@ namespace Contrast.K8s.AgentOperator.Core.State
             }
         }
 
-        public async ValueTask<IReadOnlyCollection<T>> GetByType<T>(CancellationToken cancellationToken = default)
+        public async ValueTask<IReadOnlyCollection<ResourceIdentityPair<T>>> GetByType<T>(CancellationToken cancellationToken = default)
             where T : class, INamespacedResource
         {
             await _lock.WaitAsync(cancellationToken);
             try
             {
                 return _resources.Where(x => x.Key.Type.IsAssignableTo(typeof(T)))
-                                 .Select(x => (T)x.Value.Resource)
+                                 .Select(x => new ResourceIdentityPair<T>(x.Key, (T)x.Value.Resource))
                                  .ToList();
             }
             finally
@@ -167,6 +167,8 @@ namespace Contrast.K8s.AgentOperator.Core.State
 
         private record ResourceHolder(INamespacedResource Resource, bool IsDirty = false);
     }
+
+    public record ResourceIdentityPair<T>(NamespacedResourceIdentity Identity, T Resource);
 
     public record StateUpdateResult<T>(bool Modified, T? Previous, T? Current) where T : class, INamespacedResource;
 }
