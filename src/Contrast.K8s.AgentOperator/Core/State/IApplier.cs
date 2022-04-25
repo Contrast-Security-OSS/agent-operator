@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Events;
-using Contrast.K8s.AgentOperator.Core.State.Resources;
+using Contrast.K8s.AgentOperator.Core.State.Resources.Interfaces;
 using k8s;
 using k8s.Models;
 using MediatR;
@@ -15,7 +15,7 @@ namespace Contrast.K8s.AgentOperator.Core.State
 
     public abstract class BaseApplier<TKubernetesObject, TResource> : IApplier<TKubernetesObject>
         where TKubernetesObject : IKubernetesObject<V1ObjectMeta>
-        where TResource : NamespacedResource
+        where TResource : class, INamespacedResource
     {
         // ReSharper disable once InconsistentNaming
         private readonly Logger Logger = LogManager.GetLogger(typeof(BaseApplier<,>).FullName + ":" + typeof(TResource).Name);
