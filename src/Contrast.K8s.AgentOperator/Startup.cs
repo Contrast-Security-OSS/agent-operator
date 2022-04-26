@@ -1,6 +1,8 @@
 ﻿using Autofac;
+using Autofac.Features.Variance;
 using Contrast.K8s.AgentOperator.Autofac;
 using Contrast.K8s.AgentOperator.Core;
+using Contrast.K8s.AgentOperator.Core.Injecting;
 using Contrast.K8s.AgentOperator.Core.State;
 using DotnetKubernetesClient;
 using k8s;
@@ -49,6 +51,7 @@ namespace Contrast.K8s.AgentOperator
 
             builder.RegisterType<EventStream>().As<IEventStream>().SingleInstance();
             builder.RegisterType<StateContainer>().As<IStateContainer>().SingleInstance();
+            builder.RegisterType<GlobMatcher>().As<IGlobMatcher>().SingleInstance();
 
             // Workers
             builder.RegisterAssemblyTypes(assembly).PublicOnly().AssignableTo<BackgroundService>().As<IHostedService>();
@@ -62,7 +65,7 @@ namespace Contrast.K8s.AgentOperator
                 var c = context.Resolve<IComponentContext>();
                 return t => c.Resolve(t);
             });
-            //builder.RegisterSource(new ContravariantRegistrationSource());
+            builder.RegisterSource(new ContravariantRegistrationSource());
             builder.RegisterAssemblyTypes(assembly)
                    .PublicOnly()
                    .AssignableToOpenType(typeof(IRequestHandler<>))
@@ -78,14 +81,6 @@ namespace Contrast.K8s.AgentOperator
                    .AssignableToOpenType(typeof(INotificationHandler<>))
                    .AsImplementedInterfaces()
                    .InstancePerDependency();
-
-            //builder.RegisterBuildCallback(c =>
-            //{
-            //    var container = (IContainer)c;
-            //    var tracer = new DefaultDiagnosticTracer();
-            //    tracer.OperationCompleted += (sender, args) => { Console.WriteLine(args.TraceContent); };
-            //    container.SubscribeToDiagnostics(tracer);
-            //});
         }
 
         public void Configure(IApplicationBuilder app)
