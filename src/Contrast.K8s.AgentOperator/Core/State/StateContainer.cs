@@ -32,6 +32,12 @@ namespace Contrast.K8s.AgentOperator.Core.State
     {
         private readonly SemaphoreSlim _lock = new(1, 1);
         private readonly Dictionary<NamespacedResourceIdentity, ResourceHolder> _resources = new();
+        private readonly IResourceComparer _resourceComparer;
+
+        public StateContainer(IResourceComparer resourceComparer)
+        {
+            _resourceComparer = resourceComparer;
+        }
 
         public async ValueTask<StateUpdateResult<T>> AddOrReplaceById<T>(string name,
                                                                          string @namespace,
@@ -45,17 +51,19 @@ namespace Contrast.K8s.AgentOperator.Core.State
                 var identity = NamespacedResourceIdentity.Create<T>(name, @namespace);
                 if (_resources.TryGetValue(identity, out var existing))
                 {
-                    if (existing.Resource.Equals(resource))
+                    if (_resourceComparer.AreEqual(existing.Resource, resource))
                     {
                         // No change.
                         return new StateUpdateResult<T>(false, null, (T)existing.Resource);
                     }
 
+                    // Updated.
                     _resources[identity] = new ResourceHolder(resource);
                     return new StateUpdateResult<T>(true, (T)existing.Resource, resource);
                 }
                 else
                 {
+                    // Added.
                     _resources[identity] = new ResourceHolder(resource);
                     return new StateUpdateResult<T>(true, null, resource);
                 }
