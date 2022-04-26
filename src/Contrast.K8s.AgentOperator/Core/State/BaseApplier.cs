@@ -40,7 +40,7 @@ namespace Contrast.K8s.AgentOperator.Core.State
             var (modified, previous, current) = await _stateContainer.AddOrReplaceById(name, ns, resource, cancellationToken);
             if (modified)
             {
-                Logger.Debug($"Resource '{ns}/{name}' of kind '{typeof(TResource).Name}'' was reconciled.");
+                Logger.Debug($"Resource '{typeof(TResource).Name}/{ns}/{name}' was reconciled.");
                 await _mediator.Publish(StateModified.Create(previous, current), cancellationToken);
             }
 
