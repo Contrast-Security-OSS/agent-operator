@@ -1,0 +1,3 @@
+resources:
+  - hello-world-deployment.yaml
+  - minimal-setup.yaml
