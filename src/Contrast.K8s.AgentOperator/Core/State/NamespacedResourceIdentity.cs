@@ -19,5 +19,11 @@ namespace Contrast.K8s.AgentOperator.Core.State
 
     public record NamespacedResourceIdentity<T>(string Name, string Namespace)
         : NamespacedResourceIdentity(Name, Namespace, typeof(T))
-        where T : INamespacedResource;
+        where T : INamespacedResource
+    {
+        public override string ToString()
+        {
+            return base.ToString();
+        }
+    }
 }

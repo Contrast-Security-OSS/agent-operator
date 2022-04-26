@@ -24,7 +24,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Entities
         [InlineData("latest")]
         public void InjectorVersion_should_match_valid_values(string input)
         {
-            const string regex = RegexConstants.InjectorVersion;
+            const string regex = RegexConstants.InjectorVersionRegex;
 
             // Act
             var result = Regex.IsMatch(input, regex);

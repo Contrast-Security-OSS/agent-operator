@@ -8,6 +8,6 @@ namespace Contrast.K8s.AgentOperator.Entities
         public const string AgentTypeRegex = @"^(dotnet-core)$";
 
         [RegexPattern]
-        public const string InjectorVersion = @"^(latest)$";
+        public const string InjectorVersionRegex = @"^(latest)$";
     }
 }

@@ -24,7 +24,7 @@ namespace Contrast.K8s.AgentOperator.Entities
             /// The version of the agent to inject. The literal 'latest' will inject the latest version detected.
             /// Defaults to 'latest'.
             /// </summary>
-            [Pattern(RegexConstants.AgentTypeRegex)]
+            [Pattern(RegexConstants.InjectorVersionRegex)]
             public string? Version { get; set; }
 
             /// <summary>
@@ -53,7 +53,7 @@ namespace Contrast.K8s.AgentOperator.Entities
             /// <summary>
             /// The configuration the injected agent will use.
             /// </summary>
-            public AgentInjectorConfigurationSpec Configuration { get; set; } = new();
+            public AgentInjectorConfigurationSpec? Configuration { get; set; } = new();
         }
 
         public class AgentInjectorImageSpec

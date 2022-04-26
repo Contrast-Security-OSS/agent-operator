@@ -1,6 +1,7 @@
-﻿using System.Threading;
+﻿using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
-using Contrast.K8s.AgentOperator.Core.Events;
+using Contrast.K8s.AgentOperator.Core.State.Resources;
 using JetBrains.Annotations;
 using k8s.Models;
 using MediatR;
@@ -8,16 +9,18 @@ using MediatR;
 namespace Contrast.K8s.AgentOperator.Core.State.Appliers
 {
     [UsedImplicitly]
-    public class SecretApplier : IApplier<V1Secret>
+    public class SecretApplier : BaseApplier<V1Secret, SecretResource>
     {
-        public Task<Unit> Handle(EntityReconciled<V1Secret> request, CancellationToken cancellationToken)
+        public SecretApplier(IStateContainer stateContainer, IMediator mediator) : base(stateContainer, mediator)
         {
-            return Task.FromResult(Unit.Value);
         }
 
-        public Task<Unit> Handle(EntityDeleted<V1Secret> request, CancellationToken cancellationToken)
+        protected override ValueTask<SecretResource> CreateFrom(V1Secret entity, CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(Unit.Value);
+            var resource = new SecretResource(
+                entity.Data.Keys.ToList()
+            );
+            return ValueTask.FromResult(resource);
         }
     }
 }

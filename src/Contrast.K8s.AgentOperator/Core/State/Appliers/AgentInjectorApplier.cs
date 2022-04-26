@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
@@ -29,16 +30,12 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers
                 _ => throw new ArgumentOutOfRangeException()
             };
             var image = await CalculateImage(spec, cancellationToken);
-            var selector = new ResourceWithPodSpecSelector(
-                spec.Selector.Images,
-                spec.Selector.Labels,
-                new List<string>
-                {
-                    @namespace
-                }
-            );
+            var selector = GetSelector(spec, @namespace);
             var connectionReference = new AgentInjectorConnectionReference(@namespace, spec.Connection.Name);
-            var configurationReference = new AgentConfigurationReference(@namespace, spec.Connection.Name);
+
+            var configurationReference = spec.Configuration?.Name != null
+                ? new AgentConfigurationReference(@namespace, spec.Configuration.Name)
+                : null;
 
             var resource = new AgentInjectorResource(
                 type,
@@ -48,6 +45,26 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers
                 configurationReference
             );
             return resource;
+        }
+
+        private static ResourceWithPodSpecSelector GetSelector(V1Beta1AgentInjector.AgentInjectorSpec spec, string @namespace)
+        {
+            var images = spec.Selector.Labels.Any()
+                ? spec.Selector.Images
+                : new List<string>
+                {
+                    "*"
+                };
+
+            var selector = new ResourceWithPodSpecSelector(
+                images,
+                spec.Selector.Labels,
+                new List<string>
+                {
+                    @namespace
+                }
+            );
+            return selector;
         }
 
         private static ValueTask<ContainerImageReference> CalculateImage(V1Beta1AgentInjector.AgentInjectorSpec spec,
@@ -64,8 +81,8 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers
             }
 
             var image = new ContainerImageReference(
-                spec.Image.Repository ?? throw new NotImplementedException("Repository has not defaults."),
-                spec.Image.Name ?? throw new Exception(),
+                spec.Image.Repository ?? throw new NotImplementedException("Repository has no defaults."),
+                spec.Image.Name ?? throw new NotImplementedException("Name has no defaults."),
                 version
             );
 

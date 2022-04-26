@@ -18,7 +18,9 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers
         protected override ValueTask<DeploymentResource> CreateFrom(V1Deployment entity, CancellationToken cancellationToken = default)
         {
             var resource = new DeploymentResource(
-                entity.Metadata.GetLabels()
+                entity.Metadata.GetLabels(),
+                entity.Spec.Template.GetContainers(),
+                entity.Spec.Template.GetVolumes()
             );
 
             return ValueTask.FromResult(resource);
