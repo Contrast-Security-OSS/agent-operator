@@ -8,13 +8,25 @@ Write-Host "Output: $output"
 
 dotnet build $project
 
-Write-Host "Build complete, generating crd."
+Write-Host "Generating crd."
 Remove-Item -Recurse $output\crd\ -ErrorAction Ignore
-dotnet run --project $project -- generator crd -o $output\crd\
+dotnet run --no-build --project $project -- generator crd -o $output\crd\
 
-Write-Host "Build complete, generating rbac."
+# Write-Host "Generating docker."
+# Remove-Item -Recurse $output\docker\ -ErrorAction Ignore
+# dotnet run --no-build --project $project -- generator docker -o $output\docker\
+
+Write-Host "Generating installer."
+Remove-Item -Recurse $output\installer\ -ErrorAction Ignore
+dotnet run --no-build --project $project -- generator installer -o $output\installer\
+
+Write-Host "Generating operator."
+Remove-Item -Recurse $output\operator\ -ErrorAction Ignore
+dotnet run --no-build --project $project -- generator operator -o $output\operator\
+
+Write-Host "Generating rbac."
 Remove-Item -Recurse $output\rbac\ -ErrorAction Ignore
-dotnet run --project $project -- generator rbac -o $output\rbac\
+dotnet run --no-build --project $project -- generator rbac -o $output\rbac\
 
 @(
     "$($output)crd\daemonsets_apps.yaml"
@@ -22,6 +34,7 @@ dotnet run --project $project -- generator rbac -o $output\rbac\
     "$($output)crd\kustomization.yaml"
     "$($output)crd\secrets_.yaml"
     "$($output)crd\statefulsets_apps.yaml"
+    "$($output)crd\pods_.yaml"
 ) | ForEach-Object {
     Write-Host "Cleaning up bad object $_"
     Remove-Item $_
