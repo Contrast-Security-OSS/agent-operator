@@ -29,7 +29,7 @@ namespace Contrast.K8s.AgentOperator.Core.Workers
                 {
                     var next = await _eventStream.DequeueNext(stoppingToken);
 
-                    await _mediator.Send(next, stoppingToken);
+                    await _mediator.Publish(next, stoppingToken);
                 }
                 catch (Exception e) when (e is not TaskCanceledException and not OperationCanceledException)
                 {

@@ -8,21 +8,21 @@ namespace Contrast.K8s.AgentOperator.Core
 {
     public interface IEventStream
     {
-        ValueTask Dispatch<T>(T request, CancellationToken cancellationToken = default) where T : IBaseRequest;
-        ValueTask<IBaseRequest> DequeueNext(CancellationToken cancellationToken = default);
+        ValueTask Dispatch<T>(T request, CancellationToken cancellationToken = default) where T : INotification;
+        ValueTask<INotification> DequeueNext(CancellationToken cancellationToken = default);
     }
 
     public class EventStream : IEventStream
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-        private readonly Channel<IBaseRequest> _channel = Channel.CreateBounded<IBaseRequest>(CreateChannelOptions(), ItemDropped);
+        private readonly Channel<INotification> _channel = Channel.CreateBounded<INotification>(CreateChannelOptions(), ItemDropped);
 
-        public ValueTask Dispatch<T>(T request, CancellationToken cancellationToken = default) where T : IBaseRequest
+        public ValueTask Dispatch<T>(T request, CancellationToken cancellationToken = default) where T : INotification
         {
             return _channel.Writer.WriteAsync(request, cancellationToken);
         }
 
-        public ValueTask<IBaseRequest> DequeueNext(CancellationToken cancellationToken = default)
+        public ValueTask<INotification> DequeueNext(CancellationToken cancellationToken = default)
         {
             return _channel.Reader.ReadAsync(cancellationToken);
         }
@@ -35,9 +35,10 @@ namespace Contrast.K8s.AgentOperator.Core
             };
         }
 
-        private static void ItemDropped(IBaseRequest obj)
+        private static void ItemDropped(INotification obj)
         {
-            Logger.Error("Unable to process events quick enough, dropping events for safety. Cluster snapshot will be out of date until this operator is restarted.");
+            Logger.Error(
+                "Unable to process events quick enough, dropping events for safety. Cluster snapshot will be out of date until this operator is restarted.");
         }
     }
 }

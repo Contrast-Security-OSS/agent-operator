@@ -19,7 +19,6 @@ metadata:
   namespace: default
   labels:
     app: asp-net-core
-    operatorSafe: "true"
 spec:
   replicas: 2
   revisionHistoryLimit: 1

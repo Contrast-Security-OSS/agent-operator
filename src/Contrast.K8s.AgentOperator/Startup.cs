@@ -1,9 +1,13 @@
-﻿using Autofac;
+﻿using System;
+using System.Collections.Generic;
+using Autofac;
 using Autofac.Features.Variance;
 using Contrast.K8s.AgentOperator.Autofac;
 using Contrast.K8s.AgentOperator.Core;
 using Contrast.K8s.AgentOperator.Core.Injecting;
 using Contrast.K8s.AgentOperator.Core.State;
+using Contrast.K8s.AgentOperator.Core.Tls;
+using Contrast.K8s.AgentOperator.Options;
 using DotnetKubernetesClient;
 using k8s;
 using KubeOps.Operator;
@@ -36,6 +40,8 @@ namespace Contrast.K8s.AgentOperator
                     settings.EnableLeaderElection = false;
                 }
             });
+
+            services.AddCertificateManager();
         }
 
         // ReSharper disable once UnusedMember.Global
@@ -52,6 +58,10 @@ namespace Contrast.K8s.AgentOperator
             builder.RegisterType<EventStream>().As<IEventStream>().SingleInstance();
             builder.RegisterType<StateContainer>().As<IStateContainer>().SingleInstance();
             builder.RegisterType<GlobMatcher>().As<IGlobMatcher>().SingleInstance();
+            builder.RegisterType<KestrelCertificateSelector>().As<IKestrelCertificateSelector>().SingleInstance();
+
+            // Options
+            RegisterOptions(builder);
 
             // Workers
             builder.RegisterAssemblyTypes(assembly).PublicOnly().AssignableTo<BackgroundService>().As<IHostedService>();
@@ -94,6 +104,44 @@ namespace Contrast.K8s.AgentOperator
             }
 
             app.UseKubernetesOperator();
+        }
+
+        private static void RegisterOptions(ContainerBuilder builder)
+        {
+            builder.Register(_ =>
+            {
+                var dnsNames = new List<string>
+                {
+                    "localhost"
+                };
+
+                // TODO need to set in the form of: 
+                // ingress-nginx-controller-admission,ingress-nginx-controller-admission.$(POD_NAMESPACE).svc
+                if (Environment.GetEnvironmentVariable("CONTRAST_WEBHOOK_HOSTS") is { } webHookHosts)
+                {
+                    dnsNames.AddRange(webHookHosts.Split(",", StringSplitOptions.RemoveEmptyEntries));
+                }
+
+                return new TlsCertificateOptions("contrast-web-hook", dnsNames, TimeSpan.FromDays(365 * 100));
+            }).SingleInstance();
+
+            builder.Register(_ =>
+            {
+                var webHookSecret = "contrast-web-hook-secret";
+                if (Environment.GetEnvironmentVariable("CONTRAST_WEBHOOK_SECRET") is { } customWebHookSecret)
+                {
+                    webHookSecret = customWebHookSecret.Trim();
+                }
+
+                // TODO Need to set POD_NAMESPACE.
+                var @namespace = "default";
+                if (Environment.GetEnvironmentVariable("POD_NAMESPACE") is { } podNamespace)
+                {
+                    @namespace = podNamespace.Trim();
+                }
+
+                return new TlsStorageOptions(webHookSecret, @namespace);
+            }).SingleInstance();
         }
     }
 }

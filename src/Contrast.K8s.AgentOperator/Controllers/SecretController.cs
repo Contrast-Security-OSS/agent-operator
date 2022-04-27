@@ -5,7 +5,9 @@ using KubeOps.Operator.Rbac;
 
 namespace Contrast.K8s.AgentOperator.Controllers
 {
-    [EntityRbac(typeof(V1Secret), Verbs = VerbConstants.ReadAndPatch), UsedImplicitly]
+    [UsedImplicitly]
+    // TODO Limit this is only my namespace?
+    [EntityRbac(typeof(V1Secret), Verbs = VerbConstants.AllButDelete)]
     public class SecretController : GenericController<V1Secret>
     {
         public SecretController(IEventStream eventStream) : base(eventStream)

@@ -9,7 +9,7 @@ using NLog;
 
 namespace Contrast.K8s.AgentOperator.Core.State
 {
-    public interface IApplier<T> : IRequestHandler<EntityReconciled<T>>, IRequestHandler<EntityDeleted<T>> where T : IKubernetesObject<V1ObjectMeta>
+    public interface IApplier<T> : INotificationHandler<EntityReconciled<T>>, INotificationHandler<EntityDeleted<T>> where T : IKubernetesObject<V1ObjectMeta>
     {
     }
 
@@ -29,7 +29,7 @@ namespace Contrast.K8s.AgentOperator.Core.State
             _mediator = mediator;
         }
 
-        public async Task<Unit> Handle(EntityReconciled<TKubernetesObject> request, CancellationToken cancellationToken)
+        public async Task Handle(EntityReconciled<TKubernetesObject> request, CancellationToken cancellationToken)
         {
             var entity = request.Entity;
             var resource = await CreateFrom(entity, cancellationToken);
@@ -43,11 +43,9 @@ namespace Contrast.K8s.AgentOperator.Core.State
                 Logger.Debug($"Resource '{typeof(TResource).Name}/{ns}/{name}' was reconciled.");
                 await _mediator.Publish(StateModified.Create(previous, current), cancellationToken);
             }
-
-            return Unit.Value;
         }
 
-        public async Task<Unit> Handle(EntityDeleted<TKubernetesObject> request, CancellationToken cancellationToken)
+        public async Task Handle(EntityDeleted<TKubernetesObject> request, CancellationToken cancellationToken)
         {
             var entity = request.Entity;
             var name = entity.Name();
@@ -58,8 +56,6 @@ namespace Contrast.K8s.AgentOperator.Core.State
                 Logger.Debug($"Resource '{ns}/{name}' of type '{typeof(TResource).Name}' was deleted.");
                 await _mediator.Publish(StateModified.Create(previous, current), cancellationToken);
             }
-
-            return Unit.Value;
         }
 
         protected abstract ValueTask<TResource> CreateFrom(TKubernetesObject entity, CancellationToken cancellationToken = default);

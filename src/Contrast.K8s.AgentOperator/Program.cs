@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Autofac.Extensions.DependencyInjection;
+using Contrast.K8s.AgentOperator.Core.Tls;
 using KubeOps.Operator;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NLog;
@@ -47,7 +49,18 @@ namespace Contrast.K8s.AgentOperator
                            builder.AddNLog();
                        })
                        .UseServiceProviderFactory(new AutofacServiceProviderFactory())
-                       .ConfigureWebHostDefaults(builder => { builder.UseStartup<Startup>(); });
+                       .ConfigureWebHostDefaults(builder =>
+                       {
+                           builder.UseStartup<Startup>();
+                           builder.UseKestrel(options =>
+                           {
+                               options.ConfigureHttpsDefaults(adapterOptions =>
+                               {
+                                   var selector = options.ApplicationServices.GetRequiredService<IKestrelCertificateSelector>();
+                                   adapterOptions.ServerCertificateSelector += (_, s) => selector.Select(s);
+                               });
+                           });
+                       });
         }
     }
 }
