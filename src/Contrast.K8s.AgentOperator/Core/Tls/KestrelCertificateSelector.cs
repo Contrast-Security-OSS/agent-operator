@@ -6,7 +6,7 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
 {
     public interface IKestrelCertificateSelector : IDisposable
     {
-        X509Certificate2? Select(string? hostname);
+        X509Certificate2? SelectCertificate(string? hostname);
         void SetCertificate(TlsCertificateChain certificate);
     }
 
@@ -15,7 +15,7 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         private TlsCertificateChain? _chain;
 
-        public X509Certificate2? Select(string? hostname)
+        public X509Certificate2? SelectCertificate(string? hostname)
         {
             if (_chain == null)
             {

@@ -57,7 +57,7 @@ namespace Contrast.K8s.AgentOperator
                                options.ConfigureHttpsDefaults(adapterOptions =>
                                {
                                    var selector = options.ApplicationServices.GetRequiredService<IKestrelCertificateSelector>();
-                                   adapterOptions.ServerCertificateSelector += (_, s) => selector.Select(s);
+                                   adapterOptions.ServerCertificateSelector += (_, s) => selector.SelectCertificate(s);
                                });
                            });
                        });

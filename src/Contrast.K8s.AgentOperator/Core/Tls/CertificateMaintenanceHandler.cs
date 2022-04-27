@@ -62,32 +62,38 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
 
             if (existingSecret == null || !TryGetWebHookCertificateSecret(existingSecret, out _))
             {
-                Logger.Info($"Generating new certificates to be stored in '{_tlsStorageOptions.SecretNamespace}/{_tlsStorageOptions.SecretName}'.");
-                var stopwatch = Stopwatch.StartNew();
-
-                var chain = _certificateChainGenerator.CreateTlsCertificateChain(_tlsCertificateOptions);
-                var (caCertificatePem, caPublicPem, serverCertificatePem) = _certificateChainConverter.Export(chain);
-
-                var secret = new V1Secret
-                {
-                    Kind = V1Secret.KubeKind,
-                    Metadata = new V1ObjectMeta
-                    {
-                        Name = _tlsStorageOptions.SecretName,
-                        NamespaceProperty = _tlsStorageOptions.SecretNamespace,
-                    },
-                    Data = new Dictionary<string, byte[]>
-                    {
-                        { _tlsStorageOptions.CaCertificateName, caCertificatePem },
-                        { _tlsStorageOptions.CaPublicName, caPublicPem },
-                        { _tlsStorageOptions.ServerCertificateName, serverCertificatePem }
-                    }
-                };
-
-                await _kubernetesClient.Save(secret);
-
-                Logger.Info($"Completed generation after {stopwatch.ElapsedMilliseconds}ms.");
+                await GenerateAndPublishCertificate();
             }
+        }
+
+        private async Task GenerateAndPublishCertificate()
+        {
+            Logger.Info($"Generating new certificates to be stored in '{_tlsStorageOptions.SecretNamespace}/{_tlsStorageOptions.SecretName}'.");
+            var stopwatch = Stopwatch.StartNew();
+
+            var chain = _certificateChainGenerator.CreateTlsCertificateChain(_tlsCertificateOptions);
+            var (caCertificatePem, caPublicPem, serverCertificatePem) = _certificateChainConverter.Export(chain);
+
+            // Publish shared secret.
+            var secret = new V1Secret
+            {
+                Kind = V1Secret.KubeKind,
+                Metadata = new V1ObjectMeta
+                {
+                    Name = _tlsStorageOptions.SecretName,
+                    NamespaceProperty = _tlsStorageOptions.SecretNamespace,
+                },
+                Data = new Dictionary<string, byte[]>
+                {
+                    { _tlsStorageOptions.CaCertificateName, caCertificatePem },
+                    { _tlsStorageOptions.CaPublicName, caPublicPem },
+                    { _tlsStorageOptions.ServerCertificateName, serverCertificatePem }
+                }
+            };
+
+            await _kubernetesClient.Save(secret);
+
+            Logger.Info($"Completed generation after {stopwatch.ElapsedMilliseconds}ms.");
         }
 
         private bool TryGetWebHookCertificateSecret(V1Secret secret, [NotNullWhen(true)] out TlsCertificateChain? chain)
@@ -103,7 +109,11 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
                     try
                     {
                         chain = _certificateChainConverter.Import(new TlsCertificateChainExport(caCertificateBytes, caPublicBytes, serverCertificateBytes));
-                        return chain.ServerCertificate.HasPrivateKey;
+
+                        return chain.CaCertificate.HasPrivateKey
+                               && chain.ServerCertificate.HasPrivateKey
+                               && chain.CaCertificate.NotAfter < DateTime.Now
+                               && chain.ServerCertificate.NotAfter < DateTime.Now;
                     }
                     catch (Exception e)
                     {
