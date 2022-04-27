@@ -18,8 +18,8 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
         {
             var caCertificatePem = chain.CaCertificate.Export(X509ContentType.Pkcs12);
 
-            var caPublic = DotNetUtilities.GetRsaKeyPair(chain.CaCertificate.GetRSAPrivateKey());
-            var caPublicPem = CreatePem(caPublic.Public);
+            var caPublic = DotNetUtilities.FromX509Certificate(chain.CaCertificate);
+            var caPublicPem = CreatePem(caPublic);
 
             var serverCertificatePem = chain.ServerCertificate.Export(X509ContentType.Pkcs12);
 
@@ -30,10 +30,10 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
         {
             var (caCertificatePem, _, serverCertificatePem) = export;
 
-            var caCertificate = new X509Certificate2(caCertificatePem);
-            var serverCertificate = new X509Certificate2(serverCertificatePem);
+            var caCertificate = new X509Certificate2(caCertificatePem, (string?)null, X509KeyStorageFlags.Exportable);
+            var serverCertificate = new X509Certificate2(serverCertificatePem, (string?)null, X509KeyStorageFlags.Exportable);
 
-            return new TlsCertificateChain(new X509Certificate2(caCertificate), new X509Certificate2(serverCertificate));
+            return new TlsCertificateChain(caCertificate, serverCertificate);
         }
 
         private static byte[] CreatePem(object o)

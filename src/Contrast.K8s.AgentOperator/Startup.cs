@@ -110,6 +110,18 @@ namespace Contrast.K8s.AgentOperator
         {
             builder.Register(_ =>
             {
+                // TODO Need to set POD_NAMESPACE.
+                var @namespace = "default";
+                if (Environment.GetEnvironmentVariable("POD_NAMESPACE") is { } podNamespace)
+                {
+                    @namespace = podNamespace.Trim();
+                }
+
+                return new OperatorOptions(@namespace);
+            }).SingleInstance();
+
+            builder.Register(_ =>
+            {
                 var dnsNames = new List<string>
                 {
                     "localhost"
@@ -125,7 +137,7 @@ namespace Contrast.K8s.AgentOperator
                 return new TlsCertificateOptions("contrast-web-hook", dnsNames, TimeSpan.FromDays(365 * 100));
             }).SingleInstance();
 
-            builder.Register(_ =>
+            builder.Register(x =>
             {
                 var webHookSecret = "contrast-web-hook-secret";
                 if (Environment.GetEnvironmentVariable("CONTRAST_WEBHOOK_SECRET") is { } customWebHookSecret)
@@ -133,14 +145,20 @@ namespace Contrast.K8s.AgentOperator
                     webHookSecret = customWebHookSecret.Trim();
                 }
 
-                // TODO Need to set POD_NAMESPACE.
-                var @namespace = "default";
-                if (Environment.GetEnvironmentVariable("POD_NAMESPACE") is { } podNamespace)
-                {
-                    @namespace = podNamespace.Trim();
-                }
+                var @namespace = x.Resolve<OperatorOptions>().Namespace;
 
                 return new TlsStorageOptions(webHookSecret, @namespace);
+            }).SingleInstance();
+
+            builder.Register(_ =>
+            {
+                var webHookConfigurationName = "contrast-web-hook-configuration";
+                if (Environment.GetEnvironmentVariable("CONTRAST_WEBHOOK_CONFIGURATION") is { } customWebHookSecret)
+                {
+                    webHookConfigurationName = customWebHookSecret.Trim();
+                }
+
+                return new MutatingWebHookOptions(webHookConfigurationName);
             }).SingleInstance();
         }
     }

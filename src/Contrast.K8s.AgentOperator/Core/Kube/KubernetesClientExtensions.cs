@@ -9,7 +9,8 @@ namespace Contrast.K8s.AgentOperator.Core.Kube
 {
     public static class KubernetesClientExtensions
     {
-        public static async Task Patch<T>(this IKubernetesClient client, T resource, PatchDocument patchDocument) where T : IKubernetesObject<V1ObjectMeta>
+        public static async Task Patch<T>(this IKubernetesClient client, T resource, PatchDocument patchDocument, string fieldManager)
+            where T : IKubernetesObject<V1ObjectMeta>
         {
             var apiClient = client.ApiClient;
             var crd = resource.CreateResourceDefinition();
@@ -23,7 +24,7 @@ namespace Contrast.K8s.AgentOperator.Core.Kube
                     crd.Version,
                     crd.Plural,
                     resource.Metadata.Name,
-                    fieldManager: "foobar2"
+                    fieldManager: fieldManager
                 );
             }
             else
@@ -35,7 +36,7 @@ namespace Contrast.K8s.AgentOperator.Core.Kube
                     resource.Metadata.NamespaceProperty,
                     crd.Plural,
                     resource.Metadata.Name,
-                    fieldManager: "foobar2"
+                    fieldManager: fieldManager
                 );
             }
         }

@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Events;
 using Contrast.K8s.AgentOperator.Options;
-using DotnetKubernetesClient;
 using JetBrains.Annotations;
 using k8s.Models;
 using MediatR;
@@ -20,25 +18,22 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
         private readonly IKestrelCertificateSelector _certificateSelector;
-        private readonly TlsCertificateOptions _tlsCertificateOptions;
         private readonly TlsStorageOptions _tlsStorageOptions;
         private readonly TlsCertificateChainGenerator _certificateChainGenerator;
         private readonly ITlsCertificateChainConverter _certificateChainConverter;
-        private readonly IKubernetesClient _kubernetesClient;
+        private readonly IKubeWebHookConfigurationWriter _webHookConfigurationWriter;
 
         public CertificateMaintenanceHandler(IKestrelCertificateSelector certificateSelector,
-                                             TlsCertificateOptions tlsCertificateOptions,
                                              TlsStorageOptions tlsStorageOptions,
                                              TlsCertificateChainGenerator certificateChainGenerator,
                                              ITlsCertificateChainConverter certificateChainConverter,
-                                             IKubernetesClient kubernetesClient)
+                                             IKubeWebHookConfigurationWriter webHookConfigurationWriter)
         {
             _certificateSelector = certificateSelector;
-            _tlsCertificateOptions = tlsCertificateOptions;
             _tlsStorageOptions = tlsStorageOptions;
             _certificateChainGenerator = certificateChainGenerator;
             _certificateChainConverter = certificateChainConverter;
-            _kubernetesClient = kubernetesClient;
+            _webHookConfigurationWriter = webHookConfigurationWriter;
         }
 
         public Task Handle(EntityReconciled<V1Secret> notification, CancellationToken cancellationToken)
@@ -54,14 +49,23 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
 
         public async Task Handle(NowLeader notification, CancellationToken cancellationToken)
         {
-            var existingSecret = await _kubernetesClient.Get<V1Secret>(_tlsStorageOptions.SecretName, _tlsStorageOptions.SecretNamespace);
-            if (existingSecret != null)
+            var existingSecret = await _webHookConfigurationWriter.FetchCurrentCertificate();
+            if (existingSecret == null)
             {
-                Logger.Info($"Web hook certificate secret '{_tlsStorageOptions.SecretNamespace}/{_tlsStorageOptions.SecretName}' exists, will validate.");
+                // Missing.
+                await GenerateAndPublishCertificate();
             }
-
-            if (existingSecret == null || !TryGetWebHookCertificateSecret(existingSecret, out _))
+            else if (TryGetWebHookCertificateSecret(existingSecret, out var chain))
             {
+                // Existing and valid, ensure web hook ca bundle is okay.
+                Logger.Info($"Web hook certificate secret '{_tlsStorageOptions.SecretNamespace}/{_tlsStorageOptions.SecretName}' is valid.");
+                var chainExport = _certificateChainConverter.Export(chain);
+                await _webHookConfigurationWriter.UpdateClusterWebHookConfiguration(chainExport);
+            }
+            else
+            {
+                // Invalid.
+                Logger.Info($"Web hook certificate secret '{_tlsStorageOptions.SecretNamespace}/{_tlsStorageOptions.SecretName}' is invalid.");
                 await GenerateAndPublishCertificate();
             }
         }
@@ -71,27 +75,10 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
             Logger.Info($"Generating new certificates to be stored in '{_tlsStorageOptions.SecretNamespace}/{_tlsStorageOptions.SecretName}'.");
             var stopwatch = Stopwatch.StartNew();
 
-            var chain = _certificateChainGenerator.CreateTlsCertificateChain(_tlsCertificateOptions);
-            var (caCertificatePem, caPublicPem, serverCertificatePem) = _certificateChainConverter.Export(chain);
+            var chain = _certificateChainGenerator.CreateTlsCertificateChain();
+            var chainExport = _certificateChainConverter.Export(chain);
 
-            // Publish shared secret.
-            var secret = new V1Secret
-            {
-                Kind = V1Secret.KubeKind,
-                Metadata = new V1ObjectMeta
-                {
-                    Name = _tlsStorageOptions.SecretName,
-                    NamespaceProperty = _tlsStorageOptions.SecretNamespace,
-                },
-                Data = new Dictionary<string, byte[]>
-                {
-                    { _tlsStorageOptions.CaCertificateName, caCertificatePem },
-                    { _tlsStorageOptions.CaPublicName, caPublicPem },
-                    { _tlsStorageOptions.ServerCertificateName, serverCertificatePem }
-                }
-            };
-
-            await _kubernetesClient.Save(secret);
+            await _webHookConfigurationWriter.UpdateClusterWebHookConfiguration(chainExport);
 
             Logger.Info($"Completed generation after {stopwatch.ElapsedMilliseconds}ms.");
         }
@@ -110,10 +97,11 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
                     {
                         chain = _certificateChainConverter.Import(new TlsCertificateChainExport(caCertificateBytes, caPublicBytes, serverCertificateBytes));
 
+                        var renewThreshold = DateTime.Now + TimeSpan.FromDays(90);
                         return chain.CaCertificate.HasPrivateKey
                                && chain.ServerCertificate.HasPrivateKey
-                               && chain.CaCertificate.NotAfter < DateTime.Now
-                               && chain.ServerCertificate.NotAfter < DateTime.Now;
+                               && chain.CaCertificate.NotAfter > renewThreshold
+                               && chain.ServerCertificate.NotAfter > renewThreshold;
                     }
                     catch (Exception e)
                     {

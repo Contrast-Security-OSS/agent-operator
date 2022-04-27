@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Kube;
+using Contrast.K8s.AgentOperator.Options;
 using DotnetKubernetesClient;
 using JsonDiffPatch;
 using k8s;
@@ -23,12 +24,14 @@ namespace Contrast.K8s.AgentOperator.Core
         private readonly JsonDiffer _jsonDiffer;
         private readonly IKubernetesClient _client;
         private readonly KubernetesJsonSerializer _jsonSerializer;
+        private readonly OperatorOptions _operatorOptions;
 
-        public ResourcePatcher(JsonDiffer jsonDiffer, IKubernetesClient client, KubernetesJsonSerializer jsonSerializer)
+        public ResourcePatcher(JsonDiffer jsonDiffer, IKubernetesClient client, KubernetesJsonSerializer jsonSerializer, OperatorOptions operatorOptions)
         {
             _jsonDiffer = jsonDiffer;
             _client = client;
             _jsonSerializer = jsonSerializer;
+            _operatorOptions = operatorOptions;
         }
 
         public async Task Patch<T>(T entity, Action<T> mutator) where T : IKubernetesObject<V1ObjectMeta>
@@ -45,7 +48,7 @@ namespace Contrast.K8s.AgentOperator.Core
                 Logger.Debug(
                     $"Peparing to patch '{entity.Namespace()}/{entity.Name()}' ('{entity.Kind}/{entity.ApiVersion}') with '{diff.ToString(Formatting.None)}'.");
 
-                await _client.Patch(entity, diff);
+                await _client.Patch(entity, diff, _operatorOptions.FieldManagerName);
 
                 Logger.Debug("Patch complete.");
             }

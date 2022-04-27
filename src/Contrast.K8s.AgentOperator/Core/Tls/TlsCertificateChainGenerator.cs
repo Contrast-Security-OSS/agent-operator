@@ -12,16 +12,18 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
     public class TlsCertificateChainGenerator
     {
         private readonly CreateCertificates _createCertificates;
+        private readonly TlsCertificateOptions _options;
 
-        public TlsCertificateChainGenerator(CreateCertificates createCertificates)
+        public TlsCertificateChainGenerator(CreateCertificates createCertificates, TlsCertificateOptions options)
         {
             _createCertificates = createCertificates;
+            _options = options;
         }
 
-        public TlsCertificateChain CreateTlsCertificateChain(TlsCertificateOptions options)
+        public TlsCertificateChain CreateTlsCertificateChain()
         {
-            var ca = CreateRootCa(options);
-            var serverCertificate = CreateServerCertificate(ca, options);
+            var ca = CreateRootCa(_options);
+            var serverCertificate = CreateServerCertificate(ca);
 
             return new TlsCertificateChain(ca, serverCertificate);
         }
@@ -72,17 +74,17 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
             return rootCert;
         }
 
-        private X509Certificate2 CreateServerCertificate(X509Certificate2 signingCertificate, TlsCertificateOptions options)
+        private X509Certificate2 CreateServerCertificate(X509Certificate2 signingCertificate)
         {
             var distinguishedName = new DistinguishedName
             {
-                CommonName = $"{options.NamePrefix}-sever"
+                CommonName = $"{_options.NamePrefix}-sever"
             };
 
             var validityPeriod = new ValidityPeriod
             {
                 ValidFrom = DateTimeOffset.Now.AddDays(-1),
-                ValidTo = DateTimeOffset.Now + options.ExpiresAfter
+                ValidTo = DateTimeOffset.Now + _options.ExpiresAfter
             };
 
             var enhancedKeyUsages = new OidCollection
@@ -101,7 +103,7 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
 
             var subjectAlternativeName = new SubjectAlternativeName
             {
-                DnsName = options.SanDnsNames.ToList()
+                DnsName = _options.SanDnsNames.ToList()
             };
 
             var intermediateCert = _createCertificates.NewRsaChainedCertificate(
