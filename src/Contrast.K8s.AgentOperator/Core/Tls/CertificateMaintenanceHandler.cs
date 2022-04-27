@@ -7,12 +7,14 @@ using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Events;
 using Contrast.K8s.AgentOperator.Options;
 using DotnetKubernetesClient;
+using JetBrains.Annotations;
 using k8s.Models;
 using MediatR;
 using NLog;
 
 namespace Contrast.K8s.AgentOperator.Core.Tls
 {
+    [UsedImplicitly]
     public class CertificateMaintenanceHandler : INotificationHandler<EntityReconciled<V1Secret>>, INotificationHandler<NowLeader>
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();

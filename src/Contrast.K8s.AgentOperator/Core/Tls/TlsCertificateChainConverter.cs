@@ -45,18 +45,6 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
 
             return memory.ToArray();
         }
-
-        private static T ReadPem<T>(byte[] bytes)
-        {
-            using var memory = new MemoryStream(bytes);
-            using var reader = new StreamReader(memory, Encoding.UTF8);
-            return (T)new PemReader(reader).ReadObject();
-        }
-
-        private char[] ReadBytes(byte[] bytes)
-        {
-            return Encoding.UTF8.GetString(bytes).ToCharArray();
-        }
     }
 
     public record TlsCertificateChainExport(byte[] CaCertificatePfx, byte[] CaPublicPem, byte[] ServerCertificatePfx);
