@@ -24,3 +24,9 @@ CoreDNS is running at https://kubernetes.docker.internal:6443/api/v1/namespaces/
 ```
 
 With Docker Desktop executing locally, the operator should automatically connect to the local back plane using your local `kubeconfig`.
+
+## Data Flow
+
+Data flow is unidirectional when possible.
+
+![Data Flow](./docs/data-flow.png)
