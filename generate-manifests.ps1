@@ -1,7 +1,7 @@
 #!/bin/pwsh
 
 $project = [System.IO.Path]::GetFullPath(".\src\Contrast.K8s.AgentOperator\Contrast.K8s.AgentOperator.csproj")
-$output = [System.IO.Path]::GetFullPath(".\manifests\")
+$output = [System.IO.Path]::GetFullPath(".\manifests\generated\")
 
 Write-Host "Project: $project"
 Write-Host "Output: $output"

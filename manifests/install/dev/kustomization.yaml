@@ -1,0 +1,11 @@
+bases:
+  - ../prod
+
+images:
+- name: contrastsecurity.com/agent-operator/operator
+  newName: local/operator
+  newTag: cached
+
+replicas:
+- name: contrast-agent-operator
+  count: 1

@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: contrast-agent-operator
+  namespace: contrast-agent-operator
+  labels:
+    app: contrast-agent-operator
+spec:
+  replicas: 2
+  revisionHistoryLimit: 1
+  selector:
+    matchLabels:
+      app: contrast-agent-operator
+  template:
+    metadata:
+      labels:
+        app: contrast-agent-operator
+    spec:
+      containers:
+        - image: contrastsecurity.com/agent-operator/operator:latest
+          name: contrast-agent-operator
+          ports:
+            - containerPort: 5001
+              name: https
+          env:
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: CONTRAST_WEBHOOK_SERVICENAME
+              value: contrast-agent-operator
+            - name: CONTRAST_WEBHOOK_HOSTS
+              value: $(CONTRAST_WEBHOOK_SERVICENAME),$(CONTRAST_WEBHOOK_SERVICENAME).$(POD_NAMESPACE).svc,$(CONTRAST_WEBHOOK_SERVICENAME).$(POD_NAMESPACE).svc.cluster.local

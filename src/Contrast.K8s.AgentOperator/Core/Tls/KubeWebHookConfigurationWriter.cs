@@ -72,7 +72,7 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
 
         private async Task UpdateWebHookConfiguration(TlsCertificateChainExport chainExport)
         {
-            Logger.Info($"Ensure web hook ca bundle in '{_mutatingWebHookOptions.ConfigurationName}' is correct.");
+            Logger.Info($"Ensuring web hook ca bundle in '{_mutatingWebHookOptions.ConfigurationName}' is correct.");
             var webHookConfiguration = await _kubernetesClient.Get<V1MutatingWebhookConfiguration>(
                 _mutatingWebHookOptions.ConfigurationName
             );
