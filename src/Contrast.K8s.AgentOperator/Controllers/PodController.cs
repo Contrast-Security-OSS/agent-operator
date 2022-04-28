@@ -24,8 +24,8 @@ namespace Contrast.K8s.AgentOperator.Controllers
         public async Task<MutationResult> CreateAsync(V1Pod newEntity, bool dryRun)
         {
             var result = await _mediator.Send(new EntityCreating<V1Pod>(newEntity));
-            return result is NeedsChangeEntityCreatingMutationResult<V1Pod>
-                ? MutationResult.Modified(result)
+            return result is NeedsChangeEntityCreatingMutationResult<V1Pod> mutationResult
+                ? MutationResult.Modified(mutationResult.Entity)
                 : MutationResult.NoChanges();
         }
     }
