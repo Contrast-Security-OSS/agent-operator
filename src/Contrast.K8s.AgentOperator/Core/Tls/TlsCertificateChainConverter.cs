@@ -39,7 +39,7 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
         private static byte[] CreatePem(object o)
         {
             using var memory = new MemoryStream();
-            using var writer = new StreamWriter(memory, Encoding.UTF8);
+            using var writer = new StreamWriter(memory, Encoding.ASCII);
             new PemWriter(writer).WriteObject(o);
             writer.Flush();
 

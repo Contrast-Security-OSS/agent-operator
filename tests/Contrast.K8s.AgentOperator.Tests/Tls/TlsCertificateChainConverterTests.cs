@@ -30,6 +30,22 @@ namespace Contrast.K8s.AgentOperator.Tests.Tls
         }
 
         [Fact]
+        public void When_exported_ca_pem_should_not_have_a_bom()
+        {
+            var converter = new TlsCertificateChainConverter();
+            using var chainFake = FakeCertificates();
+
+            // Act
+            var result = converter.Export(chainFake);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                result.CaPublicPem[..3].Should().NotBeEquivalentTo(new byte[] { 0xEF, 0xBB, 0xBF });
+            }
+        }
+
+        [Fact]
         public void Certificates_should_be_exportable_after_being_imported()
         {
             var converter = new TlsCertificateChainConverter();
