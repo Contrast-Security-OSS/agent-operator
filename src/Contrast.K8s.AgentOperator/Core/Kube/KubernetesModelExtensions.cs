@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Contrast.K8s.AgentOperator.Core.State.Resources.Interfaces;
+using Contrast.K8s.AgentOperator.Core.State.Resources;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
 using k8s.Models;
 
@@ -14,24 +14,18 @@ namespace Contrast.K8s.AgentOperator.Core.Kube
             return meta.EnsureLabels().Select(x => new MetadataLabel(x.Key, x.Value)).ToList();
         }
 
-        public static IReadOnlyCollection<ContainerEnvironmentVariable> GetEnvironmentVariables(this V1Container container)
+        public static IReadOnlyCollection<MetadataAnnotations> GetAnnotations(this V1ObjectMeta meta)
         {
-            if (container.Env == null)
-            {
-                return Array.Empty<ContainerEnvironmentVariable>();
-            }
-
-            return container.Env.Select(x => new ContainerEnvironmentVariable(x.Name, x.Value, x.ValueFrom != null)).ToList();
+            return meta.EnsureAnnotations().Select(x => new MetadataAnnotations(x.Key, x.Value)).ToList();
         }
 
-        public static IReadOnlyCollection<ContainerVolumeMount> GetVolumeMount(this V1Container container)
+        public static PodTemplate GetPod(this V1PodTemplateSpec spec)
         {
-            if (container.VolumeMounts == null)
-            {
-                return Array.Empty<ContainerVolumeMount>();
-            }
-
-            return container.VolumeMounts.Select(x => new ContainerVolumeMount(x.Name, x.MountPath)).ToList();
+            return new PodTemplate(
+                spec.Metadata.GetLabels(),
+                spec.Metadata.GetAnnotations(),
+                spec.GetContainers()
+            );
         }
 
         public static IReadOnlyCollection<PodContainer> GetContainers(this V1PodTemplateSpec spec)
@@ -44,31 +38,9 @@ namespace Contrast.K8s.AgentOperator.Core.Kube
             return spec.Spec.Containers
                        .Select(specContainer => new PodContainer(
                            specContainer.Name,
-                           specContainer.Image,
-                           specContainer.GetEnvironmentVariables(),
-                           specContainer.GetVolumeMount()
+                           specContainer.Image
                        ))
                        .ToList();
-        }
-
-        public static PodVolumeType GetVolumeType(this V1Volume spec)
-        {
-            if (spec.EmptyDir != null)
-            {
-                return PodVolumeType.EmptyDirectory;
-            }
-
-            return PodVolumeType.Unknown;
-        }
-
-        public static IReadOnlyCollection<PodVolume> GetVolumes(this V1PodTemplateSpec spec)
-        {
-            if (spec.Spec.Volumes == null)
-            {
-                return Array.Empty<PodVolume>();
-            }
-
-            return spec.Spec.Volumes.Select(x => new PodVolume(x.Name, x.GetVolumeType())).ToList();
         }
     }
 }

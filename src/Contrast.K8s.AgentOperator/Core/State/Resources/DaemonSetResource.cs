@@ -5,7 +5,7 @@ using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
 namespace Contrast.K8s.AgentOperator.Core.State.Resources
 {
     public record DaemonSetResource(IReadOnlyCollection<MetadataLabel> Labels,
-                                    IReadOnlyCollection<PodContainer> Containers,
-                                    IReadOnlyCollection<PodVolume> Volumes)
+                                    IReadOnlyCollection<MetadataAnnotations> Annotations,
+                                    PodTemplate PodTemplate)
         : IResourceWithPodSpec;
 }

@@ -19,8 +19,8 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers
         {
             var resource = new DeploymentResource(
                 entity.Metadata.GetLabels(),
-                entity.Spec.Template.GetContainers(),
-                entity.Spec.Template.GetVolumes()
+                entity.Metadata.GetAnnotations(),
+                entity.Spec.Template.GetPod()
             );
 
             return ValueTask.FromResult(resource);
