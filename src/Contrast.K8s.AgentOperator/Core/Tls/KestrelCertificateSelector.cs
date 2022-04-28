@@ -7,7 +7,7 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
     public interface IKestrelCertificateSelector : IDisposable
     {
         X509Certificate2? SelectCertificate(string? hostname);
-        void SetCertificate(TlsCertificateChain certificate);
+        bool TakeOwnershipCertificate(TlsCertificateChain certificate);
     }
 
     public class KestrelCertificateSelector : IKestrelCertificateSelector
@@ -25,10 +25,18 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
             return _chain?.ServerCertificate;
         }
 
-        public void SetCertificate(TlsCertificateChain chain)
+        public bool TakeOwnershipCertificate(TlsCertificateChain chain)
         {
-            _chain?.Dispose();
-            _chain = chain;
+            var ownershipTaken = chain.ServerCertificate.SerialNumber != _chain?.ServerCertificate.SerialNumber
+                                 || chain.CaCertificate.SerialNumber != _chain?.CaCertificate.SerialNumber;
+
+            if (ownershipTaken)
+            {
+                _chain?.Dispose();
+                _chain = chain;
+            }
+
+            return ownershipTaken;
         }
 
         public void Dispose()

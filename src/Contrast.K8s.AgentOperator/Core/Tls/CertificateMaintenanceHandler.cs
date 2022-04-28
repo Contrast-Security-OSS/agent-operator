@@ -40,8 +40,14 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
         {
             if (TryGetWebHookCertificateSecret(notification.Entity, out var chain))
             {
-                Logger.Info($"Secret '{notification.Entity.Namespace()}/{notification.Entity.Name()}' was changed, updating internal certificate.");
-                _certificateSelector.SetCertificate(chain);
+                if (_certificateSelector.TakeOwnershipCertificate(chain))
+                {
+                    Logger.Info($"Secret '{notification.Entity.Namespace()}/{notification.Entity.Name()}' was changed, updated internal certificates.");
+                }
+                else
+                {
+                    chain.Dispose();
+                }
             }
 
             return Task.CompletedTask;
