@@ -3,7 +3,7 @@ using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
 
 namespace Contrast.K8s.AgentOperator.Core.State.Resources.Interfaces
 {
-    public interface IResourceWithPodSpec : INamespacedResource, IMutableResource
+    public interface IResourceWithPodTemplate : INamespacedResource, IMutableResource
     {
         IReadOnlyCollection<MetadataLabel> Labels { get; }
         IReadOnlyCollection<MetadataAnnotations> Annotations { get; }

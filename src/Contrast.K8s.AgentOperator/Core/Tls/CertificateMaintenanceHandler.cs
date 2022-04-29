@@ -13,7 +13,7 @@ using NLog;
 namespace Contrast.K8s.AgentOperator.Core.Tls
 {
     [UsedImplicitly]
-    public class CertificateMaintenanceHandler : INotificationHandler<EntityReconciled<V1Secret>>, INotificationHandler<NowLeader>
+    public class CertificateMaintenanceHandler : INotificationHandler<EntityReconciled<V1Secret>>, INotificationHandler<ElectedLeader>
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
@@ -53,7 +53,7 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
             return Task.CompletedTask;
         }
 
-        public async Task Handle(NowLeader notification, CancellationToken cancellationToken)
+        public async Task Handle(ElectedLeader notification, CancellationToken cancellationToken)
         {
             var existingSecret = await _webHookConfigurationWriter.FetchCurrentCertificate();
             if (existingSecret == null)

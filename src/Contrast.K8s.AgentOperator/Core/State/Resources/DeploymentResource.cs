@@ -7,5 +7,5 @@ namespace Contrast.K8s.AgentOperator.Core.State.Resources
     public record DeploymentResource(IReadOnlyCollection<MetadataLabel> Labels,
                                      IReadOnlyCollection<MetadataAnnotations> Annotations,
                                      PodTemplate PodTemplate)
-        : IResourceWithPodSpec;
+        : IResourceWithPodTemplate;
 }

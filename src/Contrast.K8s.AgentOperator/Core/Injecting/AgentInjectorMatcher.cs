@@ -17,12 +17,12 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting
             _globMatcher = globMatcher;
         }
 
-        public IEnumerable<ResourceIdentityPair<AgentInjectorResource>> GetMatchingInjectors(AgentInjectorContext context,
-                                                                                             NamespacedResourceIdentity targetIdentity,
-                                                                                             IResourceWithPodSpec targetResource)
+        public IEnumerable<ResourceIdentityPair<AgentInjectorResource>> GetMatchingInjectors(
+            IEnumerable<ResourceIdentityPair<AgentInjectorResource>> readyInjectors,
+            NamespacedResourceIdentity targetIdentity,
+            IResourceWithPodTemplate targetResource)
         {
-            var agentInjectorResources = context.ReadyInjectors;
-            foreach (var injector in agentInjectorResources)
+            foreach (var injector in readyInjectors)
             {
                 var (_, labelPatterns, namespaces) = injector.Resource.Selector;
 
@@ -36,7 +36,7 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting
         }
 
         public IEnumerable<PodContainer> GetMatchingContainers(ResourceIdentityPair<AgentInjectorResource> injector,
-                                                               IResourceWithPodSpec targetResource)
+                                                               IResourceWithPodTemplate targetResource)
         {
             var imagesPatterns = injector.Resource.Selector.ImagesPatterns;
             foreach (var container in targetResource.PodTemplate.Containers)
@@ -49,7 +49,7 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting
             }
         }
 
-        private bool MatchesLabel<T>(T targetResource, string key, string labelPattern) where T : IResourceWithPodSpec
+        private bool MatchesLabel<T>(T targetResource, string key, string labelPattern) where T : IResourceWithPodTemplate
         {
             return targetResource.Labels.Any(
                 label => string.Equals(key, label.Name, StringComparison.OrdinalIgnoreCase)

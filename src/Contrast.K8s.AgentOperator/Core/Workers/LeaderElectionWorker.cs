@@ -38,7 +38,7 @@ namespace Contrast.K8s.AgentOperator.Core.Workers
             {
                 try
                 {
-                    await _mediator.Publish(new NowLeader());
+                    await _mediator.Publish(new ElectedLeader());
                 }
                 catch (Exception e)
                 {

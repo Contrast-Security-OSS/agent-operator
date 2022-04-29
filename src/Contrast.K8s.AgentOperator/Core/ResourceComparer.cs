@@ -18,7 +18,7 @@ namespace Contrast.K8s.AgentOperator.Core
         public bool AreEqual<T>(T left, T right) where T : INamespacedResource
         {
             var result = _compareLogic.Compare(left, right);
-            if (result.ElapsedMilliseconds > 10)
+            if (result.ElapsedMilliseconds > 40)
             {
                 Logger.Debug($"Comparing {left} and {right} took {result.ElapsedMilliseconds}ms.");
             }

@@ -1,63 +1,65 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Contrast.K8s.AgentOperator.Core.Events;
 using Contrast.K8s.AgentOperator.Core.State;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Interfaces;
 using JetBrains.Annotations;
+using MediatR;
 using NLog;
 
 namespace Contrast.K8s.AgentOperator.Core.Injecting
 {
-    public interface IAgentInjector
-    {
-        ValueTask CalculateChanges(CancellationToken cancellationToken = default);
-    }
-
     [UsedImplicitly]
-    public class AgentInjector : IAgentInjector
+    public class MatchInjectorsHandler : INotificationHandler<StateModified>
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
         private readonly IStateContainer _state;
         private readonly AgentInjectorMatcher _matcher;
+        private readonly IMediator _mediator;
 
-        public AgentInjector(IStateContainer state, AgentInjectorMatcher matcher)
+        public MatchInjectorsHandler(IStateContainer state, AgentInjectorMatcher matcher, IMediator mediator)
         {
             _state = state;
             _matcher = matcher;
+            _mediator = mediator;
         }
 
-        public async ValueTask CalculateChanges(CancellationToken cancellationToken = default)
+        public async Task Handle(StateModified notification, CancellationToken cancellationToken)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            Logger.Trace("Cluster state changed, re-calculating injection points.");
+
+            await Handle(cancellationToken);
+
+            Logger.Trace($"Completed re-calculating injection points after {stopwatch.ElapsedMilliseconds}ms.");
+        }
+
+        private async ValueTask Handle(CancellationToken cancellationToken = default)
         {
             var readyAgentInjectors = await GetReadyAgentInjectors(cancellationToken);
-            var context = new AgentInjectorContext(readyAgentInjectors);
 
-            var rootResources = await _state.GetByType<IResourceWithPodSpec>(cancellationToken);
-            foreach (var (identity, resource) in rootResources)
+            var rootResources = await _state.GetByType<IResourceWithPodTemplate>(cancellationToken);
+            foreach (var target in rootResources)
             {
-                Logger.Trace($"Calculating changes needed for '{identity}'...");
-                if (await _state.GetIsDirty(identity, cancellationToken))
-                {
-                    Logger.Trace($"Ignoring dirty '{identity}'.");
-                }
-                else
-                {
-                    CalculateChangesFor(context, identity, resource);
-                }
+                Logger.Trace($"Calculating changes needed for '{target.Identity}'...");
+                var bestInjector = GetBestInjector(readyAgentInjectors, target);
+                await _mediator.Publish(new InjectorMatched(target, bestInjector), cancellationToken);
             }
         }
 
-        private void CalculateChangesFor(AgentInjectorContext context,
-                                         NamespacedResourceIdentity targetIdentity,
-                                         IResourceWithPodSpec targetResource)
+        private ResourceIdentityPair<AgentInjectorResource>? GetBestInjector(IEnumerable<ResourceIdentityPair<AgentInjectorResource>> readyAgentInjectors,
+                                                                             ResourceIdentityPair<IResourceWithPodTemplate> target)
         {
-            var injectors = _matcher.GetMatchingInjectors(context, targetIdentity, targetResource).ToList();
+            var injectors = _matcher.GetMatchingInjectors(readyAgentInjectors, target.Identity, target.Resource).ToList();
 
             if (injectors.Count > 1)
             {
-                Logger.Warn($"Multiple injectors select target '{targetIdentity}', "
+                Logger.Warn($"Multiple injectors select target '{target.Identity}', "
                             + "the first alphabetically will be used to solve for ambiguity.");
             }
 
@@ -68,14 +70,10 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting
                 _ => null
             };
 
-            if (bestInjector != null)
-            {
-                var containers = _matcher.GetMatchingContainers(bestInjector, targetResource).ToList();
-                Logger.Trace($"Injector '{bestInjector.Identity}' selects containers '{string.Join(", ", containers.Select(x => x.Name))}'.");
-            }
+            return bestInjector;
         }
 
-        private async Task<IReadOnlyCollection<ResourceIdentityPair<AgentInjectorResource>>> GetReadyAgentInjectors(CancellationToken cancellationToken)
+        private async ValueTask<IReadOnlyCollection<ResourceIdentityPair<AgentInjectorResource>>> GetReadyAgentInjectors(CancellationToken cancellationToken)
         {
             var readyAgentInjectors = new List<ResourceIdentityPair<AgentInjectorResource>>();
             var injectorIdentities = await _state.GetKeysByType<AgentInjectorResource>(cancellationToken);
@@ -94,6 +92,4 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting
             return readyAgentInjectors;
         }
     }
-
-    public record AgentInjectorContext(IReadOnlyCollection<ResourceIdentityPair<AgentInjectorResource>> ReadyInjectors);
 }

@@ -11,8 +11,8 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
 {
     public interface IKubeWebHookConfigurationWriter
     {
-        Task UpdateClusterWebHookConfiguration(TlsCertificateChainExport chainExport);
         Task<V1Secret?> FetchCurrentCertificate();
+        Task UpdateClusterWebHookConfiguration(TlsCertificateChainExport chainExport);
     }
 
     public class KubeWebHookConfigurationWriter : IKubeWebHookConfigurationWriter
