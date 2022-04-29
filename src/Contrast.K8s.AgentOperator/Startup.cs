@@ -51,9 +51,10 @@ namespace Contrast.K8s.AgentOperator
 
             builder.ApplyContrastConventions(assembly);
 
+            // These must be cached, as they parse PEM's on ctor.
             builder.Register(_ => KubernetesClientConfiguration.BuildDefaultConfig()).AsSelf().SingleInstance();
-            builder.Register(x => new KubernetesClient(x.Resolve<KubernetesClientConfiguration>())).As<IKubernetesClient>();
-            builder.Register(x => x.Resolve<IKubernetesClient>().ApiClient).As<IKubernetes>();
+            builder.Register(x => new KubernetesClient(x.Resolve<KubernetesClientConfiguration>())).As<IKubernetesClient>().SingleInstance();
+            builder.Register(x => x.Resolve<IKubernetesClient>().ApiClient).As<IKubernetes>().SingleInstance();
 
             builder.RegisterType<EventStream>().As<IEventStream>().SingleInstance();
             builder.RegisterType<StateContainer>().As<IStateContainer>().SingleInstance();
