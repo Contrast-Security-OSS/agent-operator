@@ -14,7 +14,7 @@ namespace Contrast.K8s.AgentOperator.Core.State
                                                                                         CancellationToken cancellationToken = default)
         {
             var injector = await state.GetById<AgentInjectorResource>(name, @namespace, cancellationToken);
-            if (injector != null)
+            if (injector is { Enabled: true })
             {
                 var configurationReferenceFound = injector.ConfigurationReference is not { } configurationRef
                                                   || await state.ExistsById<AgentConfigurationResource>(

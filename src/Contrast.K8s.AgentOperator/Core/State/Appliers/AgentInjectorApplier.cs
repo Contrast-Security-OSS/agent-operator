@@ -24,6 +24,7 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers
             var spec = entity.Spec;
             var @namespace = entity.Namespace()!;
 
+            var enabled = spec.Enabled;
             var type = spec.Type switch
             {
                 "dotnet-core" => AgentInjectionType.DotNetCore,
@@ -38,6 +39,7 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers
                 : null;
 
             var resource = new AgentInjectorResource(
+                enabled,
                 type,
                 image,
                 selector,

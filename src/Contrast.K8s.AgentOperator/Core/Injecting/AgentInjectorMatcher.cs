@@ -4,7 +4,6 @@ using System.Linq;
 using Contrast.K8s.AgentOperator.Core.State;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Interfaces;
-using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
 
 namespace Contrast.K8s.AgentOperator.Core.Injecting
 {
@@ -31,20 +30,6 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting
                 if (matchesNamespace && matchesLabel)
                 {
                     yield return injector;
-                }
-            }
-        }
-
-        public IEnumerable<PodContainer> GetMatchingContainers(AgentInjectorResource injector,
-                                                               IResourceWithPodTemplate targetResource)
-        {
-            var imagesPatterns = injector.Selector.ImagesPatterns;
-            foreach (var container in targetResource.PodTemplate.Containers)
-            {
-                if (!imagesPatterns.Any()
-                    || imagesPatterns.Any(p => _globMatcher.Matches(p, container.Image)))
-                {
-                    yield return container;
                 }
             }
         }
