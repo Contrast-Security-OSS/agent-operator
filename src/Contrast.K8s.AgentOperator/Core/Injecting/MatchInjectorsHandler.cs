@@ -55,7 +55,7 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting
         private ResourceIdentityPair<AgentInjectorResource>? GetBestInjector(IEnumerable<ResourceIdentityPair<AgentInjectorResource>> readyAgentInjectors,
                                                                              ResourceIdentityPair<IResourceWithPodTemplate> target)
         {
-            var injectors = _matcher.GetMatchingInjectors(readyAgentInjectors, target.Identity, target.Resource).ToList();
+            var injectors = _matcher.GetMatchingInjectors(readyAgentInjectors, target).ToList();
 
             if (injectors.Count > 1)
             {

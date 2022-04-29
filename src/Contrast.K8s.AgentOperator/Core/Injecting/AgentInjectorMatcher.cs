@@ -18,15 +18,14 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting
 
         public IEnumerable<ResourceIdentityPair<AgentInjectorResource>> GetMatchingInjectors(
             IEnumerable<ResourceIdentityPair<AgentInjectorResource>> readyInjectors,
-            NamespacedResourceIdentity targetIdentity,
-            IResourceWithPodTemplate targetResource)
+            ResourceIdentityPair<IResourceWithPodTemplate> target)
         {
             foreach (var injector in readyInjectors)
             {
                 var (_, labelPatterns, namespaces) = injector.Resource.Selector;
 
-                var matchesNamespace = namespaces.Contains(targetIdentity.Namespace, StringComparer.OrdinalIgnoreCase);
-                var matchesLabel = !labelPatterns.Any() || labelPatterns.Any(x => MatchesLabel(targetResource, x.Key, x.Value));
+                var matchesNamespace = namespaces.Contains(target.Identity.Namespace, StringComparer.OrdinalIgnoreCase);
+                var matchesLabel = !labelPatterns.Any() || labelPatterns.Any(x => MatchesLabel(target.Resource, x.Key, x.Value));
                 if (matchesNamespace && matchesLabel)
                 {
                     yield return injector;
