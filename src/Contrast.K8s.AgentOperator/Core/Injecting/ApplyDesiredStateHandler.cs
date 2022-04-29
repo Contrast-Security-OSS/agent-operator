@@ -16,10 +16,6 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting
     [UsedImplicitly]
     public class ApplyDesiredStateHandler : INotificationHandler<InjectorMatched>
     {
-        private const string HashAttributeName = "agents.contrastsecurity.com/hash";
-        private const string NameAttributeName = "agents.contrastsecurity.com/name";
-        private const string NamespaceAttributeName = "agents.contrastsecurity.com/namespace";
-
         private readonly IInjectorHasher _hasher;
         private readonly IStateContainer _state;
         private readonly IKubernetesClient _client;
@@ -55,9 +51,9 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting
 
             var templateAnnotations = target.Resource.PodTemplate.Annotations;
 
-            if ((templateAnnotations.GetAnnotation(HashAttributeName) != desiredState.Hash)
-                || (templateAnnotations.GetAnnotation(NameAttributeName) != desiredState.Name)
-                || (templateAnnotations.GetAnnotation(NamespaceAttributeName) != desiredState.Namespace))
+            if ((templateAnnotations.GetAnnotation(InjectionConstants.HashAttributeName) != desiredState.Hash)
+                || (templateAnnotations.GetAnnotation(InjectionConstants.NameAttributeName) != desiredState.Name)
+                || (templateAnnotations.GetAnnotation(InjectionConstants.NamespaceAttributeName) != desiredState.Namespace))
             {
                 await PatchToDesiredState(desiredState, target);
             }
@@ -84,9 +80,9 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting
                 await _patcher.Patch(existingEntity, o =>
                 {
                     var annotations = o.Spec.Template.Metadata.EnsureAnnotations();
-                    annotations.SetOrRemove(HashAttributeName, desiredState.Hash);
-                    annotations.SetOrRemove(NameAttributeName, desiredState.Name);
-                    annotations.SetOrRemove(NamespaceAttributeName, desiredState.Namespace);
+                    annotations.SetOrRemove(InjectionConstants.HashAttributeName, desiredState.Hash);
+                    annotations.SetOrRemove(InjectionConstants.NameAttributeName, desiredState.Name);
+                    annotations.SetOrRemove(InjectionConstants.NamespaceAttributeName, desiredState.Namespace);
                     if (!o.Spec.Template.Metadata.Annotations.Any())
                     {
                         o.Spec.Template.Metadata.Annotations = null;
@@ -105,9 +101,9 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting
                 await _patcher.Patch(existingEntity, o =>
                 {
                     var annotations = o.Spec.Template.Metadata.EnsureAnnotations();
-                    annotations.SetOrRemove(HashAttributeName, desiredState.Hash);
-                    annotations.SetOrRemove(NameAttributeName, desiredState.Name);
-                    annotations.SetOrRemove(NamespaceAttributeName, desiredState.Namespace);
+                    annotations.SetOrRemove(InjectionConstants.HashAttributeName, desiredState.Hash);
+                    annotations.SetOrRemove(InjectionConstants.NameAttributeName, desiredState.Name);
+                    annotations.SetOrRemove(InjectionConstants.NamespaceAttributeName, desiredState.Namespace);
                     if (!o.Spec.Template.Metadata.Annotations.Any())
                     {
                         o.Spec.Template.Metadata.Annotations = null;
@@ -126,9 +122,9 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting
                 await _patcher.Patch(existingEntity, o =>
                 {
                     var annotations = o.Spec.Template.Metadata.EnsureAnnotations();
-                    annotations.SetOrRemove(HashAttributeName, desiredState.Hash);
-                    annotations.SetOrRemove(NameAttributeName, desiredState.Name);
-                    annotations.SetOrRemove(NamespaceAttributeName, desiredState.Namespace);
+                    annotations.SetOrRemove(InjectionConstants.HashAttributeName, desiredState.Hash);
+                    annotations.SetOrRemove(InjectionConstants.NameAttributeName, desiredState.Name);
+                    annotations.SetOrRemove(InjectionConstants.NamespaceAttributeName, desiredState.Namespace);
                     if (!o.Spec.Template.Metadata.Annotations.Any())
                     {
                         o.Spec.Template.Metadata.Annotations = null;

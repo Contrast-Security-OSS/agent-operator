@@ -35,10 +35,10 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting
             }
         }
 
-        public IEnumerable<PodContainer> GetMatchingContainers(ResourceIdentityPair<AgentInjectorResource> injector,
+        public IEnumerable<PodContainer> GetMatchingContainers(AgentInjectorResource injector,
                                                                IResourceWithPodTemplate targetResource)
         {
-            var imagesPatterns = injector.Resource.Selector.ImagesPatterns;
+            var imagesPatterns = injector.Selector.ImagesPatterns;
             foreach (var container in targetResource.PodTemplate.Containers)
             {
                 if (!imagesPatterns.Any()

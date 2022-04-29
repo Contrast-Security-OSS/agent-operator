@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
+using k8s.Models;
 
 namespace Contrast.K8s.AgentOperator.Core
 {
@@ -45,6 +46,37 @@ namespace Contrast.K8s.AgentOperator.Core
             {
                 dictionary[key] = value;
             }
+        }
+
+        public static void AddOrUpdate<T>(this ICollection<T> collection, Func<T, bool> predicate, T value)
+        {
+            var existing = collection.FirstOrDefault(predicate);
+            if (existing != null)
+            {
+                collection.Remove(existing);
+            }
+
+            collection.Add(value);
+        }
+
+        public static void AddOrUpdate(this ICollection<V1Container> collection, string name, V1Container value)
+        {
+            collection.AddOrUpdate(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase), value);
+        }
+
+        public static void AddOrUpdate(this ICollection<V1Volume> collection, string name, V1Volume value)
+        {
+            collection.AddOrUpdate(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase), value);
+        }
+
+        public static void AddOrUpdate(this ICollection<V1VolumeMount> collection, string name, V1VolumeMount value)
+        {
+            collection.AddOrUpdate(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase), value);
+        }
+
+        public static void AddOrUpdate(this ICollection<V1EnvVar> collection, string name, V1EnvVar value)
+        {
+            collection.AddOrUpdate(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase), value);
         }
     }
 }

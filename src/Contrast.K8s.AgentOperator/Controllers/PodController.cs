@@ -6,7 +6,6 @@ using k8s.Models;
 using KubeOps.Operator.Rbac;
 using KubeOps.Operator.Webhooks;
 using MediatR;
-using NLog;
 
 namespace Contrast.K8s.AgentOperator.Controllers
 {

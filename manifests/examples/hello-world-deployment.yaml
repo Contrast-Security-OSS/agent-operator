@@ -29,6 +29,8 @@ spec:
     metadata:
       labels:
         app: asp-net-core
+      annotations:
+        test: test
     spec:
       containers:
         - image: mcr.microsoft.com/dotnet/samples:aspnetapp

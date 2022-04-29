@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Kube;
@@ -36,6 +37,7 @@ namespace Contrast.K8s.AgentOperator.Core
 
         public async Task Patch<T>(T entity, Action<T> mutator) where T : IKubernetesObject<V1ObjectMeta>
         {
+            var stopwatch = Stopwatch.StartNew();
             var entityCopy = _jsonSerializer.DeepClone(entity);
 
             var currentVersion = _jsonSerializer.ToJToken(entityCopy);
@@ -45,12 +47,12 @@ namespace Contrast.K8s.AgentOperator.Core
             var diff = _jsonDiffer.Diff(currentVersion, nextVersion, false);
             if (diff.Operations.Any())
             {
-                Logger.Debug(
+                Logger.Trace(
                     $"Peparing to patch '{entity.Namespace()}/{entity.Name()}' ('{entity.Kind}/{entity.ApiVersion}') with '{diff.ToString(Formatting.None)}'.");
 
                 await _client.Patch(entity, diff, _operatorOptions.FieldManagerName);
 
-                Logger.Debug("Patch complete.");
+                Logger.Trace($"Patch complete after {stopwatch.ElapsedMilliseconds}ms.");
             }
         }
     }
