@@ -33,15 +33,9 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting
             if (request.Entity.Metadata.Annotations != null
                 && request.Entity.Metadata.Annotations.TryGetValue(InjectionConstants.NameAttributeName, out var injectorName)
                 && request.Entity.Metadata.Annotations.TryGetValue(InjectionConstants.NamespaceAttributeName, out var injectorNamespace)
-                && await _state.GetById<AgentInjectorResource>(injectorName, injectorNamespace, cancellationToken)
-                    is { ConnectionReference: { } connectionRef } injector
-                && await _state.GetById<AgentConnectionResource>(connectionRef.Name, connectionRef.Namespace, cancellationToken)
-                    is { } connection)
+                && await _state.GetInjectorBundle(injectorName, injectorNamespace, cancellationToken)
+                    is var (injector, connection, configuration))
             {
-                var configuration = injector.ConfigurationReference is { } configurationRef
-                    ? await _state.GetById<AgentConfigurationResource>(configurationRef.Name, configurationRef.Namespace, cancellationToken)
-                    : null;
-
                 PatchPod(request.Entity, injector, connection, configuration);
 
                 Logger.Trace($"Patching pod using injector '{injectorNamespace}/{injectorName}'.");

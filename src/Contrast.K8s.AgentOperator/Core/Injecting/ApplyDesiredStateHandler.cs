@@ -38,25 +38,28 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting
                 return;
             }
 
-            DesiredState desiredState;
-            if (injector == null)
-            {
-                desiredState = DesiredState.Empty;
-            }
-            else
-            {
-                var hash = _hasher.GetHash(injector.Resource);
-                desiredState = new DesiredState(hash, injector.Identity.Name, injector.Identity.Namespace);
-            }
+            var desiredState = await GetDesiredState(injector, cancellationToken);
 
             var templateAnnotations = target.Resource.PodTemplate.Annotations;
-
             if ((templateAnnotations.GetAnnotation(InjectionConstants.HashAttributeName) != desiredState.Hash)
                 || (templateAnnotations.GetAnnotation(InjectionConstants.NameAttributeName) != desiredState.Name)
                 || (templateAnnotations.GetAnnotation(InjectionConstants.NamespaceAttributeName) != desiredState.Namespace))
             {
                 await PatchToDesiredState(desiredState, target);
             }
+        }
+
+        private async Task<DesiredState> GetDesiredState(ResourceIdentityPair<AgentInjectorResource>? injector, CancellationToken cancellationToken = default)
+        {
+            if (injector != null
+                && await _state.GetInjectorBundle(injector.Identity.Name, injector.Identity.Namespace, cancellationToken)
+                    is var (_, connection, configuration))
+            {
+                var hash = _hasher.GetHash(injector.Resource, connection, configuration);
+                return new DesiredState(hash, injector.Identity.Name, injector.Identity.Namespace);
+            }
+
+            return DesiredState.Empty;
         }
 
         private ValueTask PatchToDesiredState(DesiredState desiredState, ResourceIdentityPair<IResourceWithPodTemplate> target)

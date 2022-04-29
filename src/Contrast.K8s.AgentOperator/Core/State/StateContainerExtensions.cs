@@ -68,5 +68,27 @@ namespace Contrast.K8s.AgentOperator.Core.State
             return await state.GetById<SecretResource>(secretRef.Name, secretRef.Namespace, cancellationToken) is { } secret
                    && secret.Keys.Contains(secretRef.Key);
         }
+
+        public static async ValueTask<InjectorBundle?> GetInjectorBundle(this IStateContainer state,
+                                                           string injectorName,
+                                                           string injectorNamespace,
+                                                           CancellationToken cancellationToken = default)
+        {
+            if (await state.GetById<AgentInjectorResource>(injectorName, injectorNamespace, cancellationToken)
+                    is { ConnectionReference: { } connectionRef } injector
+                && await state.GetById<AgentConnectionResource>(connectionRef.Name, connectionRef.Namespace, cancellationToken)
+                    is { } connection)
+            {
+                var configuration = injector.ConfigurationReference is { } configurationRef
+                    ? await state.GetById<AgentConfigurationResource>(configurationRef.Name, configurationRef.Namespace, cancellationToken)
+                    : null;
+
+                return new InjectorBundle(injector, connection, configuration);
+            }
+
+            return null;
+        }
     }
+
+    public record InjectorBundle(AgentInjectorResource Injector, AgentConnectionResource Connection, AgentConfigurationResource? Configuration);
 }
