@@ -74,12 +74,11 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
         private async Task UpdateWebHookConfiguration(TlsCertificateChainExport chainExport)
         {
             Logger.Info($"Ensuring web hook ca bundle in '{_mutatingWebHookOptions.ConfigurationName}' is correct.");
-            var webHookConfiguration = await _kubernetesClient.Get<V1MutatingWebhookConfiguration>(
-                _mutatingWebHookOptions.ConfigurationName
-            );
-            if (webHookConfiguration != null)
-            {
-                await _resourcePatcher.Patch(webHookConfiguration, configuration =>
+
+            var success = await _resourcePatcher.Patch<V1MutatingWebhookConfiguration>(
+                _mutatingWebHookOptions.ConfigurationName,
+                null,
+                configuration =>
                 {
                     var webHook = configuration.Webhooks
                                                .FirstOrDefault(
@@ -89,9 +88,10 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
                     {
                         webHook.ClientConfig.CaBundle = chainExport.CaPublicPem;
                     }
-                });
-            }
-            else
+                }
+            );
+
+            if (!success)
             {
                 Logger.Warn($"MutatingWebhookConfiguration '{_mutatingWebHookOptions.ConfigurationName}' "
                             + "was not found, web hooks will likely be broken.");

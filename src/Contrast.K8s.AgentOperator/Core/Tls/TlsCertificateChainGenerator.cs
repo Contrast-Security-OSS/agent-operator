@@ -9,7 +9,12 @@ using Contrast.K8s.AgentOperator.Options;
 
 namespace Contrast.K8s.AgentOperator.Core.Tls
 {
-    public class TlsCertificateChainGenerator
+    public interface ITlsCertificateChainGenerator
+    {
+        TlsCertificateChain CreateTlsCertificateChain();
+    }
+
+    public class TlsCertificateChainGenerator : ITlsCertificateChainGenerator
     {
         private readonly CreateCertificates _createCertificates;
         private readonly TlsCertificateOptions _options;

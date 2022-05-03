@@ -15,6 +15,7 @@ namespace Contrast.K8s.AgentOperator.Core.Kube
     public interface IResourcePatcher
     {
         Task Patch<T>(T entity, Action<T> mutator) where T : IKubernetesObject<V1ObjectMeta>;
+        Task<bool> Patch<T>(string name, string? @namespace, Action<T> mutator) where T : class, IKubernetesObject<V1ObjectMeta>;
     }
 
     public class ResourcePatcher : IResourcePatcher
@@ -32,6 +33,21 @@ namespace Contrast.K8s.AgentOperator.Core.Kube
             _client = client;
             _jsonSerializer = jsonSerializer;
             _operatorOptions = operatorOptions;
+        }
+
+        public async Task<bool> Patch<T>(string name, string? @namespace, Action<T> mutator) where T : class, IKubernetesObject<V1ObjectMeta>
+        {
+            var entity = await _client.Get<T>(name, @namespace);
+            if (entity != null)
+            {
+                await Patch(entity, mutator);
+            }
+            else
+            {
+                Logger.Trace($"Could not locate entity '{entity.Namespace()}/{entity.Name()}' to patch.");
+            }
+
+            return entity != null;
         }
 
         public async Task Patch<T>(T entity, Action<T> mutator) where T : IKubernetesObject<V1ObjectMeta>
