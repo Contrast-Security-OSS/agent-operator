@@ -41,11 +41,19 @@ https://docs.microsoft.com/en-us/visualstudio/bridge/bridge-to-kubernetes-vs-cod
 
 ![Select Namespace](./docs/select-namespace.png)
 
-- Finally, create a local tunnel from the cluster to your machine. Select the port your local operator instance is running on.
+- Finally, create a local tunnel from the cluster to your machine. Select the port your local operator instance is running on (for us, port 5001).
 
 ![Debug Service](./docs/debug-service.png)
 
-After following the prompts, connections for the operator wil be redirected to your local machine.
+After following the prompts and running the generated task, connections for the operator wil be redirected to your local machine.
+
+To run the task:
+
+![Run Task](./docs/run-task.png)
+
+And select the generated task:
+
+![Bridge Task](./docs/bridge-task.png)
 
 ## Data Flow
 
