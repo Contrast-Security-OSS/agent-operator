@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Contrast.K8s.AgentOperator.Core;
 using Contrast.K8s.AgentOperator.Core.Events;
 using Contrast.K8s.AgentOperator.Core.Kube;
 using JetBrains.Annotations;

@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using Autofac;
 using Autofac.Features.Variance;
 using Contrast.K8s.AgentOperator.Autofac;
-using Contrast.K8s.AgentOperator.Core;
 using Contrast.K8s.AgentOperator.Core.Injecting;
+using Contrast.K8s.AgentOperator.Core.Injecting.Patching.Agents;
 using Contrast.K8s.AgentOperator.Core.State;
 using Contrast.K8s.AgentOperator.Core.Tls;
 using Contrast.K8s.AgentOperator.Options;
@@ -60,12 +60,10 @@ namespace Contrast.K8s.AgentOperator
             builder.RegisterType<StateContainer>().As<IStateContainer>().SingleInstance();
             builder.RegisterType<GlobMatcher>().As<IGlobMatcher>().SingleInstance();
             builder.RegisterType<KestrelCertificateSelector>().As<IKestrelCertificateSelector>().SingleInstance();
-
-            // Options
+            
             RegisterOptions(builder);
-
-            // Workers
             builder.RegisterAssemblyTypes(assembly).PublicOnly().AssignableTo<BackgroundService>().As<IHostedService>();
+            builder.RegisterAssemblyTypes(assembly).PublicOnly().AssignableTo<IAgentPatcher>().As<IAgentPatcher>();
 
             // MediatR
             builder.RegisterType<Mediator>()
