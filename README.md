@@ -10,6 +10,8 @@ As this is an operator, local development requires the interactions of a K8s clu
 
 ### Development with Docker Desktop
 
+#### Local K8s
+
 The easiest method to develop "pull" features (features that does not require the back plane to communicate with our app) is using Docker Desktop in K8s mode.
 
 - Ensure Docker Desktop is installed (Enable WSL integration is recommended, for the lightweight containers).
@@ -24,6 +26,26 @@ CoreDNS is running at https://kubernetes.docker.internal:6443/api/v1/namespaces/
 ```
 
 With Docker Desktop executing locally, the operator should automatically connect to the local back plane using your local `kubeconfig`.
+
+#### Development with Webhooks
+
+Webhooks or "push" features require the ability for the cluster to contact the running operator. If the operator is running outside of the cluster, this communication can become a problem.
+
+Using the "Bridge to Kubernetes", we can redirect requests to a cluster service to our local machine.
+
+https://docs.microsoft.com/en-us/visualstudio/bridge/bridge-to-kubernetes-vs-code
+
+- Ensure `manifests\install\dev` is deployed into your local cluster.
+- Ensure the VS Code extension is installed.
+- Select the operator namespace.
+
+![Select Namespace](./docs/select-namespace.png)
+
+- Finally, create a local tunnel from the cluster to your machine. Select the port your local operator instance is running on.
+
+![Debug Service](./docs/debug-service.png)
+
+After following the prompts, connections for the operator wil be redirected to your local machine.
 
 ## Data Flow
 
