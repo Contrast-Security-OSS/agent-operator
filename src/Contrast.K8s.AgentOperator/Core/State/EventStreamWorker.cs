@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using MediatR;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Rest;
 using NLog;
 
 namespace Contrast.K8s.AgentOperator.Core.State
@@ -31,10 +32,16 @@ namespace Contrast.K8s.AgentOperator.Core.State
 
                     await _mediator.Publish(next, stoppingToken);
                 }
-                catch (Exception e) when (e is not TaskCanceledException and not OperationCanceledException)
+                catch (HttpOperationException e)
+                {
+                    Logger.Warn(e, $"An error occured. Response body: {e.Response.Content}");
+                }
+                catch (Exception e) when (e is TaskCanceledException or OperationCanceledException)
+                {
+                }
+                catch (Exception e)
                 {
                     Logger.Warn(e);
-                    await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
                 }
             }
         }

@@ -48,6 +48,14 @@ namespace Contrast.K8s.AgentOperator.Core
             }
         }
 
+        public static void RemovePrefixed(this IDictionary<string, string> dictionary, string prefix)
+        {
+            foreach (var key in dictionary.Keys.Where(x => x.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)).ToList())
+            {
+                dictionary.Remove(key);
+            }
+        }
+
         public static void AddOrUpdate<T>(this ICollection<T> collection, Func<T, bool> predicate, T value)
         {
             var existing = collection.FirstOrDefault(predicate);

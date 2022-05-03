@@ -14,7 +14,6 @@ namespace Contrast.K8s.AgentOperator.Core.Kube
 {
     public interface IResourcePatcher
     {
-        Task Patch<T>(T entity, Action<T> mutator) where T : IKubernetesObject<V1ObjectMeta>;
         Task<bool> Patch<T>(string name, string? @namespace, Action<T> mutator) where T : class, IKubernetesObject<V1ObjectMeta>;
     }
 
@@ -50,7 +49,7 @@ namespace Contrast.K8s.AgentOperator.Core.Kube
             return entity != null;
         }
 
-        public async Task Patch<T>(T entity, Action<T> mutator) where T : IKubernetesObject<V1ObjectMeta>
+        private async Task Patch<T>(T entity, Action<T> mutator) where T : IKubernetesObject<V1ObjectMeta>
         {
             var stopwatch = Stopwatch.StartNew();
             var entityCopy = _jsonSerializer.DeepClone(entity);

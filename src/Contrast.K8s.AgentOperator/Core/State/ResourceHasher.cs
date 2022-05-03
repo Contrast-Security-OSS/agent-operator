@@ -3,18 +3,18 @@ using System.Text;
 using Contrast.K8s.AgentOperator.Core.Kube;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
 
-namespace Contrast.K8s.AgentOperator.Core.Injecting
+namespace Contrast.K8s.AgentOperator.Core.State
 {
-    public interface IInjectorHasher
+    public interface IResourceHasher
     {
         string GetHash(AgentInjectorResource injector, AgentConnectionResource connection, AgentConfigurationResource? configuration);
     }
 
-    public class InjectorHasher : IInjectorHasher
+    public class ResourceHasher : IResourceHasher
     {
         private readonly KubernetesJsonSerializer _jsonSerializer;
 
-        public InjectorHasher(KubernetesJsonSerializer jsonSerializer)
+        public ResourceHasher(KubernetesJsonSerializer jsonSerializer)
         {
             _jsonSerializer = jsonSerializer;
         }

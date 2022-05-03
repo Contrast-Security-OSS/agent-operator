@@ -7,7 +7,6 @@ using Contrast.K8s.AgentOperator.Core.Kube;
 using Contrast.K8s.AgentOperator.Core.State;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Interfaces;
-using DotnetKubernetesClient;
 using JetBrains.Annotations;
 using k8s.Models;
 using MediatR;
@@ -17,16 +16,14 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting
     [UsedImplicitly]
     public class ApplyDesiredStateHandler : INotificationHandler<InjectorMatched>
     {
-        private readonly IInjectorHasher _hasher;
+        private readonly IResourceHasher _hasher;
         private readonly IStateContainer _state;
-        private readonly IKubernetesClient _client;
         private readonly IResourcePatcher _patcher;
 
-        public ApplyDesiredStateHandler(IInjectorHasher hasher, IStateContainer state, IKubernetesClient client, IResourcePatcher patcher)
+        public ApplyDesiredStateHandler(IResourceHasher hasher, IStateContainer state, IResourcePatcher patcher)
         {
             _hasher = hasher;
             _state = state;
-            _client = client;
             _patcher = patcher;
         }
 
@@ -69,73 +66,41 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting
             var (identity, podTemplate) = target;
             return podTemplate switch
             {
-                DaemonSetResource => PatchToDesiredStateDaemonSetResource(desiredState, identity),
-                StatefulSetResource => PatchToDesiredStateStatefulSetResource(desiredState, identity),
+                DaemonSetResource => PatchToDesiredStateDaemonSet(desiredState, identity),
+                StatefulSetResource => PatchToDesiredStateStatefulSet(desiredState, identity),
                 DeploymentResource => PatchToDesiredStateDeployment(desiredState, identity),
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
 
-        private async ValueTask PatchToDesiredStateDaemonSetResource(DesiredState desiredState, NamespacedResourceIdentity identity)
+        private async ValueTask PatchToDesiredStateDaemonSet(DesiredState desiredState, NamespacedResourceIdentity identity)
         {
-            var existingEntity = await _client.Get<V1DaemonSet>(identity.Name, identity.Namespace);
-            if (existingEntity != null)
-            {
-                await _patcher.Patch(existingEntity, o =>
-                {
-                    var annotations = o.Spec.Template.Metadata.EnsureAnnotations();
-                    annotations.SetOrRemove(InjectionConstants.HashAttributeName, desiredState.Hash);
-                    annotations.SetOrRemove(InjectionConstants.NameAttributeName, desiredState.Name);
-                    annotations.SetOrRemove(InjectionConstants.NamespaceAttributeName, desiredState.Namespace);
-                    if (!o.Spec.Template.Metadata.Annotations.Any())
-                    {
-                        o.Spec.Template.Metadata.Annotations = null;
-                    }
-                });
-
-                await _state.MarkAsDirty(identity);
-            }
+            await _state.MarkAsDirty(identity);
+            await _patcher.Patch<V1DaemonSet>(identity.Name, identity.Namespace, o => { PatchAnnotations(desiredState, o.Spec.Template); });
         }
 
-        private async ValueTask PatchToDesiredStateStatefulSetResource(DesiredState desiredState, NamespacedResourceIdentity identity)
+        private async ValueTask PatchToDesiredStateStatefulSet(DesiredState desiredState, NamespacedResourceIdentity identity)
         {
-            var existingEntity = await _client.Get<V1StatefulSet>(identity.Name, identity.Namespace);
-            if (existingEntity != null)
-            {
-                await _patcher.Patch(existingEntity, o =>
-                {
-                    var annotations = o.Spec.Template.Metadata.EnsureAnnotations();
-                    annotations.SetOrRemove(InjectionConstants.HashAttributeName, desiredState.Hash);
-                    annotations.SetOrRemove(InjectionConstants.NameAttributeName, desiredState.Name);
-                    annotations.SetOrRemove(InjectionConstants.NamespaceAttributeName, desiredState.Namespace);
-                    if (!o.Spec.Template.Metadata.Annotations.Any())
-                    {
-                        o.Spec.Template.Metadata.Annotations = null;
-                    }
-                });
-
-                await _state.MarkAsDirty(identity);
-            }
+            await _state.MarkAsDirty(identity);
+            await _patcher.Patch<V1StatefulSet>(identity.Name, identity.Namespace, o => { PatchAnnotations(desiredState, o.Spec.Template); });
         }
 
         private async ValueTask PatchToDesiredStateDeployment(DesiredState desiredState, NamespacedResourceIdentity identity)
         {
-            var existingEntity = await _client.Get<V1Deployment>(identity.Name, identity.Namespace);
-            if (existingEntity != null)
-            {
-                await _patcher.Patch(existingEntity, o =>
-                {
-                    var annotations = o.Spec.Template.Metadata.EnsureAnnotations();
-                    annotations.SetOrRemove(InjectionConstants.HashAttributeName, desiredState.Hash);
-                    annotations.SetOrRemove(InjectionConstants.NameAttributeName, desiredState.Name);
-                    annotations.SetOrRemove(InjectionConstants.NamespaceAttributeName, desiredState.Namespace);
-                    if (!o.Spec.Template.Metadata.Annotations.Any())
-                    {
-                        o.Spec.Template.Metadata.Annotations = null;
-                    }
-                });
+            await _state.MarkAsDirty(identity);
+            await _patcher.Patch<V1Deployment>(identity.Name, identity.Namespace, o => { PatchAnnotations(desiredState, o.Spec.Template); });
+        }
 
-                await _state.MarkAsDirty(identity);
+        private static void PatchAnnotations(DesiredState desiredState, V1PodTemplateSpec spec)
+        {
+            var annotations = spec.Metadata.EnsureAnnotations();
+            annotations.RemovePrefixed(InjectionConstants.OperatorAttributePrefix);
+            annotations.SetOrRemove(InjectionConstants.HashAttributeName, desiredState.Hash);
+            annotations.SetOrRemove(InjectionConstants.NameAttributeName, desiredState.Name);
+            annotations.SetOrRemove(InjectionConstants.NamespaceAttributeName, desiredState.Namespace);
+            if (!spec.Metadata.Annotations.Any())
+            {
+                spec.Metadata.Annotations = null;
             }
         }
 

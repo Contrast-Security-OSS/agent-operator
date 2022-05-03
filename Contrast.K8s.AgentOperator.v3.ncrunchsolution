@@ -3,6 +3,9 @@
     <AllowParallelTestExecution>True</AllowParallelTestExecution>
     <MetricsExclusionList>
       <Value>tests\Contrast.K8s.AgentOperator.Tests\Contrast.K8s.AgentOperator.Tests.csproj</Value>
+      <Value>src\Contrast.K8s.AgentOperator\Contrast.K8s.AgentOperator.csproj\Entities</Value>
+      <Value>src\Contrast.K8s.AgentOperator\Contrast.K8s.AgentOperator.csproj\Options</Value>
+      <Value>src\Contrast.K8s.AgentOperator\Contrast.K8s.AgentOperator.csproj\Core\Events</Value>
     </MetricsExclusionList>
     <SolutionConfigured>True</SolutionConfigured>
   </Settings>
