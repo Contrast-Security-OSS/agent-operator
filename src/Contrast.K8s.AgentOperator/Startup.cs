@@ -60,7 +60,7 @@ namespace Contrast.K8s.AgentOperator
             builder.RegisterType<StateContainer>().As<IStateContainer>().SingleInstance();
             builder.RegisterType<GlobMatcher>().As<IGlobMatcher>().SingleInstance();
             builder.RegisterType<KestrelCertificateSelector>().As<IKestrelCertificateSelector>().SingleInstance();
-            
+
             RegisterOptions(builder);
             builder.RegisterAssemblyTypes(assembly).PublicOnly().AssignableTo<BackgroundService>().As<IHostedService>();
             builder.RegisterAssemblyTypes(assembly).PublicOnly().AssignableTo<IAgentPatcher>().As<IAgentPatcher>();

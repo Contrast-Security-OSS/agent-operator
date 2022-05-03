@@ -9,6 +9,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Entities
     {
         [Theory]
         [InlineData("dotnet-core")]
+        [InlineData("java")]
         public void AgentTypeRegex_should_match_valid_values(string input)
         {
             const string regex = RegexConstants.AgentTypeRegex;

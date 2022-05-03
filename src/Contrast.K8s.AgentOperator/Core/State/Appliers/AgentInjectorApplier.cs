@@ -28,6 +28,7 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers
             var type = spec.Type switch
             {
                 "dotnet-core" => AgentInjectionType.DotNetCore,
+                "java" => AgentInjectionType.Java,
                 _ => throw new ArgumentOutOfRangeException()
             };
             var image = await CalculateImage(spec, cancellationToken);

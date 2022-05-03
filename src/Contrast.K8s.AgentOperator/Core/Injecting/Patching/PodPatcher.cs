@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Injecting.Patching.Agents;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
 using k8s.Models;
+using NLog;
 
 namespace Contrast.K8s.AgentOperator.Core.Injecting.Patching
 {
@@ -16,6 +17,8 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting.Patching
 
     public class PodPatcher : IPodPatcher
     {
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
         private readonly Func<IEnumerable<IAgentPatcher>> _patchersFactory;
         private readonly IGlobMatcher _globMatcher;
 
@@ -29,6 +32,8 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting.Patching
         {
             var patchers = _patchersFactory.Invoke();
             var patcher = patchers.FirstOrDefault(x => x.Type == AgentInjectionType.DotNetCore);
+
+            Logger.Trace($"Selected agent injector '{patcher?.Type}'.");
 
             ApplyPatches(context, pod, patcher);
 

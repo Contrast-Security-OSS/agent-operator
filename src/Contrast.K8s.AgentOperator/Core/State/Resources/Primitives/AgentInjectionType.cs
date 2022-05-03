@@ -2,6 +2,7 @@
 {
     public enum AgentInjectionType
     {
-        DotNetCore
+        DotNetCore,
+        Java
     }
 }

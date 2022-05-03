@@ -6,7 +6,7 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting.Patching.Agents
 {
     public class JavaAgentPatcher : IAgentPatcher
     {
-        public AgentInjectionType Type => AgentInjectionType.DotNetCore;
+        public AgentInjectionType Type => AgentInjectionType.Java;
 
         public IEnumerable<V1EnvVar> GenerateEnvVars(PatchingContext context)
         {
