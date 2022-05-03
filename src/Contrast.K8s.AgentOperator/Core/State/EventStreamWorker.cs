@@ -6,7 +6,7 @@ using MediatR;
 using Microsoft.Extensions.Hosting;
 using NLog;
 
-namespace Contrast.K8s.AgentOperator.Core.Workers
+namespace Contrast.K8s.AgentOperator.Core.State
 {
     [UsedImplicitly]
     public class EventStreamWorker : BackgroundService

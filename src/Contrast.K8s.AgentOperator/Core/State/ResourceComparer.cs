@@ -2,7 +2,7 @@
 using KellermanSoftware.CompareNetObjects;
 using NLog;
 
-namespace Contrast.K8s.AgentOperator.Core
+namespace Contrast.K8s.AgentOperator.Core.State
 {
     public interface IResourceComparer
     {

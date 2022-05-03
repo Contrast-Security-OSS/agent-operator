@@ -6,7 +6,7 @@ using FluentAssertions;
 using FluentAssertions.Execution;
 using Xunit;
 
-namespace Contrast.K8s.AgentOperator.Tests.Tls
+namespace Contrast.K8s.AgentOperator.Tests.Core.Tls
 {
     public class TlsCertificateChainConverterTests
     {

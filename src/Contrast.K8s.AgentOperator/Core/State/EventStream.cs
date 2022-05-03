@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using MediatR;
 using NLog;
 
-namespace Contrast.K8s.AgentOperator.Core
+namespace Contrast.K8s.AgentOperator.Core.State
 {
     public interface IEventStream
     {

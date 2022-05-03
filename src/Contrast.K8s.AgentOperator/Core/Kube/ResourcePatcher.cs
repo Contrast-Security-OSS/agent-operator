@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Contrast.K8s.AgentOperator.Core.Kube;
 using Contrast.K8s.AgentOperator.Options;
 using DotnetKubernetesClient;
 using JsonDiffPatch;
@@ -11,7 +10,7 @@ using k8s.Models;
 using Newtonsoft.Json;
 using NLog;
 
-namespace Contrast.K8s.AgentOperator.Core
+namespace Contrast.K8s.AgentOperator.Core.Kube
 {
     public interface IResourcePatcher
     {

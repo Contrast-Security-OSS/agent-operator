@@ -13,7 +13,7 @@ using NLog;
 namespace Contrast.K8s.AgentOperator.Core.Tls
 {
     [UsedImplicitly]
-    public class CertificateMaintenanceHandler : INotificationHandler<EntityReconciled<V1Secret>>, INotificationHandler<ElectedLeader>
+    public class CertificateMaintenanceHandler : INotificationHandler<EntityReconciled<V1Secret>>, INotificationHandler<LeaderStateChanged>
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
@@ -53,26 +53,29 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
             return Task.CompletedTask;
         }
 
-        public async Task Handle(ElectedLeader notification, CancellationToken cancellationToken)
+        public async Task Handle(LeaderStateChanged notification, CancellationToken cancellationToken)
         {
-            var existingSecret = await _webHookConfigurationWriter.FetchCurrentCertificate();
-            if (existingSecret == null)
+            if (notification.IsLeader)
             {
-                // Missing.
-                await GenerateAndPublishCertificate();
-            }
-            else if (TryGetWebHookCertificateSecret(existingSecret, out var chain))
-            {
-                // Existing and valid, ensure web hook ca bundle is okay.
-                Logger.Info($"Web hook certificate secret '{_tlsStorageOptions.SecretNamespace}/{_tlsStorageOptions.SecretName}' is valid.");
-                var chainExport = _certificateChainConverter.Export(chain);
-                await _webHookConfigurationWriter.UpdateClusterWebHookConfiguration(chainExport);
-            }
-            else
-            {
-                // Invalid.
-                Logger.Info($"Web hook certificate secret '{_tlsStorageOptions.SecretNamespace}/{_tlsStorageOptions.SecretName}' is invalid.");
-                await GenerateAndPublishCertificate();
+                var existingSecret = await _webHookConfigurationWriter.FetchCurrentCertificate();
+                if (existingSecret == null)
+                {
+                    // Missing.
+                    await GenerateAndPublishCertificate();
+                }
+                else if (TryGetWebHookCertificateSecret(existingSecret, out var chain))
+                {
+                    // Existing and valid, ensure web hook ca bundle is okay.
+                    Logger.Info($"Web hook certificate secret '{_tlsStorageOptions.SecretNamespace}/{_tlsStorageOptions.SecretName}' is valid.");
+                    var chainExport = _certificateChainConverter.Export(chain);
+                    await _webHookConfigurationWriter.UpdateClusterWebHookConfiguration(chainExport);
+                }
+                else
+                {
+                    // Invalid.
+                    Logger.Info($"Web hook certificate secret '{_tlsStorageOptions.SecretNamespace}/{_tlsStorageOptions.SecretName}' is invalid.");
+                    await GenerateAndPublishCertificate();
+                }
             }
         }
 

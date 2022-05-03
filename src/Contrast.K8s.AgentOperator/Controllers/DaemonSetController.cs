@@ -1,4 +1,6 @@
 ﻿using Contrast.K8s.AgentOperator.Core;
+using Contrast.K8s.AgentOperator.Core.Kube;
+using Contrast.K8s.AgentOperator.Core.State;
 using JetBrains.Annotations;
 using k8s.Models;
 using KubeOps.Operator.Rbac;

@@ -1,6 +1,6 @@
 ﻿using KubeOps.Operator.Rbac;
 
-namespace Contrast.K8s.AgentOperator.Core
+namespace Contrast.K8s.AgentOperator.Core.Kube
 {
     public static class VerbConstants
     {

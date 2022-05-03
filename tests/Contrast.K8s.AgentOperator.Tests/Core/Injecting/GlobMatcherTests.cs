@@ -3,7 +3,7 @@ using Contrast.K8s.AgentOperator.Core.Injecting;
 using FluentAssertions;
 using Xunit;
 
-namespace Contrast.K8s.AgentOperator.Tests.Injecting
+namespace Contrast.K8s.AgentOperator.Tests.Core.Injecting
 {
     public class GlobMatcherTests
     {
