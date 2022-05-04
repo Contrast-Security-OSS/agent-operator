@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Events;
+using Contrast.K8s.AgentOperator.Core.Leading;
 using Contrast.K8s.AgentOperator.Core.State;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Interfaces;
@@ -21,22 +22,31 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting
         private readonly IStateContainer _state;
         private readonly AgentInjectorMatcher _matcher;
         private readonly IMediator _mediator;
+        private readonly ILeaderElectionState _electionState;
 
-        public MatchInjectorsHandler(IStateContainer state, AgentInjectorMatcher matcher, IMediator mediator)
+        public MatchInjectorsHandler(IStateContainer state, AgentInjectorMatcher matcher, IMediator mediator, ILeaderElectionState electionState)
         {
             _state = state;
             _matcher = matcher;
             _mediator = mediator;
+            _electionState = electionState;
         }
 
         public async Task Handle(StateModified notification, CancellationToken cancellationToken)
         {
-            var stopwatch = Stopwatch.StartNew();
-            Logger.Trace("Cluster state changed, re-calculating injection points.");
+            if (_electionState.IsLeader())
+            {
+                var stopwatch = Stopwatch.StartNew();
+                Logger.Trace("Cluster state changed, re-calculating injection points.");
 
-            await Handle(cancellationToken);
+                await Handle(cancellationToken);
 
-            Logger.Trace($"Completed re-calculating injection points after {stopwatch.ElapsedMilliseconds}ms.");
+                Logger.Trace($"Completed re-calculating injection points after {stopwatch.ElapsedMilliseconds}ms.");
+            }
+            else
+            {
+                Logger.Trace($"The operator is not leading, not calculation changes.");
+            }
         }
 
         private async ValueTask Handle(CancellationToken cancellationToken = default)
