@@ -50,5 +50,7 @@ metadata:
   name: example-agent-configuration
 spec:
   yaml: |
-    enabled: false
+    enabled: true
+    something:
+      foo: true
 ---

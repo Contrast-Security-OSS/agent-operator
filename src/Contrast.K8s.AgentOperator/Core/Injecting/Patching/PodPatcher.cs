@@ -63,6 +63,12 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting.Patching
             pod.Spec.InitContainers ??= new List<V1Container>();
             pod.Spec.InitContainers.AddOrUpdate(initContainer.Name, initContainer);
 
+            if (context.Injector.ImagePullSecretReference is { } pullSecret)
+            {
+                pod.Spec.ImagePullSecrets ??= new List<V1LocalObjectReference>();
+                pod.Spec.ImagePullSecrets.AddOrUpdate(x => x.Name == pullSecret.Name, new V1LocalObjectReference(pullSecret.Name));
+            }
+
             var matchingContainers = GetMatchingContainers(context, pod);
             foreach (var container in matchingContainers)
             {
@@ -128,7 +134,7 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting.Patching
                     if (!string.IsNullOrWhiteSpace(key)
                         && !string.IsNullOrWhiteSpace(value))
                     {
-                        yield return new V1EnvVar($"CONTRAST__{key.ToUpperInvariant()}", value);
+                        yield return new V1EnvVar($"CONTRAST__{key.Replace(".", "__").ToUpperInvariant()}", value);
                     }
                 }
             }

@@ -30,7 +30,10 @@ namespace Contrast.K8s.AgentOperator.Core.State
                                                   cancellationToken
                                               ) != null;
 
-                if (configurationReferenceFound && connectionResourceFound)
+                var pullSecretFound = injector.ImagePullSecretReference == null
+                                      || await state.HasSecretKey(injector.ImagePullSecretReference, cancellationToken);
+
+                if (configurationReferenceFound && connectionResourceFound && pullSecretFound)
                 {
                     return injector;
                 }

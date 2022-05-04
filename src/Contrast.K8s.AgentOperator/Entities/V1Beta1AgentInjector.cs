@@ -69,6 +69,11 @@ namespace Contrast.K8s.AgentOperator.Entities
             /// The default depends on the value of spec.type.
             /// </summary>
             public string? Name { get; set; }
+
+            /// <summary>
+            /// The name of a pull secret to append to the pod's imagePullSecrets.
+            /// </summary>
+            public string? PullSecretName { get; set; }
         }
 
         public class AgentInjectorSelectorSpec
