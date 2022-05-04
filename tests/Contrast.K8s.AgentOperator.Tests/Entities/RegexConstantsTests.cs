@@ -23,6 +23,10 @@ namespace Contrast.K8s.AgentOperator.Tests.Entities
 
         [Theory]
         [InlineData("latest")]
+        [InlineData("2")]
+        [InlineData("2.10")]
+        [InlineData("2.10.20")]
+        [InlineData("2.10.20.30")]
         public void InjectorVersion_should_match_valid_values(string input)
         {
             const string regex = RegexConstants.InjectorVersionRegex;

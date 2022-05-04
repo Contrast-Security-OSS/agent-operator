@@ -4,12 +4,10 @@ metadata:
   name: example-injector
 spec:
   enabled: true
-  version: latest
+  version: "2"
   type: dotnet-core
   image:
-    repository: blahRepository
-    name: blahName
-    pullSecret: contrastdotnet-pull-secret
+    pullSecretName: contrastdotnet-pull-secret
   selector:
     images:
       - "*"
@@ -52,6 +50,5 @@ metadata:
 spec:
   yaml: |
     enabled: true
-    something:
-      foo: true
+    agent.dotnet.secret.should_connect: false
 ---

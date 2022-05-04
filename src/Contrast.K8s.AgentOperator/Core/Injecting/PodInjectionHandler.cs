@@ -32,7 +32,7 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting
                 && await _state.GetInjectorBundle(injectorName, injectorNamespace, cancellationToken)
                     is var (injector, connection, configuration))
             {
-                var context = new PatchingContext(injector, connection, configuration, "/contrasts");
+                var context = new PatchingContext(injector, connection, configuration, "/contrast");
                 await _patcher.Patch(context, request.Entity, cancellationToken);
 
                 Logger.Trace($"Patching pod using injector '{injectorNamespace}/{injectorName}'.");
