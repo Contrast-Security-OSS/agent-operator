@@ -1,7 +1,3 @@
 bases:
-  - rbac
-
-resources:
-  - crd/agentconfigurations_agents_contrastsecurity_com.yaml
-  - crd/agentconnections_agents_contrastsecurity_com.yaml
-  - crd/agentinjectors_agents_contrastsecurity_com.yaml
+  - ./generated/rbac
+  - ./generated/crd

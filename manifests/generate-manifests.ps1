@@ -1,7 +1,7 @@
 #!/bin/pwsh
 
-$project = [System.IO.Path]::GetFullPath(".\src\Contrast.K8s.AgentOperator\Contrast.K8s.AgentOperator.csproj")
-$output = [System.IO.Path]::GetFullPath(".\manifests\generated\")
+$project = [System.IO.Path]::GetFullPath("..\src\Contrast.K8s.AgentOperator\Contrast.K8s.AgentOperator.csproj")
+$output = [System.IO.Path]::GetFullPath(".\generated\")
 
 Write-Host "Project: $project"
 Write-Host "Output: $output"
@@ -29,12 +29,10 @@ Remove-Item -Recurse $output\rbac\ -ErrorAction Ignore
 dotnet run --no-build --project $project -- generator rbac -o $output\rbac\
 
 @(
-    "$($output)crd\daemonsets_apps.yaml"
-    "$($output)crd\deployments_apps.yaml"
-    "$($output)crd\kustomization.yaml"
-    "$($output)crd\secrets_.yaml"
-    "$($output)crd\statefulsets_apps.yaml"
-    "$($output)crd\pods_.yaml"
+    "$($output)operator\ca-key.pem"
+    "$($output)operator\ca.csr"
+    "$($output)operator\ca.pem"
+    "$($output)operator\kustomization.yaml"
 ) | ForEach-Object {
     Write-Host "Cleaning up bad object $_"
     Remove-Item $_

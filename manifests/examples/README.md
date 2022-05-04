@@ -9,11 +9,12 @@ Exec into cluster:
 kubectl -n default run -it --rm --image ubuntu -- bash
 ```
 
+Operator service:
 ```
 contrast-agent-operator.contrast-agent-operator.svc.cluster.local
 ```
 
-
+Dump web hooks:
 ```
 kubectl get MutatingWebhookConfiguration -o yaml
 ```

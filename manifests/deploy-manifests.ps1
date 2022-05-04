@@ -6,6 +6,6 @@ Write-Host "Generating manifests."
 
 Write-Host "Deploying manifests into cluster."
 
-kubectl apply -k ./manifests
+kubectl apply -k ./
 
 Write-Host "Done."

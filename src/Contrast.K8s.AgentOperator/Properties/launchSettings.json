@@ -5,7 +5,8 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "POD_NAMESPACE": "contrast-agent-operator",
-        "CONTRAST_WEBHOOK_HOSTS": "contrast-agent-operator,contrast-agent-operator.contrast-agent-operator.svc,contrast-agent-operator.contrast-agent-operator.svc.cluster.local"
+        "CONTRAST_WEBHOOK_HOSTS": "contrast-agent-operator,contrast-agent-operator.contrast-agent-operator.svc,contrast-agent-operator.contrast-agent-operator.svc.cluster.local",
+        "CONTRAST_DEFAULT_REPOSITORY": "contrastdotnet.azurecr.io"
       },
       "applicationUrl": "https://localhost:5001"
     }

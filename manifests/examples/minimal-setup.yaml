@@ -9,6 +9,7 @@ spec:
   image:
     repository: blahRepository
     name: blahName
+    pullSecret: contrastdotnet-pull-secret
   selector:
     images:
       - "*"

@@ -121,6 +121,17 @@ namespace Contrast.K8s.AgentOperator
 
             builder.Register(_ =>
             {
+                // TODO Need to set this for public releases.
+                if (Environment.GetEnvironmentVariable("CONTRAST_DEFAULT_REPOSITORY") is { } defaultRepository)
+                {
+                    return new ImageRepositoryOptions(defaultRepository);
+                }
+
+                throw new NotImplementedException("Not default repository was set.");
+            }).SingleInstance();
+
+            builder.Register(_ =>
+            {
                 var dnsNames = new List<string>
                 {
                     "localhost"
