@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Events;
 using Contrast.K8s.AgentOperator.Core.Kube;
+using Contrast.K8s.AgentOperator.Core.Leading;
 using Contrast.K8s.AgentOperator.Core.State;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Interfaces;
@@ -19,19 +20,22 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting
         private readonly IResourceHasher _hasher;
         private readonly IStateContainer _state;
         private readonly IResourcePatcher _patcher;
+        private readonly ILeaderElectionState _electionState;
 
-        public ApplyDesiredStateHandler(IResourceHasher hasher, IStateContainer state, IResourcePatcher patcher)
+        public ApplyDesiredStateHandler(IResourceHasher hasher, IStateContainer state, IResourcePatcher patcher, ILeaderElectionState electionState)
         {
             _hasher = hasher;
             _state = state;
             _patcher = patcher;
+            _electionState = electionState;
         }
 
         public async Task Handle(InjectorMatched notification, CancellationToken cancellationToken)
         {
             var (target, injector) = notification;
 
-            if (await _state.GetIsDirty(target.Identity, cancellationToken))
+            if (!_electionState.IsLeader()
+                || await _state.GetIsDirty(target.Identity, cancellationToken))
             {
                 return;
             }
