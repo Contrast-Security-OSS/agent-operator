@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
@@ -30,8 +31,8 @@ namespace Contrast.K8s.AgentOperator.Core.State
                                                   cancellationToken
                                               ) != null;
 
-                var pullSecretFound = injector.ImagePullSecretReference == null
-                                      || await state.HasSecretKey(injector.ImagePullSecretReference, cancellationToken);
+                var pullSecretFound = injector.ImagePullSecret == null
+                                      || await state.HasSecretKey(injector.ImagePullSecret, cancellationToken);
 
                 if (configurationReferenceFound && connectionResourceFound && pullSecretFound)
                 {
@@ -72,26 +73,59 @@ namespace Contrast.K8s.AgentOperator.Core.State
                    && secret.Keys.Contains(secretRef.Key);
         }
 
+        private static async Task<SecretResource?> GetSecret(this IStateContainer state,
+                                                             SecretReference secretRef,
+                                                             CancellationToken cancellationToken = default)
+        {
+            return await state.GetById<SecretResource>(secretRef.Name, secretRef.Namespace, cancellationToken);
+        }
+
         public static async ValueTask<InjectorBundle?> GetInjectorBundle(this IStateContainer state,
-                                                           string injectorName,
-                                                           string injectorNamespace,
-                                                           CancellationToken cancellationToken = default)
+                                                                         string injectorName,
+                                                                         string injectorNamespace,
+                                                                         CancellationToken cancellationToken = default)
         {
             if (await state.GetById<AgentInjectorResource>(injectorName, injectorNamespace, cancellationToken)
                     is { ConnectionReference: { } connectionRef } injector
                 && await state.GetById<AgentConnectionResource>(connectionRef.Name, connectionRef.Namespace, cancellationToken)
-                    is { } connection)
+                    is { } connection
+                && await state.GetSecret(connection.UserName, cancellationToken)
+                    is { } userNameSecret
+                && await state.GetSecret(connection.ServiceKey, cancellationToken)
+                    is { } serviceKeySecret
+                && await state.GetSecret(connection.ApiKey, cancellationToken)
+                    is { } apiKeySecret
+               )
             {
                 var configuration = injector.ConfigurationReference is { } configurationRef
                     ? await state.GetById<AgentConfigurationResource>(configurationRef.Name, configurationRef.Namespace, cancellationToken)
                     : null;
 
-                return new InjectorBundle(injector, connection, configuration);
+                var imagePullSecret = injector.ImagePullSecret is { } imagePullSecretRef
+                    ? await state.GetSecret(imagePullSecretRef, cancellationToken)
+                    : null;
+
+                var secrets = new List<SecretResource>
+                {
+                    userNameSecret,
+                    serviceKeySecret,
+                    apiKeySecret
+                };
+
+                if (imagePullSecret != null)
+                {
+                    secrets.Add(imagePullSecret);
+                }
+
+                return new InjectorBundle(injector, connection, configuration, secrets);
             }
 
             return null;
         }
     }
 
-    public record InjectorBundle(AgentInjectorResource Injector, AgentConnectionResource Connection, AgentConfigurationResource? Configuration);
+    public record InjectorBundle(AgentInjectorResource Injector,
+                                 AgentConnectionResource Connection,
+                                 AgentConfigurationResource? Configuration,
+                                 IReadOnlyCollection<SecretResource> Secrets);
 }

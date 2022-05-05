@@ -30,7 +30,7 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting
                 && request.Entity.Metadata.Annotations.TryGetValue(InjectionConstants.NameAttributeName, out var injectorName)
                 && request.Entity.Metadata.Annotations.TryGetValue(InjectionConstants.NamespaceAttributeName, out var injectorNamespace)
                 && await _state.GetInjectorBundle(injectorName, injectorNamespace, cancellationToken)
-                    is var (injector, connection, configuration))
+                    is var (injector, connection, configuration, _))
             {
                 var context = new PatchingContext(injector, connection, configuration, "/contrast");
                 await _patcher.Patch(context, request.Entity, cancellationToken);

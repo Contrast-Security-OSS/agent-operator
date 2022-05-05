@@ -58,15 +58,16 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting.Patching
                 VolumeMounts = new List<V1VolumeMount>
                 {
                     new("/contrast", volume.Name)
-                }
+                },
+                ImagePullPolicy = "Always"
             };
             pod.Spec.InitContainers ??= new List<V1Container>();
             pod.Spec.InitContainers.AddOrUpdate(initContainer.Name, initContainer);
 
-            if (context.Injector.ImagePullSecretReference is { } pullSecret)
+            if (context.Injector.ImagePullSecret is { } pullSecret)
             {
                 pod.Spec.ImagePullSecrets ??= new List<V1LocalObjectReference>();
-                pod.Spec.ImagePullSecrets.AddOrUpdate(x => x.Name == pullSecret.Name, new V1LocalObjectReference(pullSecret.Name));
+                pod.Spec.ImagePullSecrets.AddOrUpdate(x => string.Equals(x.Name, pullSecret.Name, StringComparison.Ordinal), new V1LocalObjectReference(pullSecret.Name));
             }
 
             var matchingContainers = GetMatchingContainers(context, pod);

@@ -45,9 +45,9 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting
         {
             if (injector != null
                 && await _state.GetInjectorBundle(injector.Identity.Name, injector.Identity.Namespace, cancellationToken)
-                    is var (_, connection, configuration))
+                    is var (_, connection, configuration, secrets))
             {
-                var hash = _hasher.GetHash(injector.Resource, connection, configuration);
+                var hash = _hasher.GetHash(injector.Resource, connection, configuration, secrets);
                 return new DesiredState(hash, injector.Identity.Name, injector.Identity.Namespace);
             }
 

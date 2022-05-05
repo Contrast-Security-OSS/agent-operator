@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using System.Collections.Generic;
+using System.Security.Cryptography;
 using System.Text;
 using Contrast.K8s.AgentOperator.Core.Kube;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
@@ -7,7 +8,10 @@ namespace Contrast.K8s.AgentOperator.Core.State
 {
     public interface IResourceHasher
     {
-        string GetHash(AgentInjectorResource injector, AgentConnectionResource connection, AgentConfigurationResource? configuration);
+        string GetHash(AgentInjectorResource injector,
+                       AgentConnectionResource connection,
+                       AgentConfigurationResource? configuration,
+                       IEnumerable<SecretResource> secretResources);
     }
 
     public class ResourceHasher : IResourceHasher
@@ -19,9 +23,12 @@ namespace Contrast.K8s.AgentOperator.Core.State
             _jsonSerializer = jsonSerializer;
         }
 
-        public string GetHash(AgentInjectorResource injector, AgentConnectionResource connection, AgentConfigurationResource? configuration)
+        public string GetHash(AgentInjectorResource injector,
+                              AgentConnectionResource connection,
+                              AgentConfigurationResource? configuration,
+                              IEnumerable<SecretResource> secretResources)
         {
-            return GetHashImpl(injector, connection, configuration);
+            return GetHashImpl(injector, connection, configuration, secretResources);
         }
 
         private string GetHashImpl(params object?[] objects)

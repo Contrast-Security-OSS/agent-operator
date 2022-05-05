@@ -4,7 +4,7 @@ metadata:
   name: example-injector
 spec:
   enabled: true
-  version: "2"
+  version: latest
   type: dotnet-core
   image:
     pullSecretName: contrastdotnet-pull-secret

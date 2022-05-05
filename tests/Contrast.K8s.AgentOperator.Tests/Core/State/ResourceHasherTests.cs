@@ -17,11 +17,12 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.State
             var agentInjectorResourceFake = AutoFixture.Create<AgentInjectorResource>();
             var agentConnectionResourceFake = AutoFixture.Create<AgentConnectionResource>();
             var agentConfigurationResourceFake = AutoFixture.Create<AgentConfigurationResource>();
+            var secretResourcesFake = AutoFixture.CreateMany<SecretResource>();
 
             var hasher = CreateGraph();
 
             // Act
-            var result = hasher.GetHash(agentInjectorResourceFake, agentConnectionResourceFake, agentConfigurationResourceFake);
+            var result = hasher.GetHash(agentInjectorResourceFake, agentConnectionResourceFake, agentConfigurationResourceFake, secretResourcesFake);
 
             // Assert
             result.Should().NotBeNullOrWhiteSpace();
