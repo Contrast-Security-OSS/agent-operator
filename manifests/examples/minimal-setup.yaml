@@ -1,7 +1,7 @@
 apiVersion: agents.contrastsecurity.com/v1beta1
 kind: AgentInjector
 metadata:
-  name: example-injector
+  name: example-injector-dotnet-core
 spec:
   enabled: true
   version: latest
@@ -13,7 +13,49 @@ spec:
       - "*"
     labels:
       - name: app
-        value: asp-net-core
+        value: dotnet-core-app
+  connection:
+    name: example-agent-connection
+  configuration:
+    name: example-agent-configuration
+---
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: AgentInjector
+metadata:
+  name: example-injector-java
+spec:
+  enabled: true
+  version: latest
+  type: java
+  image:
+    pullSecretName: contrastdotnet-pull-secret
+  selector:
+    images:
+      - "*"
+    labels:
+      - name: app
+        value: java-app
+  connection:
+    name: example-agent-connection
+  configuration:
+    name: example-agent-configuration
+---
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: AgentInjector
+metadata:
+  name: example-injector-nodejs
+spec:
+  enabled: true
+  version: latest
+  type: nodejs
+  image:
+    pullSecretName: contrastdotnet-pull-secret
+  selector:
+    images:
+      - "*"
+    labels:
+      - name: app
+        value: nodejs-app
   connection:
     name: example-agent-connection
   configuration:
@@ -56,4 +98,3 @@ spec:
       dotnet:
         secret:
           should_connect: false
----

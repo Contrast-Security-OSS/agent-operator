@@ -1,3 +1,6 @@
+namespace: default
 resources:
-  - hello-world-deployment.yaml
+  - sample-apps/dotnet-core.yaml
+  - sample-apps/java.yaml
+  - sample-apps/nodejs.yaml
   - minimal-setup.yaml
