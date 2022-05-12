@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Rest;
 using NLog;
 using NLog.Extensions.Logging;
 using NLog.Web;
@@ -26,6 +27,11 @@ namespace Contrast.K8s.AgentOperator
                 return await CreateHostBuilder(args)
                              .Build()
                              .RunOperatorAsync(args);
+            }
+            catch (HttpOperationException e)
+            {
+                logger.Error(e, $"Fatal error during application startup. (Content: '{e.Response.Content}')");
+                throw;
             }
             catch (Exception e)
             {
