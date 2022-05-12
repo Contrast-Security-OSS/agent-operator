@@ -82,6 +82,8 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting.Patching
 
                 foreach (var envVar in genericPatches.Concat(agentPatches))
                 {
+                    container.Env ??= new List<V1EnvVar>();
+
                     // Don't override existing env vars.
                     if (!container.Env.Any(x => string.Equals(x.Name, envVar.Name, StringComparison.OrdinalIgnoreCase)))
                     {

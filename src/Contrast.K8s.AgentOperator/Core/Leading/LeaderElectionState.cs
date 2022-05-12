@@ -37,7 +37,7 @@ namespace Contrast.K8s.AgentOperator.Core.Leading
             {
                 _state = state;
 
-                Logger.Info($"This instance leadership state is changed '{lastState}' -> '{state}'.");
+                Logger.Info($"This instance leadership state has changed '{lastState}' -> '{state}'.");
 
                 try
                 {
