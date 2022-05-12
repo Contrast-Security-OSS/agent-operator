@@ -10,12 +10,22 @@ namespace Contrast.K8s.AgentOperator.Core.Kube
     {
         public static IReadOnlyCollection<MetadataLabel> GetLabels(this V1ObjectMeta meta)
         {
-            return meta.EnsureLabels().Select(x => new MetadataLabel(x.Key, x.Value)).ToList();
+            if (meta.Labels == null)
+            {
+                return Array.Empty<MetadataLabel>();
+            }
+
+            return meta.Labels.Select(x => new MetadataLabel(x.Key, x.Value)).ToList();
         }
 
         public static IReadOnlyCollection<MetadataAnnotations> GetAnnotations(this V1ObjectMeta meta)
         {
-            return meta.EnsureAnnotations().Select(x => new MetadataAnnotations(x.Key, x.Value)).ToList();
+            if (meta.Annotations == null)
+            {
+                return Array.Empty<MetadataAnnotations>();
+            }
+
+            return meta.Annotations.Select(x => new MetadataAnnotations(x.Key, x.Value)).ToList();
         }
 
         public static PodTemplate GetPod(this V1PodTemplateSpec spec)
