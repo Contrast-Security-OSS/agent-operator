@@ -11,7 +11,9 @@ spec:
   selector:
     images:
       - "*"
-    # labels:
+    labels:
+      - name: app
+        value: asp-net-core
   connection:
     name: example-agent-connection
   configuration:
@@ -50,5 +52,8 @@ metadata:
 spec:
   yaml: |
     enabled: true
-    agent.dotnet.secret.should_connect: false
+    agent:
+      dotnet:
+        secret:
+          should_connect: false
 ---

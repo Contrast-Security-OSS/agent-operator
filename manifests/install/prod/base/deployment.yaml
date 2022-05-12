@@ -11,6 +11,26 @@ spec:
   selector:
     matchLabels:
       app: contrast-agent-operator
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: kubernetes.io/os
+                operator: In
+                values:
+                  - linux
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - contrast-agent-operator
+            topologyKey: kubernetes.io/hostname
   template:
     metadata:
       labels:
@@ -31,3 +51,18 @@ spec:
               value: contrast-agent-operator
             - name: CONTRAST_WEBHOOK_HOSTS
               value: $(CONTRAST_WEBHOOK_SERVICENAME),$(CONTRAST_WEBHOOK_SERVICENAME).$(POD_NAMESPACE).svc,$(CONTRAST_WEBHOOK_SERVICENAME).$(POD_NAMESPACE).svc.cluster.local
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: https
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: https
+          resources:
+            limits:
+              cpu: '2'
+              memory: 768M
+            requests:
+              cpu: '1'
+              memory: 512M

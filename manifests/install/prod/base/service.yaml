@@ -7,6 +7,6 @@ spec:
   ports:
     - name: https
       port: 443
-      targetPort: 5001
+      targetPort: https
   selector:
     app: contrast-agent-operator
