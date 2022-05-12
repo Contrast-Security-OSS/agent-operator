@@ -4,6 +4,12 @@ A K8s operator to inject agents into existing K8s workloads.
 
 Managed by the .NET team.
 
+## Design
+
+Data flow is unidirectional when possible.
+
+![Data Flow](./docs/data-flow.png)
+
 ## Development
 
 As this is an operator, local development requires the interactions of a K8s cluster.
@@ -54,9 +60,3 @@ To run the task:
 And select the generated task:
 
 ![Bridge Task](./docs/bridge-task.png)
-
-## Data Flow
-
-Data flow is unidirectional when possible.
-
-![Data Flow](./docs/data-flow.png)
