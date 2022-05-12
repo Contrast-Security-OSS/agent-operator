@@ -1,0 +1,10 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: contrast-agent-operator
+  namespace: contrast-agent-operator
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: contrast-agent-operator

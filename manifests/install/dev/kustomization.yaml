@@ -2,10 +2,9 @@ bases:
   - ../prod
 
 images:
-- name: contrastsecurity.com/agent-operator/operator
-  newName: local/operator
-  newTag: cached
+  - name: contrastsecurity.com/agent-operator/operator
+    newName: contrastdotnet.azurecr.io/agent-operator/operator
+    newTag: master
 
-replicas:
-- name: contrast-agent-operator
-  count: 1
+patchesStrategicMerge:
+  - overlays/deployment.yaml

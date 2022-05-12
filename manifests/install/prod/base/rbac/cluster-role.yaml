@@ -1,0 +1,103 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: contrast-agent-operator-service-role
+rules:
+- apiGroups:
+  - apps
+  - agents.contrastsecurity.com
+  - ''
+  resources:
+  - deployments
+  - daemonsets
+  - agentconnections
+  - statefulsets
+  - agentinjectors
+  - agentconfigurations
+  - pods
+  verbs:
+  - get
+  - list
+  - watch
+  - patch
+- apiGroups:
+  - ''
+  - coordination.k8s.io
+  resources:
+  - secrets
+  - leases
+  verbs:
+  - '*'
+- apiGroups:
+  - admissionregistration.k8s.io
+  resources:
+  - mutatingwebhookconfigurations
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+  - patch
+  - update
+  - delete
+- apiGroups:
+  - ''
+  resources:
+  - events
+  verbs:
+  - create
+  - get
+  - list
+  - update
+- apiGroups:
+  - ''
+  - admissionregistration.k8s.io
+  resources:
+  - services
+  - validatingwebhookconfigurations
+  verbs:
+  - create
+  - get
+  - patch
+  - update
+  - delete
+- apiGroups:
+  - apps
+  resources:
+  - deployments/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - apps
+  resources:
+  - daemonsets/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - apps
+  resources:
+  - statefulsets/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - ''
+  resources:
+  - pods/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - ''
+  resources:
+  - services/status
+  verbs:
+  - get
+  - patch
+  - update

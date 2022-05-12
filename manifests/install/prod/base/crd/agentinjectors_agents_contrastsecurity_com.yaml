@@ -1,0 +1,124 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: agentinjectors.agents.contrastsecurity.com
+spec:
+  group: agents.contrastsecurity.com
+  names:
+    kind: AgentInjector
+    listKind: AgentInjectorList
+    plural: agentinjectors
+    singular: agentinjector
+  scope: Namespaced
+  versions:
+  - name: v1beta1
+    schema:
+      openAPIV3Schema:
+        properties:
+          spec:
+            description: Specification of the kubernetes object.
+            properties:
+              enabled:
+                description: >-
+                  Is this agent injector enabled.
+
+                  Defaults to 'true'.
+                type: boolean
+              version:
+                description: >-
+                  The version of the agent to inject. The literal 'latest' will inject the latest version detected.
+
+                  Defaults to 'latest'.
+                nullable: true
+                pattern: ^(latest|(\d+(\.\d+){0,3}))$
+                type: string
+              type:
+                description: >-
+                  The type of agent to inject. Can be one of ['dotnet-core', 'java', 'nodejs'].
+
+                  Required.
+                pattern: ^(dotnet-core|dotnet|java|node|nodejs)$
+                type: string
+              image:
+                description: Overrides the default agent images.
+                properties:
+                  repository:
+                    description: >-
+                      The fully qualified name of the repository to pull agent images from. This repository must be accessible by the pods being injected.
+
+                      Defaults to the official Contrast container image repositories.
+                    nullable: true
+                    type: string
+                  name:
+                    description: >-
+                      The name of the injector image to use.
+
+                      The default depends on the value of spec.type.
+                    nullable: true
+                    type: string
+                  pullSecretName:
+                    description: The name of a pull secret to append to the pod's imagePullSecrets.
+                    nullable: true
+                    type: string
+                type: object
+              selector:
+                description: Select which Deployment/StatefulSet/DaemonSet pods are eligible for agent injection.
+                properties:
+                  images:
+                    description: >-
+                      Container images to inject the agent into. Glob patterns are supported.
+
+                      Defaults to ['*'].
+                    items:
+                      type: string
+                    type: array
+                  labels:
+                    description: >-
+                      Deployment/StatefulSet/DaemonSet labels whose pods are eligible for agent injection.
+
+                      Defaults to selecting everything.
+                    items:
+                      properties:
+                        name:
+                          description: >-
+                            The name of the label to match.
+
+                            Required.
+                          type: string
+                        value:
+                          description: The value of the label to match. Glob patterns are supported.
+                          type: string
+                      required:
+                      - name
+                      - value
+                      type: object
+                    type: array
+                type: object
+              connection:
+                description: The connection the injected agent will use to communicate with Contrast.
+                properties:
+                  name:
+                    description: >-
+                      The name of AgentConnection resource. Must exist within the same namespace.
+
+                      Required.
+                    type: string
+                required:
+                - name
+                type: object
+              configuration:
+                description: The configuration the injected agent will use.
+                nullable: true
+                properties:
+                  name:
+                    description: The name of a AgentConfiguration resource. Must exist within the same namespace.
+                    nullable: true
+                    type: string
+                type: object
+            required:
+            - type
+            - connection
+            type: object
+        type: object
+    served: true
+    storage: true

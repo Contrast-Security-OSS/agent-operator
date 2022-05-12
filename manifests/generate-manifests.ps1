@@ -16,9 +16,9 @@ dotnet run --no-build --project $project -- generator crd -o $output\crd\
 # Remove-Item -Recurse $output\docker\ -ErrorAction Ignore
 # dotnet run --no-build --project $project -- generator docker -o $output\docker\
 
-Write-Host "Generating installer."
-Remove-Item -Recurse $output\installer\ -ErrorAction Ignore
-dotnet run --no-build --project $project -- generator installer -o $output\installer\
+# Write-Host "Generating installer."
+# Remove-Item -Recurse $output\installer\ -ErrorAction Ignore
+# dotnet run --no-build --project $project -- generator installer -o $output\installer\
 
 Write-Host "Generating operator."
 Remove-Item -Recurse $output\operator\ -ErrorAction Ignore
