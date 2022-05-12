@@ -31,7 +31,7 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting.Patching
         public ValueTask Patch(PatchingContext context, V1Pod pod, CancellationToken cancellationToken = default)
         {
             var patchers = _patchersFactory.Invoke();
-            var patcher = patchers.FirstOrDefault(x => x.Type == AgentInjectionType.DotNetCore);
+            var patcher = patchers.FirstOrDefault(x => x.Type == context.Injector.Type);
 
             Logger.Trace($"Selected agent injector '{patcher?.Type}'.");
 
