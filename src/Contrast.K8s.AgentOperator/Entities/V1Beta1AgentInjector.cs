@@ -60,7 +60,7 @@ namespace Contrast.K8s.AgentOperator.Entities
         {
             /// <summary>
             /// The fully qualified name of the repository to pull agent images from. This repository must be accessible by the pods being injected.
-            /// Defaults to docker.com.
+            /// Defaults to the official Contrast container image repositories.
             /// </summary>
             public string? Repository { get; set; }
 
@@ -85,10 +85,26 @@ namespace Contrast.K8s.AgentOperator.Entities
             public IReadOnlyCollection<string> Images { get; set; } = Array.Empty<string>();
 
             /// <summary>
-            /// Deployment/StatefulSet/DaemonSet labels whose pods are eligible for agent injection. Glob patterns are supported.
+            /// Deployment/StatefulSet/DaemonSet labels whose pods are eligible for agent injection.
             /// Defaults to selecting everything.
             /// </summary>
-            public IReadOnlyDictionary<string, string> Labels { get; set; } = new Dictionary<string, string>();
+            public IReadOnlyCollection<LabelSelectorSpec> Labels { get; set; } = Array.Empty<LabelSelectorSpec>();
+        }
+
+        public class LabelSelectorSpec
+        {
+            /// <summary>
+            /// The name of the label to match.
+            /// Required.
+            /// </summary>
+            [Required]
+            public string Name { get; set; } = null!;
+
+            /// <summary>
+            /// The value of the label to match. Glob patterns are supported.
+            /// </summary>
+            [Required]
+            public string Value { get; set; } = null!;
         }
 
         public class AgentInjectorConnectionSpec

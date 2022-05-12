@@ -45,7 +45,7 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting
             }
             else
             {
-                Logger.Trace($"The operator is not leading, not calculation changes.");
+                Logger.Trace("The operator is not leading, not calculation changes.");
             }
         }
 

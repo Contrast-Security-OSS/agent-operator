@@ -15,11 +15,11 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers
     [UsedImplicitly]
     public class AgentInjectorApplier : BaseApplier<V1Beta1AgentInjector, AgentInjectorResource>
     {
-        private readonly IImageGenerator _generator;
+        private readonly IImageGenerator _imageGenerator;
 
-        public AgentInjectorApplier(IStateContainer stateContainer, IMediator mediator, IImageGenerator generator) : base(stateContainer, mediator)
+        public AgentInjectorApplier(IStateContainer stateContainer, IMediator mediator, IImageGenerator imageGenerator) : base(stateContainer, mediator)
         {
-            _generator = generator;
+            _imageGenerator = imageGenerator;
         }
 
         protected override async ValueTask<AgentInjectorResource> CreateFrom(V1Beta1AgentInjector entity, CancellationToken cancellationToken = default)
@@ -34,7 +34,7 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers
                 "java" => AgentInjectionType.Java,
                 _ => throw new ArgumentOutOfRangeException()
             };
-            var image = await _generator.GenerateImage(type,
+            var imageReference = await _imageGenerator.GenerateImage(type,
                 spec.Image.Repository,
                 spec.Image.Name,
                 spec.Version,
@@ -42,16 +42,15 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers
             );
             var selector = GetSelector(spec, @namespace);
             var connectionReference = new AgentInjectorConnectionReference(@namespace, spec.Connection.Name);
-            var pullSecretName =  spec.Image.PullSecretName != null ? new SecretReference(@namespace, spec.Image.PullSecretName, ".dockerconfigjson") : null;
-
             var configurationReference = spec.Configuration?.Name != null
                 ? new AgentConfigurationReference(@namespace, spec.Configuration.Name)
                 : null;
+            var pullSecretName = spec.Image.PullSecretName != null ? new SecretReference(@namespace, spec.Image.PullSecretName, ".dockerconfigjson") : null;
 
             var resource = new AgentInjectorResource(
                 enabled,
                 type,
-                image,
+                imageReference,
                 selector,
                 connectionReference,
                 configurationReference,
@@ -62,16 +61,18 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers
 
         private static ResourceWithPodSpecSelector GetSelector(V1Beta1AgentInjector.AgentInjectorSpec spec, string @namespace)
         {
-            var images = spec.Selector.Labels.Any()
+            var images = spec.Selector.Images.Any()
                 ? spec.Selector.Images
                 : new List<string>
                 {
                     "*"
                 };
 
+            var labels = spec.Selector.Labels.Select(x => new KeyValuePair<string, string>(x.Name, x.Value)).ToList();
+
             var selector = new ResourceWithPodSpecSelector(
                 images,
-                spec.Selector.Labels,
+                labels,
                 new List<string>
                 {
                     @namespace

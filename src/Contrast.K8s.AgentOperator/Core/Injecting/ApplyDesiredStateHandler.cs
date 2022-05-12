@@ -87,11 +87,19 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting
 
         private static void PatchAnnotations(DesiredState desiredState, V1PodTemplateSpec spec)
         {
+            // This call creates a new list if annotations is null.
             var annotations = spec.Metadata.EnsureAnnotations();
+
+            // Cleanup existing if any.
             annotations.RemovePrefixed(InjectionConstants.OperatorAttributePrefix);
+
+            // If not null, then add.
             annotations.SetOrRemove(InjectionConstants.HashAttributeName, desiredState.Hash);
             annotations.SetOrRemove(InjectionConstants.NameAttributeName, desiredState.Name);
             annotations.SetOrRemove(InjectionConstants.NamespaceAttributeName, desiredState.Namespace);
+
+            // If at the end of everything, no annotations exist, delete the collection.
+            // This reverses the EnsureAnnotations step.
             if (!spec.Metadata.Annotations.Any())
             {
                 spec.Metadata.Annotations = null;
