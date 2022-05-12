@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,10 +15,15 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers
     public class AgentInjectorApplier : BaseApplier<V1Beta1AgentInjector, AgentInjectorResource>
     {
         private readonly IImageGenerator _imageGenerator;
+        private readonly IAgentInjectionTypeConverter _typeConverter;
 
-        public AgentInjectorApplier(IStateContainer stateContainer, IMediator mediator, IImageGenerator imageGenerator) : base(stateContainer, mediator)
+        public AgentInjectorApplier(IStateContainer stateContainer,
+                                    IMediator mediator,
+                                    IImageGenerator imageGenerator,
+                                    IAgentInjectionTypeConverter typeConverter) : base(stateContainer, mediator)
         {
             _imageGenerator = imageGenerator;
+            _typeConverter = typeConverter;
         }
 
         protected override async ValueTask<AgentInjectorResource> CreateFrom(V1Beta1AgentInjector entity, CancellationToken cancellationToken = default)
@@ -28,12 +32,7 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers
             var @namespace = entity.Namespace()!;
 
             var enabled = spec.Enabled;
-            var type = spec.Type switch
-            {
-                "dotnet-core" => AgentInjectionType.DotNetCore,
-                "java" => AgentInjectionType.Java,
-                _ => throw new ArgumentOutOfRangeException()
-            };
+            var type = _typeConverter.GetTypeFromString(spec.Type);
             var imageReference = await _imageGenerator.GenerateImage(type,
                 spec.Image.Repository,
                 spec.Image.Name,

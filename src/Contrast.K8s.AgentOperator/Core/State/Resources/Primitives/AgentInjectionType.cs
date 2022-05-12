@@ -3,6 +3,7 @@
     public enum AgentInjectionType
     {
         DotNetCore,
-        Java
+        Java,
+        NodeJs,
     }
 }
