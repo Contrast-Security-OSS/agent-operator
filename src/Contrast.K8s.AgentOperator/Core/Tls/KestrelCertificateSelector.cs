@@ -26,7 +26,7 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
             }
 
             if (_chain != null
-                && hostname != null
+                && !string.IsNullOrWhiteSpace(hostname)
                 && _chainSans != null
                 && !_chainSans.Contains(hostname, StringComparer.OrdinalIgnoreCase))
             {

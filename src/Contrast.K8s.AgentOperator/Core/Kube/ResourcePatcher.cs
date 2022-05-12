@@ -36,6 +36,16 @@ namespace Contrast.K8s.AgentOperator.Core.Kube
 
         public async Task<bool> Patch<T>(string name, string? @namespace, Action<T> mutator) where T : class, IKubernetesObject<V1ObjectMeta>
         {
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentException("Value must not be empty or null.", nameof(name));
+            }
+
+            if (@namespace != null && string.IsNullOrEmpty(@namespace))
+            {
+                throw new ArgumentException("If set, value cannot be empty.", nameof(@namespace));
+            }
+
             var entity = await _client.Get<T>(name, @namespace);
             if (entity != null)
             {
