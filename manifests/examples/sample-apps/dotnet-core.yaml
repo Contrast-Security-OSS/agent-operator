@@ -24,6 +24,14 @@ spec:
           ports:
             - containerPort: 80
               name: http
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
           # resources:
           #   limits:
           #     cpu: '2'

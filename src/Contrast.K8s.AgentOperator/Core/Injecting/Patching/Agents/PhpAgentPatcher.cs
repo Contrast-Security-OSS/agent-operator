@@ -12,7 +12,7 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting.Patching.Agents
         {
             // TODO Double check this for correctness.
             yield return new V1EnvVar("CONTRAST_MOUNT_PATH", context.ContrastMountPath);
-            yield return new V1EnvVar("PHP_INI_SCAN_DIR", $":{context.ContrastMountPath}/ini/php.ini");
+            yield return new V1EnvVar("PHP_INI_SCAN_DIR", $":{context.ContrastMountPath}/ini/");
         }
     }
 }

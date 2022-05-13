@@ -22,8 +22,16 @@ spec:
         - image: webgoat/webgoat-8.0:v8.1.0
           name: java-app
           ports:
-            - containerPort: 80
+            - containerPort: 8080
               name: http
+          # livenessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: 8080
+          # readinessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: 8080
           # resources:
           #   limits:
           #     cpu: '2'

@@ -22,8 +22,16 @@ spec:
         - image: bkimminich/juice-shop:v14.0.0
           name: nodejs-app
           ports:
-            - containerPort: 80
+            - containerPort: 3000
               name: http
+          # livenessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: 3000
+          # readinessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: 3000
           # resources:
           #   limits:
           #     cpu: '2'

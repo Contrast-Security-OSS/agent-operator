@@ -34,10 +34,10 @@ spec:
                 type: string
               type:
                 description: >-
-                  The type of agent to inject. Can be one of ['dotnet-core', 'java', 'nodejs'].
+                  The type of agent to inject. Can be one of ['dotnet-core', 'java', 'nodejs', 'php'].
 
                   Required.
-                pattern: ^(dotnet-core|dotnet|java|node|nodejs)$
+                pattern: ^(dotnet-core|dotnet|java|node|nodejs|php)$
                 type: string
               image:
                 description: Overrides the default agent images.
