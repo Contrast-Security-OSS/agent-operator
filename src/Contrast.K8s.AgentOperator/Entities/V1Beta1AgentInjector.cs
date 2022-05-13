@@ -28,7 +28,7 @@ namespace Contrast.K8s.AgentOperator.Entities
             public string? Version { get; set; }
 
             /// <summary>
-            /// The type of agent to inject. Can be one of ['dotnet-core', 'java', 'nodejs'].
+            /// The type of agent to inject. Can be one of ['dotnet-core', 'java', 'nodejs', 'php'].
             /// Required.
             /// </summary>
             [Required, Pattern(RegexConstants.AgentTypeRegex)]

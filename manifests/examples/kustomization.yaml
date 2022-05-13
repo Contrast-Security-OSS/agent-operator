@@ -3,4 +3,5 @@ resources:
   - sample-apps/dotnet-core.yaml
   - sample-apps/java.yaml
   - sample-apps/nodejs.yaml
+  - sample-apps/php.yaml
   - minimal-setup.yaml

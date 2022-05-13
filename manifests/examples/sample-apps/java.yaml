@@ -19,7 +19,7 @@ spec:
         test: test
     spec:
       containers:
-        - image: mcr.microsoft.com/dotnet/samples:aspnetapp
+        - image: webgoat/webgoat-8.0:v8.1.0
           name: java-app
           ports:
             - containerPort: 80

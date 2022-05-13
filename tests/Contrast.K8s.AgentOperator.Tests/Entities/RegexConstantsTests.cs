@@ -13,6 +13,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Entities
         [InlineData("java")]
         [InlineData("node")]
         [InlineData("nodejs")]
+        [InlineData("php")]
         public void AgentTypeRegex_should_match_valid_values(string input)
         {
             const string regex = RegexConstants.AgentTypeRegex;

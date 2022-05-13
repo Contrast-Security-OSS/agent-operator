@@ -62,6 +62,27 @@ spec:
     name: example-agent-configuration
 ---
 apiVersion: agents.contrastsecurity.com/v1beta1
+kind: AgentInjector
+metadata:
+  name: example-injector-php
+spec:
+  enabled: true
+  version: latest
+  type: php
+  image:
+    pullSecretName: contrastdotnet-pull-secret
+  selector:
+    images:
+      - "*"
+    labels:
+      - name: app
+        value: php-app
+  connection:
+    name: example-agent-connection
+  configuration:
+    name: example-agent-configuration
+---
+apiVersion: agents.contrastsecurity.com/v1beta1
 kind: AgentConnection
 metadata:
   name: example-agent-connection
