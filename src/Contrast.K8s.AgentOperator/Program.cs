@@ -2,12 +2,12 @@
 using System.Threading.Tasks;
 using Autofac.Extensions.DependencyInjection;
 using Contrast.K8s.AgentOperator.Core.Tls;
+using k8s.Autorest;
 using KubeOps.Operator;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Rest;
 using NLog;
 using NLog.Extensions.Logging;
 using NLog.Web;

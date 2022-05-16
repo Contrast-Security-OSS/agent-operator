@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Injecting.Patching.Agents;
-using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
 using k8s.Models;
 using NLog;
 

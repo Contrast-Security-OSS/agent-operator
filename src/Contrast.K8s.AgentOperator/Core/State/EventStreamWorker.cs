@@ -2,9 +2,9 @@
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using k8s.Autorest;
 using MediatR;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Rest;
 using NLog;
 
 namespace Contrast.K8s.AgentOperator.Core.State

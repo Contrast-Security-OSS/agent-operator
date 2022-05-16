@@ -6,6 +6,9 @@ COPY src/Contrast.K8s.AgentOperator/Contrast.K8s.AgentOperator.csproj /source/sr
 COPY tests/Contrast.K8s.AgentOperator.Tests/Contrast.K8s.AgentOperator.Tests.csproj /source/tests/Contrast.K8s.AgentOperator.Tests/
 COPY Contrast.K8s.AgentOperator.sln /source/
 
+COPY vendor/dotnet-operator-sdk/src/KubeOps/KubeOps.csproj /source/vendor/dotnet-operator-sdk/src/KubeOps/
+COPY vendor/dotnet-operator-sdk/config/Common.targets /source/vendor/dotnet-operator-sdk/config/
+
 WORKDIR /source
 RUN dotnet restore
 

@@ -1,0 +1,3 @@
+[submodule "vendor/dotnet-operator-sdk"]
+	path = vendor/dotnet-operator-sdk
+	url = https://github.com/Silvenga/dotnet-operator-sdk.git
