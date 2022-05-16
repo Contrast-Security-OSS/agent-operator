@@ -68,3 +68,19 @@ jobs:
             BUILD_VERSION=${{ env.BUILD_VERSION }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Generate Manifests
+        run: |
+          set -xe
+          cd ./manifests/install/prod
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+          ./kustomize edit set image 'contrastsecurity.com/agent-operator/operator:${{ env.BUILD_VERSION }}'
+          cat ../../license-header.yaml > ./install-prod.yaml
+          ./kustomize build ./ >> ./install-prod.yaml
+        shell: bash
+      - name: Publish (Artifacts)
+        uses: actions/upload-artifact@v3
+        with:
+          name: manifests
+          path: manifests/install/prod/install-prod.yaml
+          retention-days: 7

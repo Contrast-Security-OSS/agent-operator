@@ -38,4 +38,4 @@ dotnet run --no-build --project $project -- generator rbac -o $output\rbac\
     Remove-Item $_
 }
 
-Write-Host "Done."
+Write-Host "Done. Make sure to copy these generated manifests into the install folder."
