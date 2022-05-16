@@ -26,6 +26,9 @@ spec:
           ports:
             - containerPort: 80
               name: http
+          env:
+            - name: CONTRAST__AGENT__LOGGER__PATH
+              value: /tmp/
           # livenessProbe:
           #   httpGet:
           #     path: /
