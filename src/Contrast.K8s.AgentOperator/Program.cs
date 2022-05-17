@@ -24,6 +24,8 @@ namespace Contrast.K8s.AgentOperator
 
             try
             {
+                logger.Info("Starting the Contrast Secruity Agent Operator.");
+
                 return await CreateHostBuilder(args)
                              .Build()
                              .RunOperatorAsync(args);
