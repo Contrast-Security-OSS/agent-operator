@@ -62,7 +62,7 @@ spec:
               scheme: HTTPS
           readinessProbe:
             httpGet:
-              path: /health
+              path: /ready
               port: 5001
               scheme: HTTPS
           resources: # Very liberal here, likely not needed.

@@ -10,6 +10,7 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
     {
         X509Certificate2? SelectCertificate(string? hostname);
         bool TakeOwnershipOfCertificate(TlsCertificateChain certificate);
+        bool HasValidCertificate();
     }
 
     public class KestrelCertificateSelector : IKestrelCertificateSelector
@@ -51,6 +52,11 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
             }
 
             return ownershipTaken;
+        }
+
+        public bool HasValidCertificate()
+        {
+            return _chain?.ServerCertificate != null;
         }
 
         private static IEnumerable<string> GetSans(X509Certificate2 certificate)

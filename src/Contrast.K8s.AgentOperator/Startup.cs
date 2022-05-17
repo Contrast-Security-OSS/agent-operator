@@ -34,7 +34,8 @@ namespace Contrast.K8s.AgentOperator
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddKubernetesOperator();
+            services.AddKubernetesOperator()
+                    .AddReadinessCheck<ReadinessCheck>();
             services.AddCertificateManager();
         }
 
