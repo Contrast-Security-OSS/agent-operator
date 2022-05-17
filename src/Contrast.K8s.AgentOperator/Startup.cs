@@ -112,7 +112,15 @@ namespace Contrast.K8s.AgentOperator
                     @namespace = podNamespace.Trim();
                 }
 
-                return new OperatorOptions(@namespace);
+                var settleDuration = 10;
+                if (Environment.GetEnvironmentVariable("CONTRAST_SETTLE_DURATION") is { } settleDurationStr
+                    && int.TryParse(settleDurationStr, out var parsedSettleDuration)
+                    && parsedSettleDuration > -1)
+                {
+                    settleDuration = parsedSettleDuration;
+                }
+
+                return new OperatorOptions(@namespace, SettlingDurationSeconds: settleDuration);
             }).SingleInstance();
 
             builder.Register(_ =>

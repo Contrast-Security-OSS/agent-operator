@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Contrast.K8s.AgentOperator.Core.Events;
+using Contrast.K8s.AgentOperator.Options;
 using JetBrains.Annotations;
 using k8s.Autorest;
 using MediatR;
@@ -44,6 +46,32 @@ namespace Contrast.K8s.AgentOperator.Core.State
                     Logger.Warn(e);
                 }
             }
+        }
+    }
+
+    [UsedImplicitly]
+    public class StateSettledWorker : BackgroundService
+    {
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        private readonly IMediator _mediator;
+        private readonly OperatorOptions _operatorOptions;
+
+        public StateSettledWorker(IMediator mediator, OperatorOptions operatorOptions)
+        {
+            _mediator = mediator;
+            _operatorOptions = operatorOptions;
+        }
+
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            var delay = TimeSpan.FromSeconds(_operatorOptions.SettlingDurationSeconds);
+
+            Logger.Info($"Waiting {delay.TotalSeconds} seconds for operator to rebuild cluster state before applying changes.");
+            await Task.Delay(delay, stoppingToken);
+
+            await _mediator.Publish(new StateSettled(), stoppingToken);
+
+            await Task.Delay(Timeout.Infinite, stoppingToken);
         }
     }
 }

@@ -36,12 +36,19 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting
         {
             if (_electionState.IsLeader())
             {
-                var stopwatch = Stopwatch.StartNew();
-                Logger.Trace("Cluster state changed, re-calculating injection points.");
+                if (await _state.GetHasSettled(cancellationToken))
+                {
+                    var stopwatch = Stopwatch.StartNew();
+                    Logger.Trace("Cluster state changed, re-calculating injection points.");
 
-                await Handle(cancellationToken);
+                    await Handle(cancellationToken);
 
-                Logger.Trace($"Completed re-calculating injection points after {stopwatch.ElapsedMilliseconds}ms.");
+                    Logger.Trace($"Completed re-calculating injection points after {stopwatch.ElapsedMilliseconds}ms.");
+                }
+                else
+                {
+                    Logger.Trace("The operator is waiting to rebuild cluster state, not calculation changes.");
+                }
             }
             else
             {

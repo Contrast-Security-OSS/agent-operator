@@ -38,6 +38,9 @@ namespace Contrast.K8s.AgentOperator.Core.State
 
         ValueTask<bool> GetIsDirty<T>(string name, string @namespace, CancellationToken cancellationToken = default)
             where T : class, INamespacedResource, IMutableResource;
+
+        Task Settled(CancellationToken cancellationToken = default);
+        Task<bool> GetHasSettled(CancellationToken cancellationToken = default);
     }
 
     public class StateContainer : IStateContainer
@@ -45,6 +48,8 @@ namespace Contrast.K8s.AgentOperator.Core.State
         private readonly SemaphoreSlim _lock = new(1, 1);
         private readonly Dictionary<NamespacedResourceIdentity, ResourceHolder> _resources = new();
         private readonly IResourceComparer _resourceComparer;
+
+        private bool _hasSettled = false;
 
         public StateContainer(IResourceComparer resourceComparer)
         {
@@ -231,6 +236,32 @@ namespace Contrast.K8s.AgentOperator.Core.State
             where T : class, INamespacedResource, IMutableResource
         {
             return GetIsDirty(NamespacedResourceIdentity.Create<T>(name, @namespace), cancellationToken);
+        }
+
+        public async Task Settled(CancellationToken cancellationToken = default)
+        {
+            await _lock.WaitAsync(cancellationToken);
+            try
+            {
+                _hasSettled = true;
+            }
+            finally
+            {
+                _lock.Release();
+            }
+        }
+
+        public async Task<bool> GetHasSettled(CancellationToken cancellationToken = default)
+        {
+            await _lock.WaitAsync(cancellationToken);
+            try
+            {
+                return _hasSettled;
+            }
+            finally
+            {
+                _lock.Release();
+            }
         }
 
         private record ResourceHolder(INamespacedResource Resource, bool IsDirty = false);
