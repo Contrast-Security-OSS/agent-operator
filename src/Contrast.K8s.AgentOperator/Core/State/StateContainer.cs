@@ -46,10 +46,10 @@ namespace Contrast.K8s.AgentOperator.Core.State
     public class StateContainer : IStateContainer
     {
         private readonly SemaphoreSlim _lock = new(1, 1);
-        private readonly Dictionary<NamespacedResourceIdentity, ResourceHolder> _resources = new();
+        private readonly Dictionary<NamespacedResourceIdentity, ResourceHolder> _resources = new(NamespacedResourceIdentity.Comparer);
         private readonly IResourceComparer _resourceComparer;
 
-        private bool _hasSettled = false;
+        private bool _hasSettled;
 
         public StateContainer(IResourceComparer resourceComparer)
         {
