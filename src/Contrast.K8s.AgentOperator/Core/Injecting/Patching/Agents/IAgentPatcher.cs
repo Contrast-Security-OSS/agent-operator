@@ -9,5 +9,9 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting.Patching.Agents
         AgentInjectionType Type { get; }
 
         IEnumerable<V1EnvVar> GenerateEnvVars(PatchingContext context);
+
+        public void PatchContainer(V1Container container, PatchingContext context)
+        {
+        }
     }
 }

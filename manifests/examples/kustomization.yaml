@@ -1,5 +1,6 @@
 namespace: default
 resources:
+  - sample-apps/dotnet-core-chaining.yaml
   - sample-apps/dotnet-core.yaml
   - sample-apps/java.yaml
   - sample-apps/nodejs.yaml

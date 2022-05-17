@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dotnet-core-chaining-app
+  namespace: default
+  labels:
+    app: dotnet-core-chaining-app
+spec:
+  replicas: 2
+  revisionHistoryLimit: 1
+  selector:
+    matchLabels:
+      app: dotnet-core-chaining-app
+  template:
+    metadata:
+      labels:
+        app: dotnet-core-chaining-app
+      annotations:
+        test: test
+    spec:
+      containers:
+        - image: mcr.microsoft.com/dotnet/samples:aspnetapp
+          name: dotnet-core-chaining-app
+          env:
+            - name: LD_PRELOAD
+              value: "/foobar.so"
+          ports:
+            - containerPort: 80
+              name: http
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+          # resources:
+          #   limits:
+          #     cpu: '2'
+          #     memory: 1024M

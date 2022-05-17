@@ -89,6 +89,8 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting.Patching
                         container.Env.Add(envVar);
                     }
                 }
+
+                agentPatcher?.PatchContainer(container, context);
             }
         }
 

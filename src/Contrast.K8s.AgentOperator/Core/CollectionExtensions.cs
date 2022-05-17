@@ -86,5 +86,10 @@ namespace Contrast.K8s.AgentOperator.Core
         {
             collection.AddOrUpdate(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase), value);
         }
+
+        public static void AddOrUpdate(this ICollection<V1EnvVar> collection, V1EnvVar value)
+        {
+            collection.AddOrUpdate(x => string.Equals(x.Name, value.Name, StringComparison.OrdinalIgnoreCase), value);
+        }
     }
 }
