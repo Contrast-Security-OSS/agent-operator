@@ -4,17 +4,20 @@ metadata:
   name: contrast-agent-operator
   namespace: contrast-agent-operator
   labels:
-    app: contrast-agent-operator
+    app.kubernetes.io/name: operator
+    app.kubernetes.io/part-of: contrast-agent-operator
 spec:
   replicas: 2
   revisionHistoryLimit: 1
   selector:
     matchLabels:
-      app: contrast-agent-operator
+      app.kubernetes.io/name: operator
+      app.kubernetes.io/part-of: contrast-agent-operator
   template:
     metadata:
       labels:
-        app: contrast-agent-operator
+        app.kubernetes.io/name: operator
+        app.kubernetes.io/part-of: contrast-agent-operator
     spec:
       affinity:
         nodeAffinity:
@@ -25,13 +28,21 @@ spec:
                     operator: In
                     values:
                       - linux
+                  - key: kubernetes.io/arch
+                    operator: In
+                    values:
+                      - amd64
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
             - weight: 100
               podAffinityTerm:
                 labelSelector:
                   matchExpressions:
-                    - key: app
+                    - key: app.kubernetes.io/name
+                      operator: In
+                      values:
+                        - operator
+                    - key: app.kubernetes.io/part-of
                       operator: In
                       values:
                         - contrast-agent-operator
@@ -67,8 +78,8 @@ spec:
               scheme: HTTPS
           resources: # Very liberal here, likely not needed.
             limits:
-              cpu: '2'
-              memory: 512M
+              cpu: 2000m
+              memory: 512Mi
             requests:
-              cpu: '1'
-              memory: 256M
+              cpu: 500m
+              memory: 256Mi

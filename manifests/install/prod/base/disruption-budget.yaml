@@ -4,7 +4,8 @@ metadata:
   name: contrast-agent-operator
   namespace: contrast-agent-operator
 spec:
-  maxUnavailable: 1
+  minAvailable: 1
   selector:
     matchLabels:
-      app: contrast-agent-operator
+      app.kubernetes.io/name: operator
+      app.kubernetes.io/part-of: contrast-agent-operator

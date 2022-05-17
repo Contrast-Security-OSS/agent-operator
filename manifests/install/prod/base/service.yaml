@@ -3,10 +3,14 @@ kind: Service
 metadata:
   name: contrast-agent-operator
   namespace: contrast-agent-operator
+  labels:
+    app.kubernetes.io/name: operator
+    app.kubernetes.io/part-of: contrast-agent-operator
 spec:
   ports:
     - name: https
       port: 443
       targetPort: https
   selector:
-    app: contrast-agent-operator
+    app.kubernetes.io/name: operator
+    app.kubernetes.io/part-of: contrast-agent-operator
