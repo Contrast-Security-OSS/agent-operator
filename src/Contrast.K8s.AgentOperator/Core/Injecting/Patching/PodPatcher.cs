@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Injecting.Patching.Agents;
+using Contrast.K8s.AgentOperator.Core.Telemetry;
 using k8s.Models;
 using NLog;
 
@@ -20,11 +21,13 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting.Patching
 
         private readonly Func<IEnumerable<IAgentPatcher>> _patchersFactory;
         private readonly IGlobMatcher _globMatcher;
+        private readonly IClusterIdState _clusterIdState;
 
-        public PodPatcher(Func<IEnumerable<IAgentPatcher>> patchersFactory, IGlobMatcher globMatcher)
+        public PodPatcher(Func<IEnumerable<IAgentPatcher>> patchersFactory, IGlobMatcher globMatcher, IClusterIdState clusterIdState)
         {
             _patchersFactory = patchersFactory;
             _globMatcher = globMatcher;
+            _clusterIdState = clusterIdState;
         }
 
         public ValueTask Patch(PatchingContext context, V1Pod pod, CancellationToken cancellationToken = default)
@@ -66,7 +69,8 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting.Patching
             if (context.Injector.ImagePullSecret is { } pullSecret)
             {
                 pod.Spec.ImagePullSecrets ??= new List<V1LocalObjectReference>();
-                pod.Spec.ImagePullSecrets.AddOrUpdate(x => string.Equals(x.Name, pullSecret.Name, StringComparison.Ordinal), new V1LocalObjectReference(pullSecret.Name));
+                pod.Spec.ImagePullSecrets.AddOrUpdate(x => string.Equals(x.Name, pullSecret.Name, StringComparison.Ordinal),
+                    new V1LocalObjectReference(pullSecret.Name));
             }
 
             var matchingContainers = GetMatchingContainers(context, pod);
@@ -107,7 +111,7 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting.Patching
             }
         }
 
-        private static IEnumerable<V1EnvVar> GenerateEnvVars(PatchingContext context)
+        private IEnumerable<V1EnvVar> GenerateEnvVars(PatchingContext context)
         {
             var (_, connection, configuration, _) = context;
 
@@ -141,6 +145,11 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting.Patching
                         yield return new V1EnvVar($"CONTRAST__{key.Replace(".", "__").ToUpperInvariant()}", value);
                     }
                 }
+            }
+
+            if (_clusterIdState.GetClusterId() is { } clusterId)
+            {
+                yield return new V1EnvVar("CONTRAST_CLUSTER_ID", clusterId.Guid.ToString("D"));
             }
         }
     }
