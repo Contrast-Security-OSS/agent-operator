@@ -16,7 +16,7 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting.Patching.Agents
             yield return new V1EnvVar("CORECLR_PROFILER_PATH", $"{context.ContrastMountPath}/runtimes/linux-x64/native/ContrastProfiler.so");
             yield return new V1EnvVar("CORECLR_ENABLE_PROFILING", "1");
             yield return new V1EnvVar("CONTRAST_SOURCE", "kubernetes-operator");
-            yield return new V1EnvVar("CONTRAST_INSTALL_DIRECTORY", context.ContrastMountPath);
+            yield return new V1EnvVar("CONTRAST_CORECLR_INSTALL_DIRECTORY", context.ContrastMountPath);
         }
 
         public void PatchContainer(V1Container container, PatchingContext context)
