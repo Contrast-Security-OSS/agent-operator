@@ -58,12 +58,12 @@ spec:
           livenessProbe:
             httpGet:
               path: /health
-              port: https
+              port: 5001
               scheme: HTTPS
           readinessProbe:
             httpGet:
               path: /health
-              port: https
+              port: 5001
               scheme: HTTPS
           resources: # Very liberal here, likely not needed.
             limits:
