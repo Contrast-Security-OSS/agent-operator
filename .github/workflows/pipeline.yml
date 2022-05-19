@@ -1,0 +1,183 @@
+name: "Build"
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+    tags:
+      - "v*"
+
+jobs:
+  #
+  # Building Stage
+  #
+  generate-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.generate-version.outputs.version }}
+    steps:
+      - name: Detect Version
+        id: generate-version
+        run: |
+          $ref = '${{ github.ref }}'
+          if ($ref.StartsWith('refs/tags/v'))
+          {
+              $version = ($ref -split '/v' | Select-Object -Last 1)
+          }
+          else
+          {
+              $version = "0.0.1"
+          }
+          Write-Host "Detected version: '$version'."
+          Write-Host "::set-output name=version::$version"
+        shell: pwsh
+  build-image:
+    runs-on: ubuntu-latest
+    needs: generate-version
+    outputs:
+      digest: ${{ steps.build.outputs.digest }}
+    env:
+      IMAGE_NAME: contrastdotnet.azurecr.io/agent-operator/operator
+      BUILD_VERSION: ${{ needs.generate-version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - uses: docker/setup-buildx-action@v1
+        id: buildx
+        with:
+          install: true
+          version: latest
+      - uses: docker/login-action@v1
+        with:
+          registry: contrastdotnet.azurecr.io
+          username: ${{ secrets.AZURE_CLIENT_ID }}
+          password: ${{ secrets.AZURE_CLIENT_SECRET }}
+      - name: Docker Meta
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,latest
+      - uses: docker/build-push-action@v2
+        id: build
+        with:
+          file: Dockerfile
+          context: .
+          push: ${{ github.actor != 'dependabot[bot]' }}
+          cache-from: ${{ github.actor != 'dependabot[bot]' && format('type=registry,ref={0}:cache', env.IMAGE_NAME) || ''}}
+          cache-to: ${{ github.actor != 'dependabot[bot]' && format('type=registry,ref={0}:cache,mode=max', env.IMAGE_NAME) || ''}}
+
+          build-args: |
+            BUILD_VERSION=${{ env.BUILD_VERSION }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+  build-manifests:
+    runs-on: ubuntu-latest
+    needs: generate-version
+    env:
+      BUILD_VERSION: ${{ needs.generate-version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Generate Manifests
+        run: |
+          set -xe
+          cd ./manifests/install/prod
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+          ./kustomize edit set image 'contrastsecurity.com/agent-operator/operator:${{ env.BUILD_VERSION }}'
+          cat ../../license-header.yaml > ./install-prod.yaml
+          ./kustomize build ./ >> ./install-prod.yaml
+        shell: bash
+      - name: Publish (Artifacts)
+        uses: actions/upload-artifact@v3
+        with:
+          name: manifests
+          path: manifests/install/prod/install-prod.yaml
+          retention-days: 7
+  #
+  # Release Internal Stage
+  #
+  release-internal:
+    runs-on: ubuntu-latest
+    environment: internal
+    concurrency:
+      group: internal
+      cancel-in-progress: true
+    needs:
+      - generate-version
+      - build-image
+      - build-manifests
+    env:
+      BUILD_VERSION: ${{ needs.generate-version.outputs.version }}
+      IMAGE_NAME: contrastdotnet.azurecr.io/agent-operator/operator
+    steps:
+      - uses: actions/checkout@v2
+      - name: Login (Azure)
+        uses: docker/login-action@v1
+        with:
+          registry: contrastdotnet.azurecr.io
+          username: ${{ secrets.AZURE_CLIENT_ID }}
+          password: ${{ secrets.AZURE_CLIENT_SECRET }}
+      - name: Docker Meta
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}},value=${{ env.BUILD_VERSION }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ env.BUILD_VERSION }}
+            type=semver,pattern={{major}},value=${{ env.BUILD_VERSION }}
+            type=raw,latest
+      - name: Tag for Release
+        uses: akhilerm/tag-push-action@v2.0.0
+        with:
+          src: contrastdotnet.azurecr.io/agent-operator/operator@${{ needs.build-image.outputs.digest }}
+          dst: |
+            ${{ steps.meta.outputs.tags }}
+  #
+  # Release Public Stage
+  #
+  release-public:
+    runs-on: ubuntu-latest
+    environment: public
+    concurrency:
+      group: public
+      cancel-in-progress: true
+    needs:
+      - generate-version
+      - build-image
+      - build-manifests
+      - release-internal
+    env:
+      BUILD_VERSION: ${{ needs.generate-version.outputs.version }}
+      IMAGE_NAME: docker.io/contrastsecurityinc/agent-operator
+    steps:
+      - uses: actions/checkout@v2
+      - name: Login (Azure)
+        uses: docker/login-action@v1
+        with:
+          registry: contrastdotnet.azurecr.io
+          username: ${{ secrets.AZURE_CLIENT_ID }}
+          password: ${{ secrets.AZURE_CLIENT_SECRET }}
+      - name: Login (Dockerhub)
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PAT }}
+      - name: Docker Meta
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}},value=${{ env.BUILD_VERSION }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ env.BUILD_VERSION }}
+            type=semver,pattern={{major}},value=${{ env.BUILD_VERSION }}
+            type=raw,latest
+      - name: Tag for Release
+        uses: akhilerm/tag-push-action@v2.0.0
+        with:
+          src: contrastdotnet.azurecr.io/agent-operator/operator@${{ needs.build-image.outputs.digest }}
+          dst: |
+            ${{ steps.meta.outputs.tags }}
