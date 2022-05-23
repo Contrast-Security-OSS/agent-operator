@@ -35,6 +35,14 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting.Patching
             var patchers = _patchersFactory.Invoke();
             var patcher = patchers.FirstOrDefault(x => x.Type == context.Injector.Type);
 
+            if (patcher?.GetMountPath() is { } mountPathOverride)
+            {
+                context = context with
+                {
+                    ContrastMountPath = mountPathOverride
+                };
+            }
+
             Logger.Trace($"Selected agent injector '{patcher?.Type}'.");
 
             ApplyPatches(context, pod, patcher);

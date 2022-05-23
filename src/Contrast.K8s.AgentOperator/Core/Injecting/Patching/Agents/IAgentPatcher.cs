@@ -13,5 +13,7 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting.Patching.Agents
         public void PatchContainer(V1Container container, PatchingContext context)
         {
         }
+
+        public string? GetMountPath() => null;
     }
 }
