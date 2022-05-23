@@ -59,7 +59,8 @@ jobs:
         with:
           images: ${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,latest
+            type=raw,value=trunk-artifact,enable=${{ github.ref == 'refs/heads/master' }}
+            type=raw,value=pr-artifact,enable=${{ github.event_name == 'pull_request' }}
       - uses: docker/build-push-action@v2
         id: build
         with:
@@ -111,6 +112,7 @@ jobs:
     env:
       BUILD_VERSION: ${{ needs.generate-version.outputs.version }}
       IMAGE_NAME: contrastdotnet.azurecr.io/agent-operator/operator
+    if: ${{ github.event_name != 'pull_request' }}
     steps:
       - uses: actions/checkout@v2
       - name: Login (Azure)
@@ -152,6 +154,7 @@ jobs:
     env:
       BUILD_VERSION: ${{ needs.generate-version.outputs.version }}
       IMAGE_NAME: docker.io/contrastsecurityinc/agent-operator
+    if: ${{ needs.generate-version.outputs.version != '0.0.1' }}
     steps:
       - uses: actions/checkout@v2
       - name: Login (Azure)
