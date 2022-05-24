@@ -19,9 +19,8 @@ spec:
             description: Specification of the kubernetes object.
             properties:
               url:
-                description: >-
+                description: |-
                   The URL of the Contrast server.
-
                   Defaults to 'https://app.contrastsecurity.com/Contrast'.
                 nullable: true
                 type: string
@@ -29,15 +28,13 @@ spec:
                 description: The API Key to use for this connection.
                 properties:
                   secretName:
-                    description: >-
+                    description: |-
                       The name of the secret to reference. Must exist in the same namespace as the AgentConnection.
-
                       Required.
                     type: string
                   secretKey:
-                    description: >-
+                    description: |-
                       The key in the secret to access the value for. Must exist in the same namespace as the AgentConnection.
-
                       Required.
                     type: string
                 required:
@@ -48,15 +45,13 @@ spec:
                 description: The Service Key to use for this connection.
                 properties:
                   secretName:
-                    description: >-
+                    description: |-
                       The name of the secret to reference. Must exist in the same namespace as the AgentConnection.
-
                       Required.
                     type: string
                   secretKey:
-                    description: >-
+                    description: |-
                       The key in the secret to access the value for. Must exist in the same namespace as the AgentConnection.
-
                       Required.
                     type: string
                 required:
@@ -67,15 +62,13 @@ spec:
                 description: The User Name to use for this connection.
                 properties:
                   secretName:
-                    description: >-
+                    description: |-
                       The name of the secret to reference. Must exist in the same namespace as the AgentConnection.
-
                       Required.
                     type: string
                   secretKey:
-                    description: >-
+                    description: |-
                       The key in the secret to access the value for. Must exist in the same namespace as the AgentConnection.
-
                       Required.
                     type: string
                 required:

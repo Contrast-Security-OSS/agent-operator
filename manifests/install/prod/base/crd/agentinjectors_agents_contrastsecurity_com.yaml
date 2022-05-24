@@ -19,23 +19,20 @@ spec:
             description: Specification of the kubernetes object.
             properties:
               enabled:
-                description: >-
+                description: |-
                   Is this agent injector enabled.
-
                   Defaults to 'true'.
                 type: boolean
               version:
-                description: >-
+                description: |-
                   The version of the agent to inject. The literal 'latest' will inject the latest version detected.
-
                   Defaults to 'latest'.
                 nullable: true
-                pattern: ^(latest|(\d+(\.\d+){0,3}))$
+                pattern: ^(latest|(\d+(\.\d+){0,3}(-.+)?))$
                 type: string
               type:
-                description: >-
+                description: |-
                   The type of agent to inject. Can be one of ['dotnet-core', 'java', 'nodejs', 'php'].
-
                   Required.
                 pattern: ^(dotnet-core|dotnet|java|node|nodejs|php)$
                 type: string
@@ -43,16 +40,14 @@ spec:
                 description: Overrides the default agent images.
                 properties:
                   repository:
-                    description: >-
+                    description: |-
                       The fully qualified name of the repository to pull agent images from. This repository must be accessible by the pods being injected.
-
                       Defaults to the official Contrast container image repositories.
                     nullable: true
                     type: string
                   name:
-                    description: >-
+                    description: |-
                       The name of the injector image to use.
-
                       The default depends on the value of spec.type.
                     nullable: true
                     type: string
@@ -65,24 +60,21 @@ spec:
                 description: Select which Deployment/StatefulSet/DaemonSet pods are eligible for agent injection.
                 properties:
                   images:
-                    description: >-
+                    description: |-
                       Container images to inject the agent into. Glob patterns are supported.
-
                       Defaults to ['*'].
                     items:
                       type: string
                     type: array
                   labels:
-                    description: >-
+                    description: |-
                       Deployment/StatefulSet/DaemonSet labels whose pods are eligible for agent injection.
-
                       Defaults to selecting everything.
                     items:
                       properties:
                         name:
-                          description: >-
+                          description: |-
                             The name of the label to match.
-
                             Required.
                           type: string
                         value:
@@ -98,9 +90,8 @@ spec:
                 description: The connection the injected agent will use to communicate with Contrast.
                 properties:
                   name:
-                    description: >-
+                    description: |-
                       The name of AgentConnection resource. Must exist within the same namespace.
-
                       Required.
                     type: string
                 required:

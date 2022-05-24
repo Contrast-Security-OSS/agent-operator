@@ -19,9 +19,8 @@ spec:
             description: Specification of the kubernetes object.
             properties:
               yaml:
-                description: >-
+                description: |-
                   The contrast_security.yaml file. Multiple lines are supported.
-
                   Required.
                 type: string
             required:
