@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using NLog;
 
@@ -17,7 +16,7 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         private TlsCertificateChain? _chain;
-        private IReadOnlyCollection<string>? _chainSans;
+        //private IReadOnlyCollection<string>? _chainSans;
 
         public X509Certificate2? SelectCertificate(string? hostname)
         {
@@ -26,13 +25,13 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
                 Logger.Warn($"A server certificate was requested for '{hostname}', but none was known at this time.");
             }
 
-            if (_chain != null
-                && !string.IsNullOrWhiteSpace(hostname)
-                && _chainSans != null
-                && !_chainSans.Contains(hostname, StringComparer.OrdinalIgnoreCase))
-            {
-                Logger.Warn($"A server certificate was requested for '{hostname}', but the currently loaded certificate doesn't match.");
-            }
+            //if (_chain != null
+            //    && !string.IsNullOrWhiteSpace(hostname)
+            //    && _chainSans != null
+            //    && !_chainSans.Contains(hostname, StringComparer.OrdinalIgnoreCase))
+            //{
+            //    Logger.Warn($"A server certificate was requested for '{hostname}', but the currently loaded certificate doesn't match.");
+            //}
 
             return _chain?.ServerCertificate;
         }
@@ -46,9 +45,9 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
             {
                 _chain?.Dispose();
                 _chain = chain;
-                _chainSans = GetSans(_chain.ServerCertificate).ToList();
+                //_chainSans = GetSans(_chain.ServerCertificate).ToList();
 
-                Logger.Trace($"Certificate has {_chainSans.Count} SAN's (SAN's: [{string.Join(", ", _chainSans)}]).");
+                //Logger.Trace($"Certificate has {_chainSans.Count} SAN's (SAN's: [{string.Join(", ", _chainSans)}]).");
             }
 
             return ownershipTaken;
@@ -61,6 +60,7 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
 
         private static IEnumerable<string> GetSans(X509Certificate2 certificate)
         {
+            // This does not work under Linux - OpenSSL version?
             var scansLines = certificate.Extensions["2.5.29.17"]?.Format(true);
             if (scansLines != null)
             {
