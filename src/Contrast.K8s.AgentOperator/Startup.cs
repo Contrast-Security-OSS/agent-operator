@@ -35,7 +35,11 @@ namespace Contrast.K8s.AgentOperator
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddKubernetesOperator()
+            services.AddKubernetesOperator(settings =>
+                    {
+                        // We handle leadership ourselves.
+                        settings.OnlyWatchEventsWhenLeader = false;
+                    })
                     .AddReadinessCheck<ReadinessCheck>();
             services.AddCertificateManager();
         }
