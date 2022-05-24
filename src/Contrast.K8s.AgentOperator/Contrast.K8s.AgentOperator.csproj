@@ -40,6 +40,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\vendor\dotnet-kubernetes-client\src\DotnetKubernetesClient\DotnetKubernetesClient.csproj" />
       <ProjectReference Include="..\..\vendor\dotnet-operator-sdk\src\KubeOps\KubeOps.csproj" />
     </ItemGroup>
 
