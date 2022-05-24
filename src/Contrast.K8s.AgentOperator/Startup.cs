@@ -22,7 +22,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using RestEase;
 
 namespace Contrast.K8s.AgentOperator
 {
@@ -121,7 +120,6 @@ namespace Contrast.K8s.AgentOperator
         {
             builder.Register(_ =>
             {
-                // TODO Need to set POD_NAMESPACE.
                 var @namespace = "default";
                 if (Environment.GetEnvironmentVariable("POD_NAMESPACE") is { } podNamespace)
                 {
@@ -157,7 +155,6 @@ namespace Contrast.K8s.AgentOperator
                     "localhost"
                 };
 
-                // TODO need to set in the form of: 
                 // ingress-nginx-controller-admission,ingress-nginx-controller-admission.$(POD_NAMESPACE).svc
                 if (Environment.GetEnvironmentVariable("CONTRAST_WEBHOOK_HOSTS") is { } webHookHosts)
                 {
