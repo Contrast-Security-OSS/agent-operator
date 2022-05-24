@@ -9,6 +9,8 @@ COPY Contrast.K8s.AgentOperator.sln /source/
 COPY vendor/dotnet-operator-sdk/src/KubeOps/KubeOps.csproj /source/vendor/dotnet-operator-sdk/src/KubeOps/
 COPY vendor/dotnet-operator-sdk/config/Common.targets /source/vendor/dotnet-operator-sdk/config/
 
+COPY vendor/dotnet-kubernetes-client/src/DotnetKubernetesClient/DotnetKubernetesClient.csproj /source/vendor/dotnet-kubernetes-client/src/DotnetKubernetesClient/
+
 WORKDIR /source
 RUN dotnet restore
 
