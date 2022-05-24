@@ -15,6 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.generate-version.outputs.version }}
+      is-public-build: ${{ steps.generate-version.outputs.is-public-build }}
     steps:
       - name: Detect Version
         id: generate-version
@@ -23,13 +24,16 @@ jobs:
           if ($ref.StartsWith('refs/tags/v'))
           {
               $version = ($ref -split '/v' | Select-Object -Last 1)
+              $isPublicBuild = $true
           }
           else
           {
               $version = "0.0.1"
+              $isPublicBuild = $false
           }
           Write-Host "Detected version: '$version'."
           Write-Host "::set-output name=version::$version"
+          Write-Host "::set-output name=is-public-build::$isPublicBuild"
         shell: pwsh
   build-image:
     runs-on: ubuntu-latest
@@ -39,6 +43,7 @@ jobs:
     env:
       IMAGE_NAME: contrastdotnet.azurecr.io/agent-operator/operator
       BUILD_VERSION: ${{ needs.generate-version.outputs.version }}
+      IS_PUBLIC_BUILD: ${{ needs.generate-version.outputs.is-public-build }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -72,6 +77,7 @@ jobs:
 
           build-args: |
             BUILD_VERSION=${{ env.BUILD_VERSION }}
+            IS_PUBLIC_BUILD=${{ env.IS_PUBLIC_BUILD }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
   build-manifests:

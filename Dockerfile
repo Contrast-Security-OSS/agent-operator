@@ -15,11 +15,12 @@ WORKDIR /source
 RUN dotnet restore
 
 COPY . /source/
-ARG BUILD_VERSION=0.0.1
+ARG BUILD_VERSION=0.0.1 \
+    IS_PUBLIC_BUILD=False
 
 RUN set -xe \
     && dotnet test -c Release -p:Version=${BUILD_VERSION} \
-    && dotnet publish -c Release -o /app -p:Version=${BUILD_VERSION}
+    && dotnet publish -c Release -o /app -p:Version=${BUILD_VERSION} -p:IsPublicBuild=${IS_PUBLIC_BUILD}
 
 FROM base AS final
 
