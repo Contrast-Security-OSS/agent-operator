@@ -41,6 +41,7 @@ namespace Contrast.K8s.AgentOperator.Core.State
 
         Task Settled(CancellationToken cancellationToken = default);
         Task<bool> GetHasSettled(CancellationToken cancellationToken = default);
+        ValueTask<IReadOnlyCollection<NamespacedResourceIdentity>> GetAllKeys(CancellationToken cancellationToken = default);
     }
 
     public class StateContainer : IStateContainer
@@ -161,6 +162,19 @@ namespace Contrast.K8s.AgentOperator.Core.State
                 return _resources.Where(x => x.Key.Type.IsAssignableTo(typeof(T)))
                                  .Select(x => new ResourceIdentityPair<T>(x.Key, (T)x.Value.Resource))
                                  .ToList();
+            }
+            finally
+            {
+                _lock.Release();
+            }
+        }
+
+        public async ValueTask<IReadOnlyCollection<NamespacedResourceIdentity>> GetAllKeys(CancellationToken cancellationToken = default)
+        {
+            await _lock.WaitAsync(cancellationToken);
+            try
+            {
+                return _resources.Select(x => x.Key).ToList();
             }
             finally
             {

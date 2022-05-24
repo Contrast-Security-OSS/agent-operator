@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Injecting.Patching.Agents;
 using Contrast.K8s.AgentOperator.Core.Telemetry;
+using Contrast.K8s.AgentOperator.Core.Telemetry.Cluster;
 using k8s.Models;
 using NLog;
 
@@ -121,7 +122,9 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting.Patching
 
         private IEnumerable<V1EnvVar> GenerateEnvVars(PatchingContext context)
         {
-            var (_, connection, configuration, _) = context;
+            var (_, connection, configuration, contrastMountPath) = context;
+
+            yield return new V1EnvVar("CONTRAST_MOUNT_PATH", contrastMountPath);
 
             yield return new V1EnvVar("CONTRAST__API__URL", connection.TeamServerUri.ToString());
             yield return new V1EnvVar(

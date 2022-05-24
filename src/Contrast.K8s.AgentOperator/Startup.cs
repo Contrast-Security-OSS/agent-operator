@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using Autofac;
 using Autofac.Features.Variance;
 using Contrast.K8s.AgentOperator.Autofac;
+using Contrast.K8s.AgentOperator.Core;
 using Contrast.K8s.AgentOperator.Core.Injecting;
 using Contrast.K8s.AgentOperator.Core.Injecting.Patching.Agents;
 using Contrast.K8s.AgentOperator.Core.Leading;
 using Contrast.K8s.AgentOperator.Core.State;
 using Contrast.K8s.AgentOperator.Core.Telemetry;
+using Contrast.K8s.AgentOperator.Core.Telemetry.Client;
+using Contrast.K8s.AgentOperator.Core.Telemetry.Cluster;
 using Contrast.K8s.AgentOperator.Core.Tls;
 using Contrast.K8s.AgentOperator.Options;
 using DotnetKubernetesClient;
@@ -19,6 +22,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using RestEase;
 
 namespace Contrast.K8s.AgentOperator
 {
@@ -61,11 +65,17 @@ namespace Contrast.K8s.AgentOperator
             builder.RegisterType<GlobMatcher>().As<IGlobMatcher>().SingleInstance();
             builder.RegisterType<KestrelCertificateSelector>().As<IKestrelCertificateSelector>().SingleInstance();
             builder.RegisterType<LeaderElectionState>().As<ILeaderElectionState>().SingleInstance();
+
             builder.RegisterType<ClusterIdState>().As<IClusterIdState>().SingleInstance();
+            builder.RegisterType<TelemetryState>().AsSelf().SingleInstance();
+            builder.Register(_ => new TelemetryState(OperatorVersion.Version)).AsSelf().SingleInstance();
 
             RegisterOptions(builder);
             builder.RegisterAssemblyTypes(assembly).PublicOnly().AssignableTo<BackgroundService>().As<IHostedService>();
             builder.RegisterAssemblyTypes(assembly).PublicOnly().AssignableTo<IAgentPatcher>().As<IAgentPatcher>();
+
+            // Telemetry
+            builder.Register(x => x.Resolve<ITelemetryClientFactory>().Create()).As<ITelemetryClient>().SingleInstance();
 
             // MediatR
             builder.RegisterType<Mediator>()
@@ -183,11 +193,8 @@ namespace Contrast.K8s.AgentOperator
 
             builder.Register(x =>
             {
-                var telemetryEnabled = !(Environment.GetEnvironmentVariable("CONTRAST_TELEMETRY_DISABLED") is { } telemetryDisableStr
-                                         && (telemetryDisableStr == "1" || string.Equals(telemetryDisableStr, "true", StringComparison.OrdinalIgnoreCase)));
                 var @namespace = x.Resolve<OperatorOptions>().Namespace;
-
-                return new TelemetryOptions(telemetryEnabled, "contrast-cluster-id", @namespace);
+                return new TelemetryOptions("contrast-cluster-id", @namespace);
             }).SingleInstance();
         }
     }

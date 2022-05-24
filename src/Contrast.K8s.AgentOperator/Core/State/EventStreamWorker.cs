@@ -53,13 +53,13 @@ namespace Contrast.K8s.AgentOperator.Core.State
     public class StateSettledWorker : BackgroundService
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-        private readonly IMediator _mediator;
         private readonly OperatorOptions _operatorOptions;
+        private readonly IEventStream _eventStream;
 
-        public StateSettledWorker(IMediator mediator, OperatorOptions operatorOptions)
+        public StateSettledWorker(OperatorOptions operatorOptions, IEventStream eventStream)
         {
-            _mediator = mediator;
             _operatorOptions = operatorOptions;
+            _eventStream = eventStream;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -69,7 +69,7 @@ namespace Contrast.K8s.AgentOperator.Core.State
             Logger.Info($"Waiting {delay.TotalSeconds} seconds for operator to rebuild cluster state before applying changes.");
             await Task.Delay(delay, stoppingToken);
 
-            await _mediator.Publish(new StateSettled(), stoppingToken);
+            await _eventStream.Dispatch(new StateSettled(), stoppingToken);
 
             await Task.Delay(Timeout.Infinite, stoppingToken);
         }

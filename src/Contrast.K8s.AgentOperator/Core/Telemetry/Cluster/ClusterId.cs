@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Contrast.K8s.AgentOperator.Core.Telemetry
+namespace Contrast.K8s.AgentOperator.Core.Telemetry.Cluster
 {
     public record ClusterId(Guid Guid, DateTimeOffset CreatedOn)
     {

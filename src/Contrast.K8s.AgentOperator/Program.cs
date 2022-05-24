@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Autofac.Extensions.DependencyInjection;
+using Contrast.K8s.AgentOperator.Core;
 using Contrast.K8s.AgentOperator.Core.Tls;
 using k8s.Autorest;
 using KubeOps.Operator;
@@ -24,7 +25,7 @@ namespace Contrast.K8s.AgentOperator
 
             try
             {
-                logger.Info("Starting the Contrast Secruity Agent Operator.");
+                logger.Info($"Starting the Contrast Secruity Agent Operator {OperatorVersion.Version}.");
 
                 return await CreateHostBuilder(args)
                              .Build()

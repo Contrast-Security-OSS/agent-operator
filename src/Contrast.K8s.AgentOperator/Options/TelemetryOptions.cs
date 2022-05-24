@@ -1,6 +1,5 @@
 ﻿namespace Contrast.K8s.AgentOperator.Options
 {
-    public record TelemetryOptions(bool Enabled,
-                                   string ClusterIdSecretName,
+    public record TelemetryOptions(string ClusterIdSecretName,
                                    string ClusterIdSecretNamespace);
 }

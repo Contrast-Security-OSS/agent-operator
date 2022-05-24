@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Tls;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace Contrast.K8s.AgentOperator
+namespace Contrast.K8s.AgentOperator.Core
 {
     public class ReadinessCheck : IHealthCheck
     {

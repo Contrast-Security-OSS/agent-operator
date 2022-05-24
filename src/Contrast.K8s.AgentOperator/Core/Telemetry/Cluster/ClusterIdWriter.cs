@@ -9,7 +9,7 @@ using k8s.Autorest;
 using k8s.Models;
 using NLog;
 
-namespace Contrast.K8s.AgentOperator.Core.Telemetry
+namespace Contrast.K8s.AgentOperator.Core.Telemetry.Cluster
 {
     public interface IClusterIdWriter
     {
