@@ -28,7 +28,7 @@ spec:
               name: http
           env:
             - name: CONTRAST__AGENT__LOGGER__PATH
-              value: /tmp/
+              value: /tmp/contrast.log
           # livenessProbe:
           #   httpGet:
           #     path: /
