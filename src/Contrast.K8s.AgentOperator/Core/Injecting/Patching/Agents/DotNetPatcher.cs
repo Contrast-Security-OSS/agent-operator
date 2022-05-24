@@ -24,9 +24,13 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting.Patching.Agents
             // This assumes this patch occurs after our generic patches.
             // Either the users sets this on the pod manually, or we set it from our config file.
             // We also assume the default is true.
-            var chainingEnabled = !string.Equals(GetFirstOrDefaultEnvVar(container.Env, "CONTRAST__AGENT__DOTNET__ENABLE_CHAINING")?.Value, "false",
-                StringComparison.OrdinalIgnoreCase);
+            var chainingEnabled = !string.Equals(
+                GetFirstOrDefaultEnvVar(container.Env, "CONTRAST__AGENT__DOTNET__ENABLE_CHAINING")?.Value,
+                "false",
+                StringComparison.OrdinalIgnoreCase
+            );
 
+            // Only modify this if CONTRAST_CCC_LD_PRELOAD isn't already set. This is to prevent infinite loops.
             if (chainingEnabled
                 && GetFirstOrDefaultEnvVar(container.Env, "LD_PRELOAD") is { Value: { } currentLdPreloadValue }
                 && !string.IsNullOrWhiteSpace(currentLdPreloadValue)
