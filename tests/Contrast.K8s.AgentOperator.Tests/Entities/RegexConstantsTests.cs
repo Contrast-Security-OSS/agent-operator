@@ -14,6 +14,8 @@ namespace Contrast.K8s.AgentOperator.Tests.Entities
         [InlineData("node")]
         [InlineData("nodejs")]
         [InlineData("php")]
+        [InlineData("personal-home-page")]
+        [InlineData("dummy")]
         public void AgentTypeRegex_should_match_valid_values(string input)
         {
             const string regex = RegexConstants.AgentTypeRegex;
@@ -30,6 +32,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Entities
         [InlineData("2")]
         [InlineData("2.10")]
         [InlineData("2.10.20")]
+        [InlineData("2.10.20-foo")]
         [InlineData("2.10.20.30")]
         [InlineData("2.10.20.30-foo")]
         public void InjectorVersion_should_match_valid_values(string input)

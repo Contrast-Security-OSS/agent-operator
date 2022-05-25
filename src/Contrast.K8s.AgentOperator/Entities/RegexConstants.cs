@@ -5,7 +5,7 @@ namespace Contrast.K8s.AgentOperator.Entities
     public static class RegexConstants
     {
         [RegexPattern]
-        public const string AgentTypeRegex = @"^(dotnet-core|dotnet|java|node|nodejs|php)$";
+        public const string AgentTypeRegex = @"^(dotnet-core|dotnet|java|node|nodejs|php|personal-home-page|dummy)$";
 
         [RegexPattern]
         public const string InjectorVersionRegex = @"^(latest|(\d+(\.\d+){0,3}(-.+)?))$";

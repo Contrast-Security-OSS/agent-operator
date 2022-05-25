@@ -19,6 +19,7 @@ namespace Contrast.K8s.AgentOperator.Core
                 AgentInjectionType.Java => "agent-operator/agents/java",
                 AgentInjectionType.NodeJs => "agent-operator/agents/nodejs",
                 AgentInjectionType.Php => "agent-operator/agents/php",
+                AgentInjectionType.Dummy => "agent-operator/agents/dummy",
                 _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
             };
         }
@@ -33,6 +34,8 @@ namespace Contrast.K8s.AgentOperator.Core
                 "node" => AgentInjectionType.NodeJs,
                 "nodejs" => AgentInjectionType.NodeJs,
                 "php" => AgentInjectionType.Php,
+                "personal-home-page" => AgentInjectionType.Php,
+                "dummy" => AgentInjectionType.Dummy,
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
