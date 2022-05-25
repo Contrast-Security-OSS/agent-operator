@@ -50,7 +50,7 @@ spec:
       serviceAccountName: contrast-agent-operator-service-account
       containers:
         - name: contrast-agent-operator
-          image: contrastsecurity.com/agent-operator/operator:latest
+          image: contrast/agent-operator:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 5001
@@ -65,7 +65,7 @@ spec:
             - name: CONTRAST_WEBHOOK_HOSTS
               value: $(CONTRAST_WEBHOOK_SERVICENAME),$(CONTRAST_WEBHOOK_SERVICENAME).$(POD_NAMESPACE).svc,$(CONTRAST_WEBHOOK_SERVICENAME).$(POD_NAMESPACE).svc.cluster.local
             - name: CONTRAST_DEFAULT_REPOSITORY
-              value: "registry.contrastsecurity.com"
+              value: "docker.io/contrast"
           livenessProbe:
             httpGet:
               path: /health

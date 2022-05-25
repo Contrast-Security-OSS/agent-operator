@@ -7,7 +7,7 @@ namespace Contrast.K8s.AgentOperator.Core.State
     public interface IImageGenerator
     {
         ValueTask<ContainerImageReference> GenerateImage(AgentInjectionType type,
-                                                         string? repository,
+                                                         string? registry,
                                                          string? name,
                                                          string? version,
                                                          CancellationToken cancellationToken = default);
@@ -23,16 +23,16 @@ namespace Contrast.K8s.AgentOperator.Core.State
         }
 
         public ValueTask<ContainerImageReference> GenerateImage(AgentInjectionType type,
-                                                                string? repository,
+                                                                string? registry,
                                                                 string? name,
                                                                 string? version,
                                                                 CancellationToken cancellationToken = default)
         {
-            repository ??= _injectionTypeConverter.GetDefaultImageRegistry(type);
+            registry ??= _injectionTypeConverter.GetDefaultImageRegistry(type);
             name ??= _injectionTypeConverter.GetDefaultImageName(type);
             version ??= "latest";
 
-            var reference = new ContainerImageReference(repository, name, version);
+            var reference = new ContainerImageReference(registry, name, version);
             return ValueTask.FromResult(reference);
         }
     }

@@ -34,7 +34,7 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers
             var enabled = spec.Enabled;
             var type = _typeConverter.GetTypeFromString(spec.Type);
             var imageReference = await _imageGenerator.GenerateImage(type,
-                spec.Image.Repository,
+                spec.Image.Registry,
                 spec.Image.Name,
                 spec.Version,
                 cancellationToken

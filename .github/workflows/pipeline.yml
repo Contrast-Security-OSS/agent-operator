@@ -41,7 +41,7 @@ jobs:
     outputs:
       digest: ${{ steps.build.outputs.digest }}
     env:
-      IMAGE_NAME: contrastdotnet.azurecr.io/agent-operator/operator
+      IMAGE_NAME: contrastdotnet.azurecr.io/agent-operator/agent-operator
       BUILD_VERSION: ${{ needs.generate-version.outputs.version }}
       IS_PUBLIC_BUILD: ${{ needs.generate-version.outputs.is-public-build }}
     steps:
@@ -117,7 +117,7 @@ jobs:
       - build-manifests
     env:
       BUILD_VERSION: ${{ needs.generate-version.outputs.version }}
-      IMAGE_NAME: contrastdotnet.azurecr.io/agent-operator/operator
+      IMAGE_NAME: contrastdotnet.azurecr.io/agent-operator/agent-operator
     if: ${{ github.event_name != 'pull_request' }}
     steps:
       - uses: actions/checkout@v2
@@ -140,7 +140,7 @@ jobs:
       - name: Tag for Release
         uses: akhilerm/tag-push-action@v2.0.0
         with:
-          src: contrastdotnet.azurecr.io/agent-operator/operator@${{ needs.build-image.outputs.digest }}
+          src: contrastdotnet.azurecr.io/agent-operator/agent-operator@${{ needs.build-image.outputs.digest }}
           dst: |
             ${{ steps.meta.outputs.tags }}
   #
@@ -159,7 +159,7 @@ jobs:
       - release-internal
     env:
       BUILD_VERSION: ${{ needs.generate-version.outputs.version }}
-      IMAGE_NAME: docker.io/contrastsecurityinc/agent-operator
+      IMAGE_NAME: docker.io/contrast/agent-operator
     if: ${{ needs.generate-version.outputs.version != '0.0.1' }}
     steps:
       - uses: actions/checkout@v2
@@ -187,6 +187,6 @@ jobs:
       - name: Tag for Release
         uses: akhilerm/tag-push-action@v2.0.0
         with:
-          src: contrastdotnet.azurecr.io/agent-operator/operator@${{ needs.build-image.outputs.digest }}
+          src: contrastdotnet.azurecr.io/agent-operator/agent-operator@${{ needs.build-image.outputs.digest }}
           dst: |
             ${{ steps.meta.outputs.tags }}

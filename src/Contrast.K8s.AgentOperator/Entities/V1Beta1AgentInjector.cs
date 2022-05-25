@@ -62,7 +62,7 @@ namespace Contrast.K8s.AgentOperator.Entities
             /// The fully qualified name of the repository to pull agent images from. This repository must be accessible by the pods being injected.
             /// Defaults to the official Contrast container image repositories.
             /// </summary>
-            public string? Repository { get; set; }
+            public string? Registry { get; set; }
 
             /// <summary>
             /// The name of the injector image to use.

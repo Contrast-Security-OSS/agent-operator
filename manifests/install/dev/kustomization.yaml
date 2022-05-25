@@ -2,8 +2,8 @@ bases:
   - ../prod
 
 images:
-  - name: contrastsecurity.com/agent-operator/operator
-    newName: contrastdotnet.azurecr.io/agent-operator/operator
+  - name: contrast/agent-operator
+    newName: contrastdotnet.azurecr.io/agent-operator/agent-operator
     newTag: latest
 
 patchesStrategicMerge:

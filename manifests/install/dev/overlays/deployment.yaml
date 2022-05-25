@@ -4,7 +4,7 @@ metadata:
   name: contrast-agent-operator
   namespace: contrast-agent-operator
 spec:
-  replicas: 2
+  replicas: 1
   template:
     spec:
       imagePullSecrets:
@@ -13,4 +13,4 @@ spec:
         - name: contrast-agent-operator
           env:
             - name: CONTRAST_DEFAULT_REGISTRY
-              value: contrastdotnet.azurecr.io
+              value: contrastdotnet.azurecr.io/agent-operator

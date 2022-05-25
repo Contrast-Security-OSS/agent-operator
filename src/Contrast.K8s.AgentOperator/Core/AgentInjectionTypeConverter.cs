@@ -24,7 +24,7 @@ namespace Contrast.K8s.AgentOperator.Core
         {
             return type switch
             {
-                AgentInjectionType.Dummy => "docker.io",
+                AgentInjectionType.Dummy => "docker.io/library",
                 _ => _repositoryOptions.DefaultRegistry
             };
         }
@@ -33,11 +33,11 @@ namespace Contrast.K8s.AgentOperator.Core
         {
             return type switch
             {
-                AgentInjectionType.DotNetCore => "agent-operator/agents/dotnet-core",
-                AgentInjectionType.Java => "agent-operator/agents/java",
-                AgentInjectionType.NodeJs => "agent-operator/agents/nodejs",
-                AgentInjectionType.Php => "agent-operator/agents/php",
-                AgentInjectionType.Dummy => "library/busybox",
+                AgentInjectionType.DotNetCore => "agent-dotnet-core",
+                AgentInjectionType.Java => "agent-java",
+                AgentInjectionType.NodeJs => "agent-nodejs",
+                AgentInjectionType.Php => "agent-php",
+                AgentInjectionType.Dummy => "busybox",
                 _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
             };
         }
