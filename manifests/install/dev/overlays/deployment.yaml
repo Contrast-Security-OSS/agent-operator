@@ -12,5 +12,5 @@ spec:
       containers:
         - name: contrast-agent-operator
           env:
-            - name: CONTRAST_DEFAULT_REPOSITORY
+            - name: CONTRAST_DEFAULT_REGISTRY
               value: contrastdotnet.azurecr.io

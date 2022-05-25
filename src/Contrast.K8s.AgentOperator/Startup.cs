@@ -140,9 +140,10 @@ namespace Contrast.K8s.AgentOperator
             builder.Register(_ =>
             {
                 // TODO Need to set this for public releases.
-                if (Environment.GetEnvironmentVariable("CONTRAST_DEFAULT_REPOSITORY") is { } defaultRepository)
+                if (Environment.GetEnvironmentVariable("CONTRAST_DEFAULT_REGISTRY")
+                    is { } defaultRegistry)
                 {
-                    return new ImageRepositoryOptions(defaultRepository);
+                    return new ImageRepositoryOptions(defaultRegistry);
                 }
 
                 throw new NotImplementedException("Not default repository was set.");

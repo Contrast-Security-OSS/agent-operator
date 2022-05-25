@@ -1,7 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
-using Contrast.K8s.AgentOperator.Options;
 
 namespace Contrast.K8s.AgentOperator.Core.State
 {
@@ -16,13 +15,10 @@ namespace Contrast.K8s.AgentOperator.Core.State
 
     public class ImageGenerator : IImageGenerator
     {
-        private readonly ImageRepositoryOptions _repositoryOptions;
         private readonly IAgentInjectionTypeConverter _injectionTypeConverter;
 
-        public ImageGenerator(ImageRepositoryOptions repositoryOptions,
-                              IAgentInjectionTypeConverter injectionTypeConverter)
+        public ImageGenerator(IAgentInjectionTypeConverter injectionTypeConverter)
         {
-            _repositoryOptions = repositoryOptions;
             _injectionTypeConverter = injectionTypeConverter;
         }
 
@@ -32,7 +28,7 @@ namespace Contrast.K8s.AgentOperator.Core.State
                                                                 string? version,
                                                                 CancellationToken cancellationToken = default)
         {
-            repository ??= _repositoryOptions.DefaultRepository;
+            repository ??= _injectionTypeConverter.GetDefaultImageRegistry(type);
             name ??= _injectionTypeConverter.GetDefaultImageName(type);
             version ??= "latest";
 
