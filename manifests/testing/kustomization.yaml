@@ -3,4 +3,11 @@ resources:
   - ./fixtures/shared/testing-agent-configuration.yaml
   - ./fixtures/shared/testing-agent-connection-secret.yaml
   - ./fixtures/shared/testing-agent-connection.yaml
+  - ./fixtures/custom-images.yaml
+  - ./fixtures/custom-version.yaml
   - ./fixtures/injection-dotnet.yaml
+  - ./fixtures/injection-java.yaml
+  - ./fixtures/injection-nodejs.yaml
+  - ./fixtures/injection-php.yaml
+  - ./fixtures/missing-deps.yaml
+  - ./fixtures/namespace.yaml

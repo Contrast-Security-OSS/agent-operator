@@ -8,7 +8,7 @@ spec:
   image:
     pullSecretName: custom-images
     name: custom-name
-    repository: custom-repository/sub-path
+    registry: custom-registry/sub-path
     pullPolicy: Never
   selector:
     labels:

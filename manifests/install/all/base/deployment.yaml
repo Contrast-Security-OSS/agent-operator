@@ -64,8 +64,8 @@ spec:
               value: contrast-agent-operator
             - name: CONTRAST_WEBHOOK_HOSTS
               value: $(CONTRAST_WEBHOOK_SERVICENAME),$(CONTRAST_WEBHOOK_SERVICENAME).$(POD_NAMESPACE).svc,$(CONTRAST_WEBHOOK_SERVICENAME).$(POD_NAMESPACE).svc.cluster.local
-            - name: CONTRAST_DEFAULT_REPOSITORY
-              value: "docker.io/contrast"
+            - name: CONTRAST_DEFAULT_REGISTRY
+              value: "contrast"
           livenessProbe:
             httpGet:
               path: /health

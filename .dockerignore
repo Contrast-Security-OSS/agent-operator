@@ -23,3 +23,9 @@
 **/*.ncrunchproject
 **/*.DotSettings
 **/*.user
+
+**/.github/
+**/.vscode
+**/manifests
+**/docs
+**/README.md

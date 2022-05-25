@@ -4,7 +4,7 @@ bases:
   - ../all
 
 images:
-  - name: contrastsecurity.com/agent-operator/operator
+  - name: contrast/agent-operator
     newName: local/agent-operator
     newTag: latest
 

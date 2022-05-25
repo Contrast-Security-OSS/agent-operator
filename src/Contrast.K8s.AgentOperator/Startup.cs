@@ -146,7 +146,7 @@ namespace Contrast.K8s.AgentOperator
                     return new ImageRepositoryOptions(defaultRegistry);
                 }
 
-                throw new NotImplementedException("Not default repository was set.");
+                throw new NotImplementedException("No default registry was set.");
             }).SingleInstance();
 
             builder.Register(_ =>
