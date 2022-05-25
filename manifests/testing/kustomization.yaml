@@ -1,0 +1,6 @@
+namespace: testing
+resources:
+  - ./fixtures/shared/testing-agent-configuration.yaml
+  - ./fixtures/shared/testing-agent-connection-secret.yaml
+  - ./fixtures/shared/testing-agent-connection.yaml
+  - ./fixtures/injection-dotnet.yaml

@@ -1,0 +1,35 @@
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: AgentInjector
+metadata:
+  name: missing-deps
+spec:
+  enabled: true
+  type: dummy
+  connection:
+    name: missing-testing-agent-connection
+  configuration:
+    name: missing-testing-agent-configuration
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: missing-deps
+  labels:
+    app: missing-deps
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: missing-deps
+  template:
+    metadata:
+      labels:
+        app: missing-deps
+    spec:
+      containers:
+        - image: nginx
+          name: nginx
+          resources:
+            limits:
+              cpu: '1'
+              memory: 128M

@@ -1,0 +1,39 @@
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: AgentInjector
+metadata:
+  name: injection-java
+spec:
+  enabled: true
+  type: java
+  selector:
+    labels:
+      - name: app
+        value: injection-java
+  connection:
+    name: testing-agent-connection
+  configuration:
+    name: testing-agent-configuration
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: injection-java
+  labels:
+    app: injection-java
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: injection-java
+  template:
+    metadata:
+      labels:
+        app: injection-java
+    spec:
+      containers:
+        - image: nginx
+          name: nginx
+          resources:
+            limits:
+              cpu: '1'
+              memory: 128M

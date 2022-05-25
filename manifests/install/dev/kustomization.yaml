@@ -1,5 +1,5 @@
 bases:
-  - ../prod
+  - ../all
 
 images:
   - name: contrast/agent-operator

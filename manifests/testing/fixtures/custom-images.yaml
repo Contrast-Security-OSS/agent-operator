@@ -1,0 +1,52 @@
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: AgentInjector
+metadata:
+  name: custom-images
+spec:
+  enabled: true
+  type: dotnet-core
+  image:
+    pullSecretName: custom-images
+    name: custom-name
+    repository: custom-repository/sub-path
+    pullPolicy: Never
+  selector:
+    labels:
+      - name: app
+        value: custom-images
+  connection:
+    name: testing-agent-connection
+  configuration:
+    name: testing-agent-configuration
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: custom-images
+  labels:
+    app: custom-images
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: custom-images
+  template:
+    metadata:
+      labels:
+        app: custom-images
+    spec:
+      containers:
+        - image: nginx
+          name: nginx
+          resources:
+            limits:
+              cpu: '1'
+              memory: 128M
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: custom-images
+type: Opaque
+stringData:
+  .dockerconfigjson: "{}"

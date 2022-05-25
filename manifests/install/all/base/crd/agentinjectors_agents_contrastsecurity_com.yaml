@@ -39,7 +39,7 @@ spec:
               image:
                 description: Overrides the default agent images.
                 properties:
-                  repository:
+                  registry:
                     description: |-
                       The fully qualified name of the repository to pull agent images from. This repository must be accessible by the pods being injected.
                       Defaults to the official Contrast container image repositories.

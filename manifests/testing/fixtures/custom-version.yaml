@@ -1,0 +1,40 @@
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: AgentInjector
+metadata:
+  name: custom-version
+spec:
+  enabled: true
+  type: dummy
+  version: "1.0"
+  selector:
+    labels:
+      - name: app
+        value: custom-version
+  connection:
+    name: testing-agent-connection
+  configuration:
+    name: testing-agent-configuration
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: custom-version
+  labels:
+    app: custom-version
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: custom-version
+  template:
+    metadata:
+      labels:
+        app: custom-version
+    spec:
+      containers:
+        - image: nginx
+          name: nginx
+          resources:
+            limits:
+              cpu: '1'
+              memory: 128M

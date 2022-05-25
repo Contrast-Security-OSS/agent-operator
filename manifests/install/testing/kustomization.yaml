@@ -1,0 +1,10 @@
+bases:
+  - ../all
+
+images:
+  - name: contrastsecurity.com/agent-operator/operator
+    newName: contrastdotnet.azurecr.io/agent-operator/operator
+    newTag: latest
+
+patchesStrategicMerge:
+  - overlays/deployment.yaml

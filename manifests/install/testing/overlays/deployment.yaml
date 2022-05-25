@@ -1,0 +1,14 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: contrast-agent-operator
+  namespace: contrast-agent-operator
+spec:
+  replicas: 2
+  template:
+    spec:
+      containers:
+        - name: contrast-agent-operator
+          env:
+            - name: CONTRAST_DEFAULT_REGISTRY
+              value: contrastdotnet.azurecr.io
