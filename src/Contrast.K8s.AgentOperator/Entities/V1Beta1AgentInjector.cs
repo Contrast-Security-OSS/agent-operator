@@ -74,6 +74,13 @@ namespace Contrast.K8s.AgentOperator.Entities
             /// The name of a pull secret to append to the pod's imagePullSecrets.
             /// </summary>
             public string? PullSecretName { get; set; }
+
+            /// <summary>
+            /// The pull policy to use when fetching Contrast images. See Kubernetes imagePullPolicy for more information.
+            /// Defaults to "Always".
+            /// </summary>
+            [Pattern(RegexConstants.PullPolicyRegex)]
+            public string? PullPolicy { get; set; } = "Always";
         }
 
         public class AgentInjectorSelectorSpec

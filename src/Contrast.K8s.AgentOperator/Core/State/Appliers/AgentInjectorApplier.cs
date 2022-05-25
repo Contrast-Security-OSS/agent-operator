@@ -45,6 +45,7 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers
                 ? new AgentConfigurationReference(@namespace, spec.Configuration.Name)
                 : null;
             var pullSecretName = spec.Image.PullSecretName != null ? new SecretReference(@namespace, spec.Image.PullSecretName, ".dockerconfigjson") : null;
+            var pullPolicy = spec.Image.PullPolicy ?? "Always";
 
             var resource = new AgentInjectorResource(
                 enabled,
@@ -53,7 +54,8 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers
                 selector,
                 connectionReference,
                 configurationReference,
-                pullSecretName
+                pullSecretName,
+                pullPolicy
             );
             return resource;
         }

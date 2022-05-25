@@ -9,5 +9,8 @@ namespace Contrast.K8s.AgentOperator.Entities
 
         [RegexPattern]
         public const string InjectorVersionRegex = @"^(latest|(\d+(\.\d+){0,3}(-.+)?))$";
+
+        [RegexPattern]
+        public const string PullPolicyRegex = @"^(Always|IfNotPresent|Never)$";
     }
 }

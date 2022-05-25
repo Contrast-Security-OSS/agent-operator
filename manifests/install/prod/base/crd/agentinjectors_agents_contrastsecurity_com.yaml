@@ -55,6 +55,13 @@ spec:
                     description: The name of a pull secret to append to the pod's imagePullSecrets.
                     nullable: true
                     type: string
+                  pullPolicy:
+                    description: |-
+                      The pull policy to use when fetching Contrast images. See Kubernetes imagePullPolicy for more information.
+                      Defaults to "Always".
+                    nullable: true
+                    pattern: ^(Always|IfNotPresent|Never)$
+                    type: string
                 type: object
               selector:
                 description: Select which Deployment/StatefulSet/DaemonSet pods are eligible for agent injection.

@@ -70,7 +70,7 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting.Patching
                 {
                     new("/contrast", volume.Name)
                 },
-                ImagePullPolicy = "Always"
+                ImagePullPolicy = context.Injector.ImagePullPolicy
             };
             pod.Spec.InitContainers ??= new List<V1Container>();
             pod.Spec.InitContainers.AddOrUpdate(initContainer.Name, initContainer);

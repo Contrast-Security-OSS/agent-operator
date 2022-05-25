@@ -42,5 +42,20 @@ namespace Contrast.K8s.AgentOperator.Tests.Entities
             // Assert
             result.Should().BeTrue();
         }
+
+        [Theory]
+        [InlineData("Always")]
+        [InlineData("IfNotPresent")]
+        [InlineData("Never")]
+        public void PullPolicyRegex_should_match_valid_values(string input)
+        {
+            const string regex = RegexConstants.PullPolicyRegex;
+
+            // Act
+            var result = Regex.IsMatch(input, regex);
+
+            // Assert
+            result.Should().BeTrue();
+        }
     }
 }
