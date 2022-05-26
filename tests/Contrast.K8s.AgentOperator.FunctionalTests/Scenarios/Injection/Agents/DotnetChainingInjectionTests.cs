@@ -34,7 +34,9 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection.Agents
                 var container = result.Spec.Containers.Should().ContainSingle().Subject;
 
                 container.Env.Should().Contain(x => x.Name == "LD_PRELOAD")
-                         .Which.Value.Should().Be("/contrast/runtimes/linux-x64/native/ContrastChainLoader.so");
+                         .Which.Value.Should().Be("/contrast/runtimes/linux-x64/native/ContrastChainLoader.so:something");
+                container.Env.Should().Contain(x => x.Name == "CONTRAST_EXISTING_LD_PRELOAD")
+                         .Which.Value.Should().Be("something");
             }
         }
     }
