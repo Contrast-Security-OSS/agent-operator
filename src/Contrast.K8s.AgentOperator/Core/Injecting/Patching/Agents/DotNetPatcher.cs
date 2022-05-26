@@ -30,14 +30,14 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting.Patching.Agents
                 StringComparison.OrdinalIgnoreCase
             );
 
-            // Only modify this if CONTRAST_CCC_LD_PRELOAD isn't already set. This is to prevent infinite loops.
+            // Only modify this if CONTRAST_EXISTING_LD_PRELOAD isn't already set. This is to prevent infinite loops.
             if (chainingEnabled
                 && GetFirstOrDefaultEnvVar(container.Env, "LD_PRELOAD") is { Value: { } currentLdPreloadValue }
                 && !string.IsNullOrWhiteSpace(currentLdPreloadValue)
-                && GetFirstOrDefaultEnvVar(container.Env, "CONTRAST_CCC_LD_PRELOAD") is null)
+                && GetFirstOrDefaultEnvVar(container.Env, "CONTRAST_EXISTING_LD_PRELOAD") is null)
             {
-                container.Env.AddOrUpdate(new V1EnvVar("CONTRAST_CCC_LD_PRELOAD", currentLdPreloadValue));
-                container.Env.AddOrUpdate(new V1EnvVar("LD_PRELOAD", $"{context.ContrastMountPath}/runtimes/linux-x64/native/ContrastChainLoader.so"));
+                container.Env.AddOrUpdate(new V1EnvVar("CONTRAST_EXISTING_LD_PRELOAD", currentLdPreloadValue));
+                container.Env.AddOrUpdate(new V1EnvVar("LD_PRELOAD", $"{context.ContrastMountPath}/runtimes/linux-x64/native/ContrastChainLoader.so:{currentLdPreloadValue}"));
             }
         }
 
