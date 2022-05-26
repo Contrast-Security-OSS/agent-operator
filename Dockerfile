@@ -4,6 +4,7 @@ WORKDIR /app
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 COPY src/Contrast.K8s.AgentOperator/Contrast.K8s.AgentOperator.csproj /source/src/Contrast.K8s.AgentOperator/
 COPY tests/Contrast.K8s.AgentOperator.Tests/Contrast.K8s.AgentOperator.Tests.csproj /source/tests/Contrast.K8s.AgentOperator.Tests/
+COPY tests/Contrast.K8s.AgentOperator.FunctionalTests/Contrast.K8s.AgentOperator.FunctionalTests.csproj /source/tests/Contrast.K8s.AgentOperator.FunctionalTests/
 COPY Contrast.K8s.AgentOperator.sln /source/
 
 COPY vendor/dotnet-operator-sdk/src/KubeOps/KubeOps.csproj /source/vendor/dotnet-operator-sdk/src/KubeOps/
@@ -19,7 +20,7 @@ ARG BUILD_VERSION=0.0.1 \
     IS_PUBLIC_BUILD=False
 
 RUN set -xe \
-    && dotnet test -c Release -p:Version=${BUILD_VERSION} \
+    && dotnet test -c Release -p:Version=${BUILD_VERSION} --filter Type=Unit \
     && dotnet publish -c Release -o /app -p:Version=${BUILD_VERSION} -p:IsPublicBuild=${IS_PUBLIC_BUILD}
 
 FROM base AS final
