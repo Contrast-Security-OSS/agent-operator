@@ -6,7 +6,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development",
         "POD_NAMESPACE": "contrast-agent-operator",
         "CONTRAST_WEBHOOK_HOSTS": "contrast-agent-operator,contrast-agent-operator.contrast-agent-operator.svc,contrast-agent-operator.contrast-agent-operator.svc.cluster.local",
-        "CONTRAST_DEFAULT_REGISTRY": "contrastdotnet.azurecr.io",
+        "CONTRAST_DEFAULT_REGISTRY": "contrastdotnet.azurecr.io/agent-operator",
         "CONTRAST_SETTLE_DURATION": "2",
         "CONTRAST_DEVELOPMENT": "true"
       },
