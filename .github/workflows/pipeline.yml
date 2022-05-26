@@ -152,11 +152,8 @@ jobs:
           kubectl --namespace testing-agent-operator get deployment contrast-agent-operator -o yaml
           kubectl --namespace testing-agent-operator wait --for=condition=Available --timeout=30s deployment contrast-agent-operator
 
-          # Force all pods to be recreated (statefulset's are slow).
-          kubectl --namespace=testing delete --all pods
-
           # Wait for the cluster to settle.
-          sleep 20s
+          sleep 60s
         shell: bash
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v2
