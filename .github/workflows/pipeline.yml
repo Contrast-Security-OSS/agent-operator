@@ -102,6 +102,61 @@ jobs:
           name: manifests
           path: manifests/install/prod/install-prod.yaml
           retention-days: 7
+  test-image:
+    runs-on: ubuntu-latest
+    needs: build-image
+    strategy:
+      matrix:
+        k3s-version:
+          # - v1.24 # EOL: 2023-09-29
+          - v1.23 # EOL: 2023-02-28
+          - v1.22 # EOL: 2022-10-28
+          - v1.21 # EOL: 2022-06-28
+      fail-fast: false
+    env:
+      IMAGE: contrastdotnet.azurecr.io/agent-operator/agent-operator@${{ needs.build-image.outputs.digest }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - uses: docker/login-action@v1
+        with:
+          registry: contrastdotnet.azurecr.io
+          username: ${{ secrets.AZURE_CLIENT_ID }}
+          password: ${{ secrets.AZURE_CLIENT_SECRET }}
+      - uses: nolar/setup-k3d-k3s@v1
+        name: Deploy K3d
+        with:
+          version: ${{ matrix.k3s-version }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Import Images
+        run: |
+          set -xe
+          docker pull ${{ env.IMAGE }}
+          docker tag ${{ env.IMAGE }} local/agent-operator:latest
+          k3d image import local/agent-operator:latest
+      - name: Deploy Manifests
+        run: |
+          set -xe
+          kubectl apply -k manifests/install/testing
+          kubectl apply -k manifests/testing
+        shell: bash
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: 6.0.x
+      - name: Wait for Operator
+        run: |
+          set -xe
+          kubectl --namespace testing-agent-operator wait --for=condition=Available --timeout=30s deployment contrast-agent-operator
+          sleep 10s
+        shell: bash
+      - name: Execute Functional Tests
+        run: |
+          set -xe
+          dotnet test ./tests/Contrast.K8s.AgentOperator.FunctionalTests/Contrast.K8s.AgentOperator.FunctionalTests.csproj
+        shell: bash
   #
   # Release Internal Stage
   #
@@ -115,6 +170,7 @@ jobs:
       - generate-version
       - build-image
       - build-manifests
+      - test-image
     env:
       BUILD_VERSION: ${{ needs.generate-version.outputs.version }}
       IMAGE_NAME: contrastdotnet.azurecr.io/agent-operator/agent-operator
