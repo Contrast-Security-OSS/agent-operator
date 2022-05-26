@@ -1,0 +1,41 @@
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: AgentInjector
+metadata:
+  name: type-deployment
+spec:
+  enabled: true
+  type: dummy
+  selector:
+    labels:
+      - name: app
+        value: type-deployment
+  connection:
+    name: testing-agent-connection
+  configuration:
+    name: testing-agent-configuration
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: type-deployment
+  labels:
+    app: type-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: type-deployment
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: type-deployment
+    spec:
+      containers:
+        - image: nginx
+          name: nginx
+          resources:
+            limits:
+              cpu: '1'
+              memory: 128M

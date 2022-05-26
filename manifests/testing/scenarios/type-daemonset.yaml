@@ -1,0 +1,38 @@
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: AgentInjector
+metadata:
+  name: type-daemonset
+spec:
+  enabled: true
+  type: dummy
+  selector:
+    labels:
+      - name: app
+        value: type-daemonset
+  connection:
+    name: testing-agent-connection
+  configuration:
+    name: testing-agent-configuration
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: type-daemonset
+  labels:
+    app: type-daemonset
+spec:
+  selector:
+    matchLabels:
+      app: type-daemonset
+  template:
+    metadata:
+      labels:
+        app: type-daemonset
+    spec:
+      containers:
+        - image: nginx
+          name: nginx
+          resources:
+            limits:
+              cpu: '1'
+              memory: 128M

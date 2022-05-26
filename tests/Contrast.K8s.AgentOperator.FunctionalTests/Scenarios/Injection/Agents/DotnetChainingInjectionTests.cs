@@ -10,7 +10,7 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection.Agents
 {
     public class DotnetChainingInjectionTests : IClassFixture<TestingContext>
     {
-        private const string ScenarioName = "injection-dotnet-chaining";
+        private const string ScenarioName = "injection-dotnetchaining";
 
         private readonly TestingContext _context;
 

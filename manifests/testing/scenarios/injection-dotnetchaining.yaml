@@ -1,14 +1,14 @@
 apiVersion: agents.contrastsecurity.com/v1beta1
 kind: AgentInjector
 metadata:
-  name: injection-dotnet-chaining
+  name: injection-dotnetchaining
 spec:
   enabled: true
   type: dotnet-core
   selector:
     labels:
       - name: app
-        value: injection-dotnet-chaining
+        value: injection-dotnetchaining
   connection:
     name: testing-agent-connection
   configuration:
@@ -17,20 +17,20 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: injection-dotnet-chaining
+  name: injection-dotnetchaining
   labels:
-    app: injection-dotnet-chaining
+    app: injection-dotnetchaining
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: injection-dotnet-chaining
+      app: injection-dotnetchaining
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app: injection-dotnet-chaining
+        app: injection-dotnetchaining
     spec:
       containers:
         - image: nginx

@@ -1,0 +1,54 @@
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: AgentInjector
+metadata:
+  name: type-statefulset
+spec:
+  enabled: true
+  type: dummy
+  selector:
+    labels:
+      - name: app
+        value: type-statefulset
+  connection:
+    name: testing-agent-connection
+  configuration:
+    name: testing-agent-configuration
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: type-statefulset
+  labels:
+    app: type-statefulset
+spec:
+  ports:
+    - port: 80
+      name: web
+  clusterIP: None
+  selector:
+    app: type-statefulset
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: type-statefulset
+  labels:
+    app: type-statefulset
+spec:
+  serviceName: type-statefulset
+  replicas: 1
+  selector:
+    matchLabels:
+      app: type-statefulset
+  template:
+    metadata:
+      labels:
+        app: type-statefulset
+    spec:
+      containers:
+        - image: nginx
+          name: nginx
+          resources:
+            limits:
+              cpu: '1'
+              memory: 128M

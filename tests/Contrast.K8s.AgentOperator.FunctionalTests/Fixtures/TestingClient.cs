@@ -55,7 +55,7 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Fixtures
                 var results = await _client.List<T>(@namespace);
                 var normalizedPrefix = Regex.Escape(name);
 
-                var result = results.SingleOrDefault(x => Regex.IsMatch(x.Name(), @"^(" + normalizedPrefix + @")-[a-z0-9]{8,10}-[a-z0-9]{5}$"));
+                var result = results.SingleOrDefault(x => Regex.IsMatch(x.Name(), @"^(" + normalizedPrefix + @")-[a-z0-9\-]+$"));
                 if (result != null)
                 {
                     return result;
