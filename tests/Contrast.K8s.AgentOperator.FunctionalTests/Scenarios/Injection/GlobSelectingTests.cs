@@ -46,7 +46,7 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection
                 var nonInjectionContainer = result.Spec.Containers.Should().ContainSingle(x => x.Name == "ignore").Subject;
                 nonInjectionContainer.Env.Should().BeNull();
 
-                var injectionContainer = result.Spec.Containers.Should().ContainSingle(x => x.Name == "nginx").Subject;
+                var injectionContainer = result.Spec.Containers.Should().ContainSingle(x => x.Name == "busybox").Subject;
                 injectionContainer.Env.Should().Contain(x => x.Name == "CONTRAST__API__URL");
             }
         }

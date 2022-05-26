@@ -9,6 +9,8 @@ spec:
     labels:
       - name: app
         value: injection-dotnetchaining
+  image:
+    pullPolicy: Never
   connection:
     name: testing-agent-connection
   configuration:
@@ -33,8 +35,9 @@ spec:
         app: injection-dotnetchaining
     spec:
       containers:
-        - image: nginx
-          name: nginx
+        - image: busybox
+          imagePullPolicy: Never
+          name: busybox
           env:
             - name: LD_PRELOAD
               value: something

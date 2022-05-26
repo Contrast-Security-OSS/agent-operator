@@ -9,6 +9,8 @@ spec:
     labels:
       - name: app
         value: type-daemonset
+  image:
+    pullPolicy: Never
   connection:
     name: testing-agent-connection
   configuration:
@@ -30,8 +32,9 @@ spec:
         app: type-daemonset
     spec:
       containers:
-        - image: nginx
-          name: nginx
+        - image: busybox
+          imagePullPolicy: Never
+          name: busybox
           resources:
             limits:
               cpu: '1'

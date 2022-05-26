@@ -11,6 +11,8 @@ spec:
     labels:
       - name: app
         value: multiple-images
+  image:
+    pullPolicy: Never
   connection:
     name: testing-agent-connection
   configuration:
@@ -35,13 +37,15 @@ spec:
         app: multiple-images
     spec:
       containers:
-        - image: nginx
-          name: nginx
+        - image: busybox
+          imagePullPolicy: Never
+          name: busybox
           resources:
             limits:
               cpu: '1'
               memory: 128M
         - image: prime
+          imagePullPolicy: Never
           name: prime
           resources:
             limits:

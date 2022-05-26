@@ -135,26 +135,33 @@ jobs:
           docker pull ${{ env.IMAGE }}
           docker tag ${{ env.IMAGE }} local/agent-operator:latest
           k3d image import local/agent-operator:latest
+
+          docker pull docker.io/library/busybox:latest
+          k3d image import docker.io/library/busybox:latest
       - name: Deploy Manifests
         run: |
           set -xe
           kubectl apply -k manifests/install/testing
           kubectl apply -k manifests/testing
         shell: bash
-
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v2
-        with:
-          dotnet-version: 6.0.x
       - name: Wait for Operator
         run: |
           set -xe
+
+          # Wait for operator ready.
           kubectl --namespace testing-agent-operator get deployment contrast-agent-operator -o yaml
           kubectl --namespace testing-agent-operator wait --for=condition=Available --timeout=30s deployment contrast-agent-operator
+
+          # Force all pods to be recreated (statefulset's are slow).
+          kubectl --namespace=testing delete --all pods
 
           # Wait for the cluster to settle.
           sleep 20s
         shell: bash
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: 6.0.x
       - name: Execute Functional Tests
         run: |
           set -xe

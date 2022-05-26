@@ -33,8 +33,9 @@ spec:
         app: injection-dummy
     spec:
       containers:
-        - image: nginx
-          name: nginx
+        - image: busybox
+          imagePullPolicy: Never
+          name: busybox
           resources:
             limits:
               cpu: '1'

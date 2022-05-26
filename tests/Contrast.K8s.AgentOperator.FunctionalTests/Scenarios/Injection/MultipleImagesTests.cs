@@ -31,7 +31,7 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection
             // Assert
             using (new AssertionScope())
             {
-                var nonInjectionContainer = result.Spec.Containers.Should().ContainSingle(x=>x.Name == "nginx").Subject;
+                var nonInjectionContainer = result.Spec.Containers.Should().ContainSingle(x=>x.Name == "busybox").Subject;
                 nonInjectionContainer.Env.Should().BeNull();
 
                 var injectionContainer = result.Spec.Containers.Should().ContainSingle(x=>x.Name == "prime").Subject;
