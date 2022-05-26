@@ -1,17 +1,17 @@
 namespace: testing
 resources:
-  - ./fixtures/shared/testing-agent-configuration.yaml
-  - ./fixtures/shared/testing-agent-connection-secret.yaml
-  - ./fixtures/shared/testing-agent-connection.yaml
-  - ./fixtures/custom-images.yaml
-  - ./fixtures/custom-version.yaml
-  - ./fixtures/glob-selecting.yaml
-  - ./fixtures/injection-dotnet.yaml
-  - ./fixtures/injection-dotnet-chaining.yaml
-  - ./fixtures/injection-dummy.yaml
-  - ./fixtures/injection-java.yaml
-  - ./fixtures/injection-nodejs.yaml
-  - ./fixtures/injection-php.yaml
-  - ./fixtures/missing-deps.yaml
-  - ./fixtures/multiple-images.yaml
-  - ./fixtures/namespace.yaml
+  - ./scenarios/shared/testing-agent-configuration.yaml
+  - ./scenarios/shared/testing-agent-connection-secret.yaml
+  - ./scenarios/shared/testing-agent-connection.yaml
+  - ./scenarios/custom-images.yaml
+  - ./scenarios/custom-version.yaml
+  - ./scenarios/glob-selecting.yaml
+  - ./scenarios/injection-dotnet.yaml
+  - ./scenarios/injection-dotnet-chaining.yaml
+  - ./scenarios/injection-dummy.yaml
+  - ./scenarios/injection-java.yaml
+  - ./scenarios/injection-nodejs.yaml
+  - ./scenarios/injection-php.yaml
+  - ./scenarios/missing-deps.yaml
+  - ./scenarios/multiple-images.yaml
+  - ./scenarios/namespace.yaml
