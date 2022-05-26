@@ -149,6 +149,7 @@ jobs:
       - name: Wait for Operator
         run: |
           set -xe
+          kubectl --namespace testing-agent-operator get deployment contrast-agent-operator -o yaml
           kubectl --namespace testing-agent-operator wait --for=condition=Available --timeout=30s deployment contrast-agent-operator
 
           # Wait for the cluster to settle.
@@ -158,6 +159,12 @@ jobs:
         run: |
           set -xe
           dotnet test ./tests/Contrast.K8s.AgentOperator.FunctionalTests/Contrast.K8s.AgentOperator.FunctionalTests.csproj
+        shell: bash
+      - name: Dump Operator Logs
+        if: ${{ always() }}
+        run: |
+          set -xe
+          kubectl --namespace testing-agent-operator logs deployment/contrast-agent-operator
         shell: bash
   #
   # Release Internal Stage
