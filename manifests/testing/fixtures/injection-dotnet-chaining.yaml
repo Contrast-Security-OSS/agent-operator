@@ -1,36 +1,43 @@
 apiVersion: agents.contrastsecurity.com/v1beta1
 kind: AgentInjector
 metadata:
-  name: missing-deps
+  name: injection-dotnet-chaining
 spec:
   enabled: true
-  type: dummy
+  type: dotnet-core
+  selector:
+    labels:
+      - name: app
+        value: injection-dotnet-chaining
   connection:
-    name: missing-testing-agent-connection
+    name: testing-agent-connection
   configuration:
-    name: missing-testing-agent-configuration
+    name: testing-agent-configuration
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: missing-deps
+  name: injection-dotnet-chaining
   labels:
-    app: missing-deps
+    app: injection-dotnet-chaining
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: missing-deps
+      app: injection-dotnet-chaining
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app: missing-deps
+        app: injection-dotnet-chaining
     spec:
       containers:
         - image: nginx
           name: nginx
+          env:
+            - name: LD_PRELOAD
+              value: something
           resources:
             limits:
               cpu: '1'

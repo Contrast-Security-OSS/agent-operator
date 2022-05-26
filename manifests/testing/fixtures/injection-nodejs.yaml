@@ -25,6 +25,8 @@ spec:
   selector:
     matchLabels:
       app: injection-nodejs
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:

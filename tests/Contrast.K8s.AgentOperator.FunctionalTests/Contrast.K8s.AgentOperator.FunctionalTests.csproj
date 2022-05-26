@@ -27,14 +27,14 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Contrast.K8s.AgentOperator\Contrast.K8s.AgentOperator.csproj" />
+        <AssemblyAttribute Include="Xunit.AssemblyTraitAttribute">
+            <_Parameter1>Type</_Parameter1>
+            <_Parameter2>Functional</_Parameter2>
+        </AssemblyAttribute>
     </ItemGroup>
 
     <ItemGroup>
-        <AssemblyAttribute Include="Xunit.AssemblyTraitAttribute">
-            <_Parameter1>Type</_Parameter1>
-            <_Parameter2>Unit</_Parameter2>
-        </AssemblyAttribute>
+      <ProjectReference Include="..\..\vendor\dotnet-kubernetes-client\src\DotnetKubernetesClient\DotnetKubernetesClient.csproj" />
     </ItemGroup>
 
 </Project>

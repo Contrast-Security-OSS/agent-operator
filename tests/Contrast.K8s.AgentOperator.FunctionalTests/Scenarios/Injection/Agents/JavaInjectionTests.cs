@@ -1,0 +1,68 @@
+﻿using System.Threading.Tasks;
+using Contrast.K8s.AgentOperator.FunctionalTests.Fixtures;
+using FluentAssertions;
+using FluentAssertions.Execution;
+using k8s.Models;
+using Xunit;
+using Xunit.Abstractions;
+
+namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection.Agents
+{
+    public class JavaInjectionTests : IClassFixture<TestingContext>
+    {
+        private const string ScenarioName = "injection-java";
+
+        private readonly TestingContext _context;
+
+        public JavaInjectionTests(TestingContext context, ITestOutputHelper outputHelper)
+        {
+            _context = context;
+            _context.RegisterOutput(outputHelper);
+        }
+
+        [Fact]
+        public async Task When_injected_then_pod_should_have_agent_injection_environment_variables()
+        {
+            var client = await _context.GetClient();
+
+            // Act
+            var result = await client.GetByPrefix<V1Pod>(ScenarioName);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                var container = result.Spec.Containers.Should().ContainSingle().Subject;
+
+                container.Env.Should().Contain(x => x.Name == "JAVA_TOOL_OPTIONS")
+                         .Which.Value.Should().Be("-javaagent:/opt/contrast/contrast-agent.jar");
+            }
+        }
+
+        [Fact]
+        public async Task When_injected_then_pod_should_have_agent_injection_volume_mount()
+        {
+            var client = await _context.GetClient();
+
+            // Act
+            var result = await client.GetByPrefix<V1Pod>(ScenarioName);
+
+            // Assert
+            result.Spec.Containers.Should().ContainSingle()
+                  .Which.VolumeMounts.Should().ContainSingle(x => x.Name == "contrast")
+                  .Which.MountPath.Should().Be("/opt/contrast");
+        }
+
+        [Fact]
+        public async Task When_injected_then_pod_should_have_agent_injection_init_image()
+        {
+            var client = await _context.GetClient();
+
+            // Act
+            var result = await client.GetByPrefix<V1Pod>(ScenarioName);
+
+            // Assert
+            result.Spec.InitContainers.Should().ContainSingle(x => x.Name == "contrast-init")
+                  .Which.Image.Should().Be("contrast/agent-java:latest");
+        }
+    }
+}

@@ -1,32 +1,36 @@
 apiVersion: agents.contrastsecurity.com/v1beta1
 kind: AgentInjector
 metadata:
-  name: missing-deps
+  name: injection-dummy
 spec:
   enabled: true
   type: dummy
+  selector:
+    labels:
+      - name: app
+        value: injection-dummy
   connection:
-    name: missing-testing-agent-connection
+    name: testing-agent-connection
   configuration:
-    name: missing-testing-agent-configuration
+    name: testing-agent-configuration
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: missing-deps
+  name: injection-dummy
   labels:
-    app: missing-deps
+    app: injection-dummy
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: missing-deps
+      app: injection-dummy
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app: missing-deps
+        app: injection-dummy
     spec:
       containers:
         - image: nginx

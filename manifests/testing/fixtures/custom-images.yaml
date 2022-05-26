@@ -30,6 +30,8 @@ spec:
   selector:
     matchLabels:
       app: custom-images
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:

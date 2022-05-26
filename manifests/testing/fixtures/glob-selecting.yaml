@@ -1,36 +1,48 @@
 apiVersion: agents.contrastsecurity.com/v1beta1
 kind: AgentInjector
 metadata:
-  name: missing-deps
+  name: glob-selecting
 spec:
   enabled: true
   type: dummy
+  selector:
+    images:
+      - n*
+    labels:
+      - name: app
+        value: glob-select*
   connection:
-    name: missing-testing-agent-connection
+    name: testing-agent-connection
   configuration:
-    name: missing-testing-agent-configuration
+    name: testing-agent-configuration
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: missing-deps
+  name: glob-selecting
   labels:
-    app: missing-deps
+    app: glob-selecting
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: missing-deps
+      app: glob-selecting
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app: missing-deps
+        app: glob-selecting
     spec:
       containers:
         - image: nginx
           name: nginx
+          resources:
+            limits:
+              cpu: '1'
+              memory: 128M
+        - image: ignore
+          name: ignore
           resources:
             limits:
               cpu: '1'
