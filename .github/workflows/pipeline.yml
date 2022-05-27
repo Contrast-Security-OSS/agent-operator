@@ -151,7 +151,6 @@ jobs:
           sleep 15s
 
           kubectl apply -k manifests/testing
-          kubectl -n testing delete --all pods
           sleep 30s
         shell: bash
       - name: Setup .NET SDK
