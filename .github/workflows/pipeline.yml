@@ -136,22 +136,21 @@ jobs:
 
           docker pull ${{ env.IMAGE }}
           docker tag ${{ env.IMAGE }} local/agent-operator:latest
-          k3d image import local/agent-operator:latest
+          k3d image import local/agent-operator:latest --mode direct
 
           docker pull busybox:stable
-          k3d image import busybox:stable
+          k3d image import busybox:stable --mode direct
 
           docker pull k8s.gcr.io/pause:3.3
-          k3d image import k8s.gcr.io/pause:3.3
+          k3d image import k8s.gcr.io/pause:3.3 --mode direct
       - name: Deploy Manifests
         run: |
           set -xe
           kubectl apply -k manifests/install/testing
-          kubectl --namespace testing-agent-operator wait --for=condition=Available --timeout=30s deployment contrast-agent-operator
-          sleep 15s
-
           kubectl apply -k manifests/testing
-          sleep 30s
+
+          kubectl --namespace testing-agent-operator wait --for=condition=Available --timeout=30s deployment contrast-agent-operator
+          sleep 120s
         shell: bash
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v2
