@@ -132,28 +132,26 @@ jobs:
       - name: Import Images
         run: |
           set -xe
+
           docker pull ${{ env.IMAGE }}
           docker tag ${{ env.IMAGE }} local/agent-operator:latest
           k3d image import local/agent-operator:latest
 
-          docker pull docker.io/library/busybox:latest
-          k3d image import docker.io/library/busybox:latest
+          docker pull busybox:stable
+          k3d image import busybox:stable
+
+          docker pull k8s.gcr.io/pause:3.3
+          k3d image import k8s.gcr.io/pause:3.3
       - name: Deploy Manifests
         run: |
           set -xe
           kubectl apply -k manifests/install/testing
-          kubectl apply -k manifests/testing
-        shell: bash
-      - name: Wait for Operator
-        run: |
-          set -xe
-
-          # Wait for operator ready.
-          kubectl --namespace testing-agent-operator get deployment contrast-agent-operator -o yaml
           kubectl --namespace testing-agent-operator wait --for=condition=Available --timeout=30s deployment contrast-agent-operator
+          sleep 15s
 
-          # Wait for the cluster to settle.
-          sleep 60s
+          kubectl apply -k manifests/testing
+          kubectl -n testing delete --all pods
+          sleep 30s
         shell: bash
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v2
@@ -168,6 +166,7 @@ jobs:
         if: ${{ always() }}
         run: |
           set -xe
+          kubectl --namespace testing-agent-operator get deployment contrast-agent-operator -o yaml
           kubectl --namespace testing-agent-operator logs deployment/contrast-agent-operator
         shell: bash
   #

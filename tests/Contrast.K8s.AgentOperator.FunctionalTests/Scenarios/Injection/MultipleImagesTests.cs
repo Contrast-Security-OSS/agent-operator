@@ -31,10 +31,10 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection
             // Assert
             using (new AssertionScope())
             {
-                var nonInjectionContainer = result.Spec.Containers.Should().ContainSingle(x=>x.Name == "busybox").Subject;
+                var nonInjectionContainer = result.Spec.Containers.Should().ContainSingle(x=>x.Name == "pause").Subject;
                 nonInjectionContainer.Env.Should().BeNull();
 
-                var injectionContainer = result.Spec.Containers.Should().ContainSingle(x=>x.Name == "prime").Subject;
+                var injectionContainer = result.Spec.Containers.Should().ContainSingle(x=>x.Name == "busybox").Subject;
                 injectionContainer.Env.Should().Contain(x => x.Name == "CONTRAST__API__URL");
             }
         }

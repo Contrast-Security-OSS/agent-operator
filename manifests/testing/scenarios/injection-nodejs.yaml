@@ -35,10 +35,5 @@ spec:
         app: injection-nodejs
     spec:
       containers:
-        - image: busybox
-          imagePullPolicy: Never
-          name: busybox
-          resources:
-            limits:
-              cpu: '1'
-              memory: 128M
+        - image: k8s.gcr.io/pause:3.3
+          name: pause

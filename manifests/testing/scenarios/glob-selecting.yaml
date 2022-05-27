@@ -37,17 +37,9 @@ spec:
         app: glob-selecting
     spec:
       containers:
-        - image: busybox
-          imagePullPolicy: Never
+        - image: busybox:stable
           name: busybox
-          resources:
-            limits:
-              cpu: '1'
-              memory: 128M
-        - image: ignore
-          imagePullPolicy: Never
+          command: [ "/bin/sh", "-c", "--" ]
+          args: [ "sleep infinity" ]
+        - image: k8s.gcr.io/pause:3.3
           name: ignore
-          resources:
-            limits:
-              cpu: '1'
-              memory: 128M

@@ -35,13 +35,8 @@ spec:
         app: injection-dotnetchaining
     spec:
       containers:
-        - image: busybox
-          imagePullPolicy: Never
-          name: busybox
+        - image: k8s.gcr.io/pause:3.3
+          name: pause
           env:
             - name: LD_PRELOAD
               value: something
-          resources:
-            limits:
-              cpu: '1'
-              memory: 128M

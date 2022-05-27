@@ -7,7 +7,7 @@ spec:
   type: dummy
   selector:
     images:
-      - prime
+      - busybox:stable
     labels:
       - name: app
         value: multiple-images
@@ -37,17 +37,9 @@ spec:
         app: multiple-images
     spec:
       containers:
-        - image: busybox
-          imagePullPolicy: Never
+        - image: busybox:stable
           name: busybox
-          resources:
-            limits:
-              cpu: '1'
-              memory: 128M
-        - image: prime
-          imagePullPolicy: Never
-          name: prime
-          resources:
-            limits:
-              cpu: '1'
-              memory: 128M
+          command: [ "/bin/sh", "-c", "--" ]
+          args: [ "sleep infinity" ]
+        - image: k8s.gcr.io/pause:3.3
+          name: pause
