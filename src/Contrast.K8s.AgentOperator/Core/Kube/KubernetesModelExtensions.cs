@@ -37,6 +37,53 @@ namespace Contrast.K8s.AgentOperator.Core.Kube
             );
         }
 
+        public static PodSelector ToPodSelector(this V1LabelSelector spec)
+        {
+            var expressions = new List<PodMatchExpression>();
+            if (spec.MatchLabels is { } matchLabels)
+            {
+                foreach (var matchLabel in matchLabels)
+                {
+                    expressions.Add(new PodMatchExpression(matchLabel.Key, LabelMatchOperation.In, new List<string>
+                    {
+                        matchLabel.Value
+                    }));
+                }
+            }
+
+            if (spec.MatchExpressions is { } matchExpressions)
+            {
+                foreach (var matchExpression in matchExpressions)
+                {
+                    var operation = LabelMatchOperation.Unknown;
+                    if (string.Equals(matchExpression.OperatorProperty, "In", StringComparison.OrdinalIgnoreCase))
+                    {
+                        operation = LabelMatchOperation.In;
+                    }
+
+                    if (string.Equals(matchExpression.OperatorProperty, "NotIn", StringComparison.OrdinalIgnoreCase))
+                    {
+                        operation = LabelMatchOperation.NotIn;
+                    }
+
+                    if (string.Equals(matchExpression.OperatorProperty, "Exists", StringComparison.OrdinalIgnoreCase))
+                    {
+                        operation = LabelMatchOperation.Exists;
+                    }
+
+                    if (string.Equals(matchExpression.OperatorProperty, "DoesNotExist", StringComparison.OrdinalIgnoreCase))
+                    {
+                        operation = LabelMatchOperation.DoesNotExist;
+                    }
+
+                    var values = matchExpression.Values?.ToList() ?? (IReadOnlyCollection<string>)Array.Empty<string>();
+                    expressions.Add(new PodMatchExpression(matchExpression.Key, operation, values));
+                }
+            }
+
+            return new PodSelector(expressions);
+        }
+
         public static IReadOnlyCollection<PodContainer> GetContainers(this V1PodTemplateSpec spec)
         {
             if (spec.Spec.Containers == null)

@@ -8,7 +8,7 @@ namespace Contrast.K8s.AgentOperator.Core.State
 {
     public interface IEventStream
     {
-        ValueTask Dispatch<T>(T request, CancellationToken cancellationToken = default) where T : INotification;
+        ValueTask DispatchDeferred<T>(T request, CancellationToken cancellationToken = default) where T : INotification;
         ValueTask<INotification> DequeueNext(CancellationToken cancellationToken = default);
     }
 
@@ -17,7 +17,7 @@ namespace Contrast.K8s.AgentOperator.Core.State
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         private readonly Channel<INotification> _channel = Channel.CreateBounded<INotification>(CreateChannelOptions(), ItemDropped);
 
-        public ValueTask Dispatch<T>(T request, CancellationToken cancellationToken = default) where T : INotification
+        public ValueTask DispatchDeferred<T>(T request, CancellationToken cancellationToken = default) where T : INotification
         {
             return _channel.Writer.WriteAsync(request, cancellationToken);
         }

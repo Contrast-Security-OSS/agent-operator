@@ -20,17 +20,17 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting
             IEnumerable<ResourceIdentityPair<AgentInjectorResource>> readyInjectors,
             ResourceIdentityPair<IResourceWithPodTemplate> target)
         {
-            foreach (var injector in readyInjectors)
-            {
-                var (_, labelPatterns, namespaces) = injector.Resource.Selector;
+            return readyInjectors.Where(injector => InjectorMatchesTarget(injector, target));
+        }
 
-                var matchesNamespace = namespaces.Contains(target.Identity.Namespace, StringComparer.OrdinalIgnoreCase);
-                var matchesLabel = !labelPatterns.Any() || labelPatterns.Any(x => MatchesLabel(target.Resource, x.Key, x.Value));
-                if (matchesNamespace && matchesLabel)
-                {
-                    yield return injector;
-                }
-            }
+        public bool InjectorMatchesTarget(ResourceIdentityPair<AgentInjectorResource> injector,
+                                          ResourceIdentityPair<IResourceWithPodTemplate> target)
+        {
+            var (_, labelPatterns, namespaces) = injector.Resource.Selector;
+
+            var matchesNamespace = namespaces.Contains(target.Identity.Namespace, StringComparer.OrdinalIgnoreCase);
+            var matchesLabel = !labelPatterns.Any() || labelPatterns.Any(x => MatchesLabel(target.Resource, x.Key, x.Value));
+            return matchesNamespace && matchesLabel;
         }
 
         private bool MatchesLabel<T>(T targetResource, string key, string labelPattern) where T : IResourceWithPodTemplate

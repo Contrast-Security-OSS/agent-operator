@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Options;
 using DotnetKubernetesClient;
 using JsonDiffPatch;
 using k8s;
+using k8s.Autorest;
 using k8s.Models;
 using Newtonsoft.Json;
 using NLog;
@@ -74,7 +76,14 @@ namespace Contrast.K8s.AgentOperator.Core.Kube
                 Logger.Trace(
                     $"Peparing to patch '{entity.Namespace()}/{entity.Name()}' ('{entity.Kind}/{entity.ApiVersion}') with '{diff.ToString(Formatting.None)}'.");
 
-                await _client.Patch(entity, diff, _operatorOptions.FieldManagerName);
+                try
+                {
+                    await _client.Patch(entity, diff, _operatorOptions.FieldManagerName);
+                }
+                catch (HttpOperationException e) when (e.Response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    Logger.Trace("Entity disappeared while patching.");
+                }
 
                 Logger.Trace($"Patch complete after {stopwatch.ElapsedMilliseconds}ms.");
             }

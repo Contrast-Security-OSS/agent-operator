@@ -19,13 +19,13 @@ namespace Contrast.K8s.AgentOperator.Controllers
 
         public async Task<ResourceControllerResult?> ReconcileAsync(T entity)
         {
-            await _eventStream.Dispatch(new EntityReconciled<T>(entity));
+            await _eventStream.DispatchDeferred(new EntityReconciled<T>(entity));
             return null;
         }
 
         public async Task DeletedAsync(T entity)
         {
-            await _eventStream.Dispatch(new EntityDeleted<T>(entity));
+            await _eventStream.DispatchDeferred(new EntityDeleted<T>(entity));
         }
     }
 }

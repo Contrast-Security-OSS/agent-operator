@@ -69,7 +69,7 @@ namespace Contrast.K8s.AgentOperator.Core.State
             Logger.Info($"Waiting {delay.TotalSeconds} seconds for operator to rebuild cluster state before applying changes.");
             await Task.Delay(delay, stoppingToken);
 
-            await _eventStream.Dispatch(new StateSettled(), stoppingToken);
+            await _eventStream.DispatchDeferred(new StateSettled(), stoppingToken);
 
             await Task.Delay(Timeout.Infinite, stoppingToken);
         }
