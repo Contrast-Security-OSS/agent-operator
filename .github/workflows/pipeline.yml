@@ -94,7 +94,7 @@ jobs:
           set -xe
           cd ./manifests/install/prod
           curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
-          ./kustomize edit set image 'contrastsecurity.com/agent-operator/operator:${{ env.BUILD_VERSION }}'
+          ./kustomize edit set image 'contrast/agent-operator:${{ env.BUILD_VERSION }}'
           cat ../../license-header.yaml > ./install-prod.yaml
           ./kustomize build ./ >> ./install-prod.yaml
         shell: bash
