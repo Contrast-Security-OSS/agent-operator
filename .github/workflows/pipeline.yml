@@ -281,3 +281,12 @@ jobs:
           artifacts: ${{ steps.download-artifacts.outputs.download-path }}/*.yaml
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
+      - uses: act10ns/slack@v1
+        with:
+          status: ${{ job.status }}
+          message: |-
+            Version <https://github.com/Contrast-Security-Inc/agent-operator/releases/tag/v${{ env.BUILD_VERSION }}|v${{ env.BUILD_VERSION }}> of the agent-operator was released!
+          fallback: |-
+            [GitHub] Version v${{ env.BUILD_VERSION }} of the agent-operator was released!
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
