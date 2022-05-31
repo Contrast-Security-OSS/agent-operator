@@ -4,6 +4,8 @@ A K8s operator to inject agents into existing K8s workloads. Images are built in
 
 Managed by the .NET team.
 
+For questions, suggestions, bugs, see [#agent-operator](https://contrastsecurityinc.slack.com/archives/C03FNADV430).
+
 ## Artifacts
 
 Builds released into the the `internal` environment are published to our internal container image registry hosted on Azure (which expire after 30 days). Manifest are uploaded as GitHub Action artifacts (which expire after 7 days).
@@ -18,10 +20,10 @@ contrastdotnet.azurecr.io/agent-operator/agent-operator:latest
 Builds released into the the `public` environment are are published to DockerHub. Manifest are uploaded to the [GitHub releases page](https://github.com/Contrast-Security-Inc/agent-operator/releases).
 
 ```
-  docker.io/contrast/agent-operator:1.0.0
-  docker.io/contrast/agent-operator:1.0
-  docker.io/contrast/agent-operator:1
-  docker.io/contrast/agent-operator:latest
+contrast/agent-operator:1.0.0
+contrast/agent-operator:1.0
+contrast/agent-operator:1
+contrast/agent-operator:latest
 ```
 
 ## Design
