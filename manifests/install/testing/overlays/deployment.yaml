@@ -10,3 +10,6 @@ spec:
       containers:
         - name: contrast-agent-operator
           imagePullPolicy: Never
+          env:
+            - name: CONTRAST_AGENT_TELEMETRY_OPTOUT
+              value: "true"
