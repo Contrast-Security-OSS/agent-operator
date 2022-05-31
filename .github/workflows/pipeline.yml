@@ -268,7 +268,7 @@ jobs:
         id: download-artifacts
         with:
           name: manifests
-          path: ./manifests
+          path: ./artifacts
       - name: Publish
         uses: ncipollo/release-action@v1
         with:
