@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Contrast.K8s.AgentOperator.Core.Injecting.Patching.Agents;
-using Contrast.K8s.AgentOperator.Core.Telemetry;
+using Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents;
 using Contrast.K8s.AgentOperator.Core.Telemetry.Cluster;
 using k8s.Models;
 using NLog;
 
-namespace Contrast.K8s.AgentOperator.Core.Injecting.Patching
+namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching
 {
     public interface IPodPatcher
     {

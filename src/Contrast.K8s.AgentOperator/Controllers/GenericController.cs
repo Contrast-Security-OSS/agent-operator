@@ -23,6 +23,8 @@ namespace Contrast.K8s.AgentOperator.Controllers
             return null;
         }
 
+        public virtual Task StatusModifiedAsync(T entity) => Task.CompletedTask;
+
         public async Task DeletedAsync(T entity)
         {
             await _eventStream.DispatchDeferred(new EntityDeleted<T>(entity));

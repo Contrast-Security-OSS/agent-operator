@@ -1,4 +1,4 @@
-﻿namespace Contrast.K8s.AgentOperator.Core.Injecting
+﻿namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting
 {
     public static class InjectionConstants
     {

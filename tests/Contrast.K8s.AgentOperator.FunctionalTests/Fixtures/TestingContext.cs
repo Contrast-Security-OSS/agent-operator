@@ -25,7 +25,7 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Fixtures
             var result = await Client.GetServerVersion();
             _outputHelper?.WriteLine($"Working with K8s version {result.GitVersion}.");
 
-            return new TestingClient(Client, _outputHelper, new TestingClientOptions(defaultNamespace, TimeSpan.FromSeconds(30)));
+            return new TestingClient(Client, _outputHelper, new TestingClientOptions(defaultNamespace, TimeSpan.FromMinutes(5)));
         }
 
         private IKubernetesClient ClientFactory()

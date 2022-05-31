@@ -1,14 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using AutoFixture;
-using Contrast.K8s.AgentOperator.Core.Injecting.Patching;
-using Contrast.K8s.AgentOperator.Core.Injecting.Patching.Agents;
+using Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching;
+using Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents;
 using FluentAssertions;
 using FluentAssertions.Execution;
 using k8s.Models;
 using Xunit;
 
-namespace Contrast.K8s.AgentOperator.Tests.Core.Injecting
+namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting.Patching.Agents
 {
     public class DotNetPatcherTests
     {
@@ -42,7 +42,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Injecting
             var context = AutoFixture.Create<PatchingContext>();
             var existingPreload = AutoFixture.Create<string>();
             var container = AutoFixture.Build<V1Container>()
-                .With(x => x.Env, new List<V1EnvVar> { new("LD_PRELOAD", existingPreload) }).Create();
+                                       .With(x => x.Env, new List<V1EnvVar> { new("LD_PRELOAD", existingPreload) }).Create();
 
             // Act
             patcher.PatchContainer(container, context);
@@ -51,7 +51,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Injecting
             using (new AssertionScope())
             {
                 container.Env.Should()
-                    .Contain(x => x.Name == "CONTRAST_EXISTING_LD_PRELOAD" && x.Value == existingPreload);
+                         .Contain(x => x.Name == "CONTRAST_EXISTING_LD_PRELOAD" && x.Value == existingPreload);
                 container.Env.Should().Contain(x =>
                     x.Name == "LD_PRELOAD" && x.Value ==
                     $"{context.ContrastMountPath}/runtimes/linux-x64/native/ContrastChainLoader.so:{existingPreload}");

@@ -12,7 +12,7 @@ using JetBrains.Annotations;
 using MediatR;
 using NLog;
 
-namespace Contrast.K8s.AgentOperator.Core.Injecting
+namespace Contrast.K8s.AgentOperator.Core.Reactions.Matching
 {
     [UsedImplicitly]
     public class MatchInjectorsHandler : INotificationHandler<StateModified>

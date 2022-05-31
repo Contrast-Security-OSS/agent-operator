@@ -5,7 +5,7 @@ using Contrast.K8s.AgentOperator.Core.State;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Interfaces;
 
-namespace Contrast.K8s.AgentOperator.Core.Injecting
+namespace Contrast.K8s.AgentOperator.Core.Reactions.Matching
 {
     public class AgentInjectorMatcher
     {

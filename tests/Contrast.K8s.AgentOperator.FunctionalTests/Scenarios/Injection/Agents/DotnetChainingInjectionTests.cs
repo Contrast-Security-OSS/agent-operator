@@ -26,7 +26,7 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection.Agents
             var client = await _context.GetClient();
 
             // Act
-            var result = await client.GetByPrefix<V1Pod>(ScenarioName);
+            var result = await client.GetInjectedPodByPrefix(ScenarioName);
 
             // Assert
             using (new AssertionScope())

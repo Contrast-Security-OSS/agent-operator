@@ -11,16 +11,16 @@ using JetBrains.Annotations;
 using k8s.Models;
 using MediatR;
 
-namespace Contrast.K8s.AgentOperator.Core.Injecting
+namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting
 {
     [UsedImplicitly]
-    public class ApplyDesiredStateHandler : INotificationHandler<InjectorMatched>
+    public class PodTemplateInjectionHandler : INotificationHandler<InjectorMatched>
     {
         private readonly IResourceHasher _hasher;
         private readonly IStateContainer _state;
         private readonly IResourcePatcher _patcher;
 
-        public ApplyDesiredStateHandler(IResourceHasher hasher, IStateContainer state, IResourcePatcher patcher)
+        public PodTemplateInjectionHandler(IResourceHasher hasher, IStateContainer state, IResourcePatcher patcher)
         {
             _hasher = hasher;
             _state = state;
@@ -29,6 +29,11 @@ namespace Contrast.K8s.AgentOperator.Core.Injecting
 
         public async Task Handle(InjectorMatched notification, CancellationToken cancellationToken)
         {
+            if (await _state.GetIsDirty(notification.Target.Identity, cancellationToken))
+            {
+                return;
+            }
+
             var (target, injector) = notification;
             var desiredState = await GetDesiredState(injector, cancellationToken);
 

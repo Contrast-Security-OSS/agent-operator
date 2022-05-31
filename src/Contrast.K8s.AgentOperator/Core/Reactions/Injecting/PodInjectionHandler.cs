@@ -1,14 +1,14 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Events;
-using Contrast.K8s.AgentOperator.Core.Injecting.Patching;
+using Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching;
 using Contrast.K8s.AgentOperator.Core.State;
 using JetBrains.Annotations;
 using k8s.Models;
 using MediatR;
 using NLog;
 
-namespace Contrast.K8s.AgentOperator.Core.Injecting
+namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting
 {
     [UsedImplicitly]
     public class PodInjectionHandler : IRequestHandler<EntityCreating<V1Pod>, EntityCreatingMutationResult<V1Pod>>

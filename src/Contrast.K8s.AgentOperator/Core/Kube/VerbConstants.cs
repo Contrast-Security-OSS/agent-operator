@@ -10,5 +10,7 @@ namespace Contrast.K8s.AgentOperator.Core.Kube
         public const RbacVerb AllButDelete = RbacVerb.All & ~RbacVerb.Delete;
 
         public const RbacVerb ReadOnly = RbacVerb.Get | RbacVerb.List | RbacVerb.Watch;
+
+        public const RbacVerb FullControl = RbacVerb.All;
     }
 }

@@ -26,7 +26,7 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection
             var client = await _context.GetClient();
 
             // Act
-            var result = await client.GetByPrefix<V1Pod>(ScenarioName);
+            var result = await client.GetInjectedPodByPrefix(ScenarioName);
 
             // Assert
             result.Annotations().Should().ContainKey("agents.contrastsecurity.com/is-injected").WhoseValue.Should().Be("True");
@@ -38,7 +38,7 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection
             var client = await _context.GetClient();
 
             // Act
-            var result = await client.GetByPrefix<V1Pod>(ScenarioName);
+            var result = await client.GetInjectedPodByPrefix(ScenarioName);
 
             // Assert
             using (new AssertionScope())

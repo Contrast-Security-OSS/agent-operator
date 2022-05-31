@@ -2,7 +2,7 @@
 using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
 using k8s.Models;
 
-namespace Contrast.K8s.AgentOperator.Core.Injecting.Patching.Agents
+namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents
 {
     public interface IAgentPatcher
     {

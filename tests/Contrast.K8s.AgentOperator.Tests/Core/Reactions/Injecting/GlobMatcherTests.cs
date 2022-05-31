@@ -1,9 +1,9 @@
 ﻿using AutoFixture;
-using Contrast.K8s.AgentOperator.Core.Injecting;
+using Contrast.K8s.AgentOperator.Core.Reactions;
 using FluentAssertions;
 using Xunit;
 
-namespace Contrast.K8s.AgentOperator.Tests.Core.Injecting
+namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting
 {
     public class GlobMatcherTests
     {

@@ -5,6 +5,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Options;
 using DotnetKubernetesClient;
+using DotnetKubernetesClient.Entities;
 using JsonDiffPatch;
 using k8s;
 using k8s.Autorest;
@@ -17,6 +18,7 @@ namespace Contrast.K8s.AgentOperator.Core.Kube
     public interface IResourcePatcher
     {
         Task<bool> Patch<T>(string name, string? @namespace, Action<T> mutator) where T : class, IKubernetesObject<V1ObjectMeta>;
+        Task<bool> PatchStatus<T>(string name, string? @namespace, GenericCondition condition) where T : class, IKubernetesObject<V1ObjectMeta>;
     }
 
     public class ResourcePatcher : IResourcePatcher
@@ -73,8 +75,8 @@ namespace Contrast.K8s.AgentOperator.Core.Kube
             var diff = _jsonDiffer.Diff(currentVersion, nextVersion, false);
             if (diff.Operations.Any())
             {
-                Logger.Trace(
-                    $"Peparing to patch '{entity.Namespace()}/{entity.Name()}' ('{entity.Kind}/{entity.ApiVersion}') with '{diff.ToString(Formatting.None)}'.");
+                Logger.Trace(() => $"Preparing to patch '{entity.Namespace()}/{entity.Name()}' ('{entity.Kind}/{entity.ApiVersion}') "
+                                   + $"with '{diff.ToString(Formatting.None)}'.");
 
                 try
                 {
@@ -87,6 +89,40 @@ namespace Contrast.K8s.AgentOperator.Core.Kube
 
                 Logger.Trace($"Patch complete after {stopwatch.ElapsedMilliseconds}ms.");
             }
+        }
+
+        public async Task<bool> PatchStatus<T>(string name, string? @namespace, GenericCondition condition) where T : class, IKubernetesObject<V1ObjectMeta>
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentException("Value must not be empty or null.", nameof(name));
+            }
+
+            if (@namespace != null && string.IsNullOrEmpty(@namespace))
+            {
+                throw new ArgumentException("If set, value cannot be empty.", nameof(@namespace));
+            }
+
+            var stopwatch = Stopwatch.StartNew();
+
+            var crd = CustomEntityDefinitionExtensions.CreateResourceDefinition<T>();
+
+            Logger.Trace(() =>
+                $"Preparing to patch status '{@namespace}/{name}' ('{crd.Kind}/{crd.Version}') "
+                + $"with '{KubernetesJson.Serialize(condition)}'.");
+
+            try
+            {
+                await _client.PatchStatus<T>(name, @namespace, condition, _operatorOptions.FieldManagerName);
+            }
+            catch (HttpOperationException e) when (e.Response.StatusCode == HttpStatusCode.NotFound)
+            {
+                Logger.Trace("Entity disappeared while patching.");
+            }
+
+            Logger.Trace($"Patch complete after {stopwatch.ElapsedMilliseconds}ms.");
+
+            return true;
         }
     }
 }

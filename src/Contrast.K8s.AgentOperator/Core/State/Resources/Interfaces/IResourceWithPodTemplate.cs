@@ -5,8 +5,8 @@ namespace Contrast.K8s.AgentOperator.Core.State.Resources.Interfaces
 {
     public interface IResourceWithPodTemplate : INamespacedResource, IMutableResource
     {
+        string Uid { get; }
         IReadOnlyCollection<MetadataLabel> Labels { get; }
-        IReadOnlyCollection<MetadataAnnotations> Annotations { get; }
         PodTemplate PodTemplate { get; }
         PodSelector Selector { get; }
     }

@@ -67,6 +67,37 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Fixtures
 
             throw new TaskCanceledException();
         }
+
+        public async Task<V1Pod> GetInjectedPodByPrefix(string name, string? @namespace = default)
+        {
+            const string convergedType = "agents.contrastsecurity.com/injection-converged";
+
+            using var source = new CancellationTokenSource(_options.WaitDuration);
+            while (!source.IsCancellationRequested)
+            {
+                var pod = await GetByPrefix<V1Pod>(name, @namespace);
+                if (pod.Status.Conditions.FirstOrDefault(x => x.Type == convergedType) is { } condition)
+                {
+                    if (string.Equals(condition.Status, "True", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return pod;
+                    }
+
+                    _outputHelper?.WriteLine($"Entity {@namespace}/{name}-* ({typeof(V1Pod)}) exists, but {convergedType}={condition.Status} "
+                                             + $"(Reason: '{condition.Reason}', Message: '{condition.Message}', LastTransitionTime: '{condition.LastTransitionTime}'). "
+                                             + $"Will try again in {_pollInterval.TotalSeconds} seconds.");
+                }
+                else
+                {
+                    _outputHelper?.WriteLine(
+                        $"Entity {@namespace}/{name}-* ({typeof(V1Pod)}) exists, but has no {convergedType} condition. Will try again in {_pollInterval.TotalSeconds} seconds.");
+                }
+
+                await Task.Delay(_pollInterval, source.Token);
+            }
+
+            throw new TaskCanceledException();
+        }
     }
 
     public record TestingClientOptions(string DefaultNamespace, TimeSpan WaitDuration);

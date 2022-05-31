@@ -23,7 +23,7 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection
             var client = await _context.GetClient();
 
             // Act
-            var result = await client.GetByPrefix<V1Pod>("type-daemonset");
+            var result = await client.GetInjectedPodByPrefix("type-daemonset");
 
             // Assert
             result.Annotations().Should().ContainKey("agents.contrastsecurity.com/is-injected").WhoseValue.Should().Be("True");
@@ -35,7 +35,7 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection
             var client = await _context.GetClient();
 
             // Act
-            var result = await client.GetByPrefix<V1Pod>("type-statefulset");
+            var result = await client.GetInjectedPodByPrefix("type-statefulset");
 
             // Assert
             result.Annotations().Should().ContainKey("agents.contrastsecurity.com/is-injected").WhoseValue.Should().Be("True");
@@ -47,7 +47,7 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection
             var client = await _context.GetClient();
 
             // Act
-            var result = await client.GetByPrefix<V1Pod>("type-deployment");
+            var result = await client.GetInjectedPodByPrefix("type-deployment");
 
             // Assert
             result.Annotations().Should().ContainKey("agents.contrastsecurity.com/is-injected").WhoseValue.Should().Be("True");

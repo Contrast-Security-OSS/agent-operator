@@ -91,5 +91,13 @@ namespace Contrast.K8s.AgentOperator.Core
         {
             collection.AddOrUpdate(x => string.Equals(x.Name, value.Name, StringComparison.OrdinalIgnoreCase), value);
         }
+
+        public static void Remove<T>(this ICollection<T> collection, Func<T, bool> predicate)
+        {
+            foreach (var resource in collection.Where(predicate))
+            {
+                collection.Remove(resource);
+            }
+        }
     }
 }
