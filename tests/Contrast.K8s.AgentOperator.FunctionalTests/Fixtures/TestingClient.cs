@@ -76,7 +76,7 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Fixtures
             while (!source.IsCancellationRequested)
             {
                 var pod = await GetByPrefix<V1Pod>(name, @namespace);
-                if (pod.Status.Conditions.FirstOrDefault(x => x.Type == convergedType) is { } condition)
+                if (pod.Status?.Conditions?.FirstOrDefault(x => x.Type == convergedType) is { } condition)
                 {
                     if (string.Equals(condition.Status, "True", StringComparison.OrdinalIgnoreCase))
                     {
