@@ -132,18 +132,23 @@ jobs:
           version: ${{ matrix.k3s-version }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Import Images
-        run: |
-          set -xe
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 5
+          command: |
+            set -xe
 
-          docker pull ${{ env.IMAGE }}
-          docker tag ${{ env.IMAGE }} local/agent-operator:latest
-          k3d image import local/agent-operator:latest --mode direct
+            docker pull ${{ env.IMAGE }}
+            docker tag ${{ env.IMAGE }} local/agent-operator:latest
+            k3d image import local/agent-operator:latest --mode direct
 
-          docker pull busybox:stable
-          k3d image import busybox:stable --mode direct
+            docker pull busybox:stable
+            k3d image import busybox:stable --mode direct
 
-          docker pull k8s.gcr.io/pause:3.3
-          k3d image import k8s.gcr.io/pause:3.3 --mode direct
+            docker pull k8s.gcr.io/pause:3.3
+            k3d image import k8s.gcr.io/pause:3.3 --mode direct
+          shell: bash
       - name: Deploy Manifests
         run: |
           set -xe
