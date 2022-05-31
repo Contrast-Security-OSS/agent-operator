@@ -228,8 +228,9 @@ jobs:
     needs:
       - generate-version
       - build-image
-      - build-manifests
       - release-internal
+    permissions:
+      contents: write
     env:
       BUILD_VERSION: ${{ needs.generate-version.outputs.version }}
       IMAGE_NAME: docker.io/contrast/agent-operator
@@ -263,3 +264,20 @@ jobs:
           src: contrastdotnet.azurecr.io/agent-operator/agent-operator@${{ needs.build-image.outputs.digest }}
           dst: |
             ${{ steps.meta.outputs.tags }}
+      - uses: actions/download-artifact@v3
+        id: download-artifacts
+        with:
+          name: manifests
+          path: ./manifests
+      - name: Publish
+        uses: ncipollo/release-action@v1
+        with:
+          body: |
+            Version v${{ env.BUILD_VERSION }} released!
+            ```
+            contrast/agent-operator:${{ env.BUILD_VERSION }}
+            contrast/agent-operator@${{ needs.build-image.outputs.digest }}
+            ```
+          artifacts: ${{ steps.download-artifacts.outputs.download-path }}/*.yaml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          allowUpdates: true
