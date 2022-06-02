@@ -1,4 +1,6 @@
-﻿using Contrast.K8s.AgentOperator.Core.Telemetry.Models;
+﻿using System.Net;
+using Contrast.K8s.AgentOperator.Core.Telemetry.Models;
+using k8s.Autorest;
 using NLog;
 using NLog.Targets;
 
@@ -15,8 +17,16 @@ namespace Contrast.K8s.AgentOperator.Core.Telemetry.Services.Exceptions
             }
 
             var loggerName = logEvent.LoggerName ?? "<unknown>";
-            var report = new ExceptionReport(loggerName, Layout.Render(logEvent), logEvent.Exception);
+            if (loggerName == "KubeOps.Operator.Kubernetes.ResourceWatcher"
+                && logEvent.Exception is HttpOperationException httpOperationException
+                && httpOperationException.Response.StatusCode
+                    is HttpStatusCode.NotFound)
+            {
+                // Ignore any of the common exceptions we don't care about.
+                return;
+            }
 
+            var report = new ExceptionReport(loggerName, Layout.Render(logEvent), logEvent.Exception);
             TelemetryExceptionsBuffer.Instance.Add(report);
         }
     }
