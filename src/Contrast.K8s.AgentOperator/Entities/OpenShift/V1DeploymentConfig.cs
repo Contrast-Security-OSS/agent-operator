@@ -1,9 +1,10 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using JetBrains.Annotations;
 using k8s.Models;
 using KubeOps.Operator.Entities;
 
-namespace Contrast.K8s.AgentOperator.Core.OpenShift
+namespace Contrast.K8s.AgentOperator.Entities.OpenShift
 {
     [KubernetesEntity(Group = "apps.openshift.io", ApiVersion = "v1", Kind = "DeploymentConfig", PluralName = "deploymentconfigs"), UsedImplicitly]
     public class V1DeploymentConfig : CustomKubernetesEntity<V1DeploymentConfig.DeploymentConfigSpec>
@@ -17,7 +18,7 @@ namespace Contrast.K8s.AgentOperator.Core.OpenShift
             /// Selector is a label query over pods that should match the Replicas count.
             /// </summary>
             [JsonPropertyName("selector")]
-            public V1LabelSelector? Selector { get; set; }
+            public IDictionary<string, string> Selector { get; set; } = new Dictionary<string, string>();
 
             /// <summary>
             /// Template is the object that describes the pod that will be created if insufficient replicas are detected.

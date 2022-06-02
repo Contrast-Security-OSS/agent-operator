@@ -1,8 +1,10 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Kube;
-using Contrast.K8s.AgentOperator.Core.OpenShift;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
+using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
+using Contrast.K8s.AgentOperator.Entities.OpenShift;
 using JetBrains.Annotations;
 using k8s.Models;
 using MediatR;
@@ -22,10 +24,28 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers
                 entity.Uid(),
                 entity.Metadata.GetLabels(),
                 entity.Spec.Template.GetPod(),
-                entity.Spec.Selector.ToPodSelector()
+                GetSelector(entity)
             );
 
             return ValueTask.FromResult(resource);
+        }
+
+        private static PodSelector GetSelector(V1DeploymentConfig entity)
+        {
+            var expressions = new List<PodMatchExpression>();
+            if (entity.Spec.Selector is { } matchLabels)
+            {
+                foreach (var matchLabel in matchLabels)
+                {
+                    expressions.Add(new PodMatchExpression(matchLabel.Key, LabelMatchOperation.In, new List<string>
+                    {
+                        matchLabel.Value
+                    }));
+                }
+            }
+
+            var selector = new PodSelector(expressions);
+            return selector;
         }
     }
 }

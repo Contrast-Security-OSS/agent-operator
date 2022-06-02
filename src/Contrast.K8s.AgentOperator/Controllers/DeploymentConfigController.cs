@@ -1,6 +1,6 @@
 ﻿using Contrast.K8s.AgentOperator.Core.Kube;
-using Contrast.K8s.AgentOperator.Core.OpenShift;
 using Contrast.K8s.AgentOperator.Core.State;
+using Contrast.K8s.AgentOperator.Entities.OpenShift;
 using JetBrains.Annotations;
 using KubeOps.Operator.Rbac;
 
