@@ -1,4 +1,4 @@
-apiVersion: apps/v1
+apiVersion: apps.openshift.io/v1
 kind: DeploymentConfig
 metadata:
   name: dotnet-core-app
@@ -9,8 +9,7 @@ spec:
   replicas: 2
   revisionHistoryLimit: 1
   selector:
-    matchLabels:
-      app: dotnet-core-app
+    app: dotnet-core-app
   template:
     metadata:
       labels:
