@@ -41,6 +41,7 @@ namespace Contrast.K8s.AgentOperator.Entities
 
             /// <summary>
             /// Select which Deployment/StatefulSet/DaemonSet pods are eligible for agent injection.
+            /// Under OpenShift, DeploymentConfig is also supported.
             /// </summary>
             public AgentInjectorSelectorSpec Selector { get; set; } = new();
 

@@ -28,8 +28,17 @@ namespace Contrast.K8s.AgentOperator.Core.Kube
             return meta.Annotations.Select(x => new MetadataAnnotations(x.Key, x.Value)).ToList();
         }
 
-        public static PodTemplate GetPod(this V1PodTemplateSpec spec)
+        public static PodTemplate GetPod(this V1PodTemplateSpec? spec)
         {
+            if (spec == null)
+            {
+                return new PodTemplate(
+                    Array.Empty<MetadataLabel>(),
+                    Array.Empty<MetadataAnnotations>(),
+                    Array.Empty<PodContainer>()
+                );
+            }
+
             return new PodTemplate(
                 spec.Metadata.GetLabels(),
                 spec.Metadata.GetAnnotations(),
@@ -37,8 +46,13 @@ namespace Contrast.K8s.AgentOperator.Core.Kube
             );
         }
 
-        public static PodSelector ToPodSelector(this V1LabelSelector spec)
+        public static PodSelector ToPodSelector(this V1LabelSelector? spec)
         {
+            if (spec == null)
+            {
+                return new PodSelector(Array.Empty<PodMatchExpression>());
+            }
+
             var expressions = new List<PodMatchExpression>();
             if (spec.MatchLabels is { } matchLabels)
             {

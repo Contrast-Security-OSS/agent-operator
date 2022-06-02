@@ -64,7 +64,9 @@ spec:
                     type: string
                 type: object
               selector:
-                description: Select which Deployment/StatefulSet/DaemonSet pods are eligible for agent injection.
+                description: |-
+                  Select which Deployment/StatefulSet/DaemonSet pods are eligible for agent injection.
+                  Under OpenShift, DeploymentConfig is also supported.
                 properties:
                   images:
                     description: |-
