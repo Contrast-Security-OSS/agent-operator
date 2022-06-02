@@ -106,15 +106,16 @@ jobs:
           retention-days: 7
   test-image:
     runs-on: ubuntu-latest
-    needs: build-image
+    needs:
+      - build-image
     if: ${{ github.actor != 'dependabot[bot]' }}
     strategy:
       matrix:
         k3s-version:
-          # - v1.24 # EOL: 2023-09-29
-          - v1.23 # EOL: 2023-02-28
-          - v1.22 # EOL: 2022-10-28
-          - v1.21 # EOL: 2022-06-28
+          # - 1.24 # EOL: 2023-09-29
+          - 1.23 # EOL: 2023-02-28
+          - 1.22 # EOL: 2022-10-28
+          - 1.21 # EOL: 2022-06-28
       fail-fast: false
     env:
       IMAGE: contrastdotnet.azurecr.io/agent-operator/agent-operator@${{ needs.build-image.outputs.digest }}
@@ -130,7 +131,7 @@ jobs:
       - uses: nolar/setup-k3d-k3s@v1
         name: Deploy K3d
         with:
-          version: ${{ matrix.k3s-version }}
+          version: v${{ matrix.k3s-version }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Import Images
         uses: nick-fields/retry@v2
@@ -174,6 +175,64 @@ jobs:
           kubectl --namespace testing-agent-operator get deployment contrast-agent-operator -o yaml
           kubectl --namespace testing-agent-operator logs deployment/contrast-agent-operator
         shell: bash
+  test-manifests:
+    runs-on: ubuntu-latest
+    needs:
+      - build-manifests
+    strategy:
+      matrix:
+        k3s-version:
+          # - 1.24 # EOL: 2023-09-29
+          - 1.23 # EOL: 2023-02-28
+          - 1.22 # EOL: 2022-10-28
+          - 1.21 # EOL: 2022-06-28
+      fail-fast: false
+    steps:
+      - name: Setup Pluto
+        uses: FairwindsOps/pluto/github-action@master
+      - name: Setup Polaris
+        uses: fairwindsops/polaris/.github/actions/setup-polaris@master
+        with:
+          version: 6.0.0
+      - name: Setup Kubeconform
+        run: |
+          set -xe
+          wget https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz
+          tar xf kubeconform-linux-amd64.tar.gz
+          sudo install kubeconform /usr/local/bin/kubeconform
+      - name: Download Manifests
+        uses: actions/download-artifact@v3
+        id: download-artifacts
+        with:
+          name: manifests
+          path: ./artifacts
+      - name: Validate Manifests
+        run: |
+          set -xe
+
+          which kubeconform
+          which pluto
+          which polaris
+
+          # https://github.com/yannh/kubeconform/issues/100#issuecomment-1096832969
+          kubeconform \
+            --verbose \
+            --summary \
+            --kubernetes-version ${{ matrix.k3s-version }}.0 \
+            -schema-location "default" \
+            -schema-location "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/{{ .NormalizedKubernetesVersion }}/{{ .ResourceKind }}{{ .KindSuffix }}.json" \
+            ./artifacts/install-prod.yaml
+
+          pluto detect \
+            --output wide \
+            --target-versions k8s=v${{ matrix.k3s-version }}.0 \
+            ./artifacts/install-prod.yaml
+
+          polaris audit \
+            --audit-path ./artifacts/ \
+            --set-exit-code-on-danger \
+            --set-exit-code-below-score 90
+        shell: bash
   #
   # Release Internal Stage
   #
@@ -186,8 +245,8 @@ jobs:
     needs:
       - generate-version
       - build-image
-      - build-manifests
       - test-image
+      - test-manifests
     env:
       BUILD_VERSION: ${{ needs.generate-version.outputs.version }}
       IMAGE_NAME: contrastdotnet.azurecr.io/agent-operator/agent-operator
