@@ -36,6 +36,7 @@ RUN chown operator-user:operator-group -R .
 USER operator-user
 
 ENV ASPNETCORE_URLS=https://+:5001 \
-    ASPNETCORE_ENVIRONMENT=Production
+    ASPNETCORE_ENVIRONMENT=Production \
+    ASPNETCORE_HOSTBUILDER__RELOADCONFIGONCHANGE=false
 
 ENTRYPOINT ["dotnet", "Contrast.K8s.AgentOperator.dll"]
