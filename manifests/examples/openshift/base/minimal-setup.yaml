@@ -1,0 +1,58 @@
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: AgentInjector
+metadata:
+  name: example-injector-dotnet-core
+spec:
+  enabled: true
+  version: latest
+  type: dotnet-core
+  image:
+    pullSecretName: contrastdotnet-pull-secret
+  selector:
+    images:
+      - "*"
+    labels:
+      - name: app
+        value: dotnet-core-app
+  connection:
+    name: example-agent-connection
+  configuration:
+    name: example-agent-configuration
+---
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: AgentConnection
+metadata:
+  name: example-agent-connection
+spec:
+  url: http://localhost
+  apiKey:
+    secretName: example-agent-connection-secret
+    secretKey: apiKey
+  serviceKey:
+    secretName: example-agent-connection-secret
+    secretKey: serviceKey
+  userName:
+    secretName: example-agent-connection-secret
+    secretKey: userName
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: example-agent-connection-secret
+type: Opaque
+stringData:
+  apiKey: apiKey
+  serviceKey: serviceKey
+  userName: userName
+---
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: AgentConfiguration
+metadata:
+  name: example-agent-configuration
+spec:
+  yaml: |
+    enabled: true
+    agent:
+      dotnet:
+        secret:
+          should_connect: false

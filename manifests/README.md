@@ -2,6 +2,7 @@ Install manifests for local development:
 
 ```
 kubectl apply -k .\install\dev
+kubectl apply -k .\examples\dev
 ```
 
 A pull secret is required to pull our agent images:

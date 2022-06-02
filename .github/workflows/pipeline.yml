@@ -156,7 +156,7 @@ jobs:
           kubectl apply -k manifests/install/testing
           kubectl --namespace testing-agent-operator wait --for=condition=Available --timeout=30s deployment contrast-agent-operator
 
-          kubectl apply -k manifests/testing
+          kubectl apply -k manifests/examples/testing
         shell: bash
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v2
