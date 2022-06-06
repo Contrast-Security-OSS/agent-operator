@@ -123,7 +123,11 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection
 
                 var mount = container.VolumeMounts.Should().ContainSingle().Subject;
                 mount.Name.Should().Be("contrast");
-                mount.MountPath.Should().Be("/contrast");
+                mount.MountPath.Should().Be("/contrast-init");
+
+                var env = container.Env.Should().ContainSingle().Subject;
+                env.Name.Should().Be("CONTRAST_MOUNT_PATH");
+                env.Value.Should().Be("/contrast-init");
             }
         }
 

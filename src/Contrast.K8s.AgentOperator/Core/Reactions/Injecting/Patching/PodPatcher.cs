@@ -62,14 +62,19 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching
             pod.Spec.Volumes ??= new List<V1Volume>();
             pod.Spec.Volumes.AddOrUpdate(volume.Name, volume);
 
+            const string initTargetMountPath = "/contrast-init";
             var initContainer = new V1Container("contrast-init")
             {
                 Image = context.Injector.Image.GetFullyQualifiedContainerImageName(),
                 VolumeMounts = new List<V1VolumeMount>
                 {
-                    new("/contrast", volume.Name)
+                    new(initTargetMountPath, volume.Name)
                 },
-                ImagePullPolicy = context.Injector.ImagePullPolicy
+                ImagePullPolicy = context.Injector.ImagePullPolicy,
+                Env = new List<V1EnvVar>
+                {
+                    new("CONTRAST_MOUNT_PATH", initTargetMountPath)
+                }
             };
             pod.Spec.InitContainers ??= new List<V1Container>();
             pod.Spec.InitContainers.AddOrUpdate(initContainer.Name, initContainer);
