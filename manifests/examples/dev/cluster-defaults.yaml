@@ -1,0 +1,44 @@
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: ClusterAgentConfiguration
+metadata:
+  name: default-agent-configuration
+  namespace: contrast-agent-operator
+spec:
+  template:
+    spec:
+      yaml: |
+        enabled: true
+        agent:
+          dotnet:
+            secret:
+              should_connect: false
+  namespaces:
+    - default
+---
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: ClusterAgentConnection
+metadata:
+  name: default-agent-connection
+spec:
+  template:
+    spec:
+      url: http://localhost
+      apiKey:
+        secretName: default-agent-connection-secret
+        secretKey: apiKey
+      serviceKey:
+        secretName: default-agent-connection-secret
+        secretKey: serviceKey
+      userName:
+        secretName: default-agent-connection-secret
+        secretKey: userName
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: default-agent-connection-secret
+type: Opaque
+stringData:
+  apiKey: apiKey
+  serviceKey: serviceKey
+  userName: userName
