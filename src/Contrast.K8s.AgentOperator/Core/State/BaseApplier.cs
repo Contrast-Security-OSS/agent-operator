@@ -58,6 +58,6 @@ namespace Contrast.K8s.AgentOperator.Core.State
             }
         }
 
-        protected abstract ValueTask<TResource> CreateFrom(TKubernetesObject entity, CancellationToken cancellationToken = default);
+        public abstract ValueTask<TResource> CreateFrom(TKubernetesObject entity, CancellationToken cancellationToken = default);
     }
 }

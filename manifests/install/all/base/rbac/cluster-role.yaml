@@ -10,26 +10,40 @@ rules:
   - ""
   - apps
   - apps.openshift.io
-  - agents.contrastsecurity.com
   resources:
   - pods
-  - statefulsets
-  - deploymentconfigs
-  - agentconnections
-  - agentconfigurations
-  - agentinjectors
   - daemonsets
+  - deploymentconfigs
   - deployments
+  - statefulsets
   verbs:
   - get
   - list
   - watch
   - patch
 - apiGroups:
+  - agents.contrastsecurity.com
+  resources:
+  - clusteragentconfigurations
+  - clusteragentconnections
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - agents.contrastsecurity.com
+  resources:
+  - agentinjectors
+  verbs:
+  - '*'
+- apiGroups:
+  - agents.contrastsecurity.com
   - ""
   - coordination.k8s.io
   resources:
+  - agentconfigurations
   - secrets
+  - agentconnections
   - leases
   verbs:
   - '*'
@@ -77,14 +91,6 @@ rules:
 - apiGroups:
   - apps
   resources:
-  - statefulsets/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - apps
-  resources:
   - daemonsets/status
   verbs:
   - get
@@ -94,6 +100,14 @@ rules:
   - apps
   resources:
   - deployments/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - apps
+  resources:
+  - statefulsets/status
   verbs:
   - get
   - patch

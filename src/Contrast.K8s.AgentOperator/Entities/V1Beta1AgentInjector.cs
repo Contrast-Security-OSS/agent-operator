@@ -9,7 +9,7 @@ using KubeOps.Operator.Rbac;
 namespace Contrast.K8s.AgentOperator.Entities
 {
     [KubernetesEntity(Group = "agents.contrastsecurity.com", ApiVersion = "v1beta1", Kind = "AgentInjector", PluralName = "agentinjectors")]
-    [EntityRbac(typeof(V1Beta1AgentInjector), Verbs = VerbConstants.ReadOnly)]
+    [EntityRbac(typeof(V1Beta1AgentInjector), Verbs = VerbConstants.FullControl)]
     public class V1Beta1AgentInjector : CustomKubernetesEntity<V1Beta1AgentInjector.AgentInjectorSpec>
     {
         public class AgentInjectorSpec

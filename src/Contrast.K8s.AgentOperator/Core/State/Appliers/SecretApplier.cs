@@ -19,7 +19,7 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers
         {
         }
 
-        protected override ValueTask<SecretResource> CreateFrom(V1Secret entity, CancellationToken cancellationToken = default)
+        public override ValueTask<SecretResource> CreateFrom(V1Secret entity, CancellationToken cancellationToken = default)
         {
             var data = entity.Data ?? new Dictionary<string, byte[]>();
 

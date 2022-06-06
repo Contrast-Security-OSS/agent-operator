@@ -15,7 +15,7 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers
         {
         }
 
-        protected override ValueTask<DaemonSetResource> CreateFrom(V1DaemonSet entity, CancellationToken cancellationToken = default)
+        public override ValueTask<DaemonSetResource> CreateFrom(V1DaemonSet entity, CancellationToken cancellationToken = default)
         {
             var resource = new DaemonSetResource(
                 entity.Uid(),

@@ -15,7 +15,7 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers
         {
         }
 
-        protected override ValueTask<StatefulSetResource> CreateFrom(V1StatefulSet entity, CancellationToken cancellationToken = default)
+        public override ValueTask<StatefulSetResource> CreateFrom(V1StatefulSet entity, CancellationToken cancellationToken = default)
         {
             var resource = new StatefulSetResource(
                 entity.Uid(),

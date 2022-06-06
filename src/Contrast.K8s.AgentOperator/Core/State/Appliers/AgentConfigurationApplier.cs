@@ -21,7 +21,7 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers
             _yamlParser = yamlParser;
         }
 
-        protected override ValueTask<AgentConfigurationResource> CreateFrom(V1Beta1AgentConfiguration entity, CancellationToken cancellationToken = default)
+        public override ValueTask<AgentConfigurationResource> CreateFrom(V1Beta1AgentConfiguration entity, CancellationToken cancellationToken = default)
         {
             var yamlValues = new Dictionary<string, string>();
             if (entity.Spec.Yaml is { } yaml)
@@ -29,7 +29,8 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers
                 var parsedYaml = _yamlParser.Parse(yaml, out var result);
                 if (!result.IsValid)
                 {
-                    Logger.Error($"Failed to parse yaml in AgentConfiguration '{entity.Namespace()}/{entity.Name()}' and will be ignored (Error: '{result.Error}').");
+                    Logger.Error(
+                        $"Failed to parse yaml in AgentConfiguration '{entity.Namespace()}/{entity.Name()}' and will be ignored (Error: '{result.Error}').");
                 }
                 else
                 {

@@ -15,7 +15,7 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers
         {
         }
 
-        protected override ValueTask<DeploymentResource> CreateFrom(V1Deployment entity, CancellationToken cancellationToken = default)
+        public override ValueTask<DeploymentResource> CreateFrom(V1Deployment entity, CancellationToken cancellationToken = default)
         {
             var resource = new DeploymentResource(
                 entity.Uid(),

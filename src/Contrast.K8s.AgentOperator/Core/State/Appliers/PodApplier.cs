@@ -20,7 +20,7 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers
         {
         }
 
-        protected override ValueTask<PodResource> CreateFrom(V1Pod entity, CancellationToken cancellationToken = default)
+        public override ValueTask<PodResource> CreateFrom(V1Pod entity, CancellationToken cancellationToken = default)
         {
             var isInjected = entity.GetAnnotation(InjectionConstants.IsInjectedAttributeName) is { } isInjectedAnnotation
                              && isInjectedAnnotation.Equals(true.ToString(), StringComparison.OrdinalIgnoreCase);

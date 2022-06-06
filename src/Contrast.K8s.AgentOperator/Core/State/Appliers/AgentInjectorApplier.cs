@@ -26,7 +26,7 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers
             _typeConverter = typeConverter;
         }
 
-        protected override async ValueTask<AgentInjectorResource> CreateFrom(V1Beta1AgentInjector entity, CancellationToken cancellationToken = default)
+        public override async ValueTask<AgentInjectorResource> CreateFrom(V1Beta1AgentInjector entity, CancellationToken cancellationToken = default)
         {
             var spec = entity.Spec;
             var @namespace = entity.Namespace()!;

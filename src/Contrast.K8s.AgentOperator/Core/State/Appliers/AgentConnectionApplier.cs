@@ -20,7 +20,7 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers
         {
         }
 
-        protected override ValueTask<AgentConnectionResource> CreateFrom(V1Beta1AgentConnection entity, CancellationToken cancellationToken = default)
+        public override ValueTask<AgentConnectionResource> CreateFrom(V1Beta1AgentConnection entity, CancellationToken cancellationToken = default)
         {
             var spec = entity.Spec;
 
