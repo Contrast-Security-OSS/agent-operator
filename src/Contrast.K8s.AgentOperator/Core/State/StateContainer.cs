@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -67,7 +66,7 @@ namespace Contrast.K8s.AgentOperator.Core.State
             try
             {
                 var identity = NamespacedResourceIdentity.Create<T>(name, @namespace);
-                if (_resources.TryGetValue(identity, out var existing))
+                if (_resources.TryGetValue(identity, out var existing) && existing.Resource != null)
                 {
                     if (_resourceComparer.AreEqual(existing.Resource, resource))
                     {
@@ -101,7 +100,7 @@ namespace Contrast.K8s.AgentOperator.Core.State
             try
             {
                 var identity = NamespacedResourceIdentity.Create<T>(name, @namespace);
-                if (_resources.TryGetValue(identity, out var existing))
+                if (_resources.TryGetValue(identity, out var existing) && existing.Resource != null)
                 {
                     _resources.Remove(identity);
                     return new StateUpdateResult<T>(true, (T)existing.Resource, null);
@@ -124,7 +123,7 @@ namespace Contrast.K8s.AgentOperator.Core.State
             try
             {
                 var identity = NamespacedResourceIdentity.Create<T>(name, @namespace);
-                if (_resources.TryGetValue(identity, out var ret))
+                if (_resources.TryGetValue(identity, out var ret) && ret.Resource != null)
                 {
                     return (T)ret.Resource;
                 }
@@ -160,7 +159,8 @@ namespace Contrast.K8s.AgentOperator.Core.State
             try
             {
                 return _resources.Where(x => x.Key.Type.IsAssignableTo(typeof(T)))
-                                 .Select(x => new ResourceIdentityPair<T>(x.Key, (T)x.Value.Resource))
+                                 .Where(x => x.Value.Resource != null)
+                                 .Select(x => new ResourceIdentityPair<T>(x.Key, (T)x.Value.Resource!))
                                  .ToList();
             }
             finally
@@ -213,7 +213,7 @@ namespace Contrast.K8s.AgentOperator.Core.State
                 }
                 else
                 {
-                    throw new Exception("Cannot mark a resource as dirty that does not exist.");
+                    _resources[identity] = new ResourceHolder(null, true);
                 }
             }
             finally
@@ -236,7 +236,12 @@ namespace Contrast.K8s.AgentOperator.Core.State
             await _lock.WaitAsync(cancellationToken);
             try
             {
-                return _resources[identity].IsDirty;
+                if (_resources.TryGetValue(identity, out var ret))
+                {
+                    return ret.IsDirty;
+                }
+
+                return false;
             }
             finally
             {
@@ -278,7 +283,7 @@ namespace Contrast.K8s.AgentOperator.Core.State
             }
         }
 
-        private record ResourceHolder(INamespacedResource Resource, bool IsDirty = false);
+        private record ResourceHolder(INamespacedResource? Resource, bool IsDirty = false);
     }
 
     public record ResourceIdentityPair<T>(NamespacedResourceIdentity Identity, T Resource);
