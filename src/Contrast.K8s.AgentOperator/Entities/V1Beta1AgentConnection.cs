@@ -10,6 +10,12 @@ namespace Contrast.K8s.AgentOperator.Entities
     [EntityRbac(typeof(V1Beta1AgentConnection), Verbs = VerbConstants.FullControl)]
     public class V1Beta1AgentConnection : CustomKubernetesEntity<V1Beta1AgentConnection.AgentInjectorSpec>
     {
+        public V1Beta1AgentConnection()
+        {
+            Kind = "AgentConnection";
+            ApiVersion = "agents.contrastsecurity.com/v1beta1";
+        }
+
         public class AgentInjectorSpec
         {
             /// <summary>

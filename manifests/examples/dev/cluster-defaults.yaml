@@ -12,6 +12,7 @@ spec:
           dotnet:
             secret:
               should_connect: false
+            test: false
   namespaces:
     - default
 ---
