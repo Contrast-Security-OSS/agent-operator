@@ -1,4 +1,6 @@
-﻿using System.Net;
+﻿using System.IO;
+using System.Net;
+using System.Net.Http;
 using Contrast.K8s.AgentOperator.Core.Telemetry.Models;
 using k8s.Autorest;
 using NLog;
@@ -17,13 +19,20 @@ namespace Contrast.K8s.AgentOperator.Core.Telemetry.Services.Exceptions
             }
 
             var loggerName = logEvent.LoggerName ?? "<unknown>";
-            if (loggerName == "KubeOps.Operator.Kubernetes.ResourceWatcher"
-                && logEvent.Exception is HttpOperationException httpOperationException
-                && httpOperationException.Response.StatusCode
-                    is HttpStatusCode.NotFound)
+            if (loggerName == "KubeOps.Operator.Kubernetes.ResourceWatcher")
             {
                 // Ignore any of the common exceptions we don't care about.
-                return;
+
+                if (logEvent.Exception is HttpOperationException httpOperationException
+                    && httpOperationException.Response.StatusCode is HttpStatusCode.NotFound)
+                {
+                    return;
+                }
+
+                if (logEvent.Exception is HttpRequestException { InnerException: EndOfStreamException })
+                {
+                    return;
+                }
             }
 
             var report = new ExceptionReport(loggerName, Layout.Render(logEvent), logEvent.Exception);

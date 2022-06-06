@@ -67,7 +67,7 @@ namespace Contrast.K8s.AgentOperator.Core.Telemetry.Services.Metrics
                 }
                 catch (Exception e)
                 {
-                    Logger.Trace(e, "A failure occured during telemetry submission.");
+                    Logger.Trace(e, "A failure occurred during telemetry submission.");
                 }
 
                 await Task.Delay(TimeSpan.FromHours(4), stoppingToken);

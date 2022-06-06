@@ -61,7 +61,7 @@ namespace Contrast.K8s.AgentOperator.Core.Telemetry.Services.Exceptions
                 }
                 catch (Exception e) when (e is not TaskCanceledException)
                 {
-                    Logger.Trace(e, "A failure occured during telemetry submission.");
+                    Logger.Trace(e, "A failure occurred during telemetry submission.");
                 }
 
                 await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
