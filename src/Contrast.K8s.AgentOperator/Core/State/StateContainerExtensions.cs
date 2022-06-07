@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -70,7 +71,7 @@ namespace Contrast.K8s.AgentOperator.Core.State
                                                      CancellationToken cancellationToken = default)
         {
             return await state.GetById<SecretResource>(secretRef.Name, secretRef.Namespace, cancellationToken) is { } secret
-                   && secret.Keys.Contains(secretRef.Key);
+                   && secret.KeyPairs.Any(x => string.Equals(x.Key, secretRef.Key, StringComparison.OrdinalIgnoreCase));
         }
 
         private static async Task<SecretResource?> GetSecret(this IStateContainer state,

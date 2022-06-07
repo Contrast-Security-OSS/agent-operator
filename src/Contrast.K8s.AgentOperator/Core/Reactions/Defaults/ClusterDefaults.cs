@@ -28,6 +28,11 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults
             return "default-agent-connection-" + GetShortHash(targetNamespace);
         }
 
+        public string GetDefaultAgentConnectionSecretName(string targetNamespace)
+        {
+            return "default-agent-connection-secret-" + GetShortHash(targetNamespace);
+        }
+
         public Dictionary<string, string> GetAnnotationsForManagedResources(string templateResourceName, string templateResourceNamespace)
         {
             return new Dictionary<string, string>

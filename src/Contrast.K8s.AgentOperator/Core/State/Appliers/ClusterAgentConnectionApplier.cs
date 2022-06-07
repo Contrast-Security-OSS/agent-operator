@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
 using Contrast.K8s.AgentOperator.Entities;
 using JetBrains.Annotations;
+using k8s.Models;
 using MediatR;
 
 namespace Contrast.K8s.AgentOperator.Core.State.Appliers
@@ -21,6 +22,8 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers
         public override async ValueTask<ClusterAgentConnectionResource> CreateFrom(V1Beta1ClusterAgentConnection entity,
                                                                                    CancellationToken cancellationToken = default)
         {
+            entity.Spec.Template!.Metadata.NamespaceProperty = entity.Namespace();
+
             var template = await _agentConnectionApplier.CreateFrom(entity.Spec.Template!, cancellationToken);
             var namespaces = entity.Spec.Namespaces;
 

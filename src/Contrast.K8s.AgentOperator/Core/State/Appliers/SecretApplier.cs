@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
+using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
 using JetBrains.Annotations;
 using k8s.Models;
 using MediatR;
@@ -22,23 +22,10 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers
         public override ValueTask<SecretResource> CreateFrom(V1Secret entity, CancellationToken cancellationToken = default)
         {
             var data = entity.Data ?? new Dictionary<string, byte[]>();
+            var keyPairs = data.Select(x => new SecretKeyValue(x.Key, Sha256(x.Value))).NormalizeSecrets();
 
-            var resource = new SecretResource(
-                data.Keys.ToList(),
-                Sha256(data.Values.Select(x => x ?? Array.Empty<byte>()))
-            );
+            var resource = new SecretResource(keyPairs);
             return ValueTask.FromResult(resource);
-        }
-
-        private static string Sha256(IEnumerable<byte[]> data)
-        {
-            var builder = new StringBuilder();
-            foreach (var d in data)
-            {
-                builder.Append(Sha256(d));
-            }
-
-            return Sha256(Encoding.UTF8.GetBytes(builder.ToString()));
         }
 
         private static string Sha256(byte[] data)

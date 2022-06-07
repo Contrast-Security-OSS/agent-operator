@@ -33,6 +33,11 @@ namespace Contrast.K8s.AgentOperator.Core
             return collection.Any(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase));
         }
 
+        public static IReadOnlyCollection<SecretKeyValue> NormalizeSecrets(this IEnumerable<SecretKeyValue> secretKeyValues)
+        {
+            return secretKeyValues.OrderBy(x => x.Key).ToList();
+        }
+
         public static void SetOrRemove(this IDictionary<string, string> dictionary, string key, string? value)
         {
             if (string.IsNullOrWhiteSpace(value))

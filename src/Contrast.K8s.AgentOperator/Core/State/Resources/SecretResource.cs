@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Interfaces;
+using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
 
 namespace Contrast.K8s.AgentOperator.Core.State.Resources
 {
-    public record SecretResource(IReadOnlyCollection<string> Keys, string DataHash) : INamespacedResource, IMutableResource;
+    public record SecretResource(IReadOnlyCollection<SecretKeyValue> KeyPairs) : INamespacedResource, IMutableResource;
 }

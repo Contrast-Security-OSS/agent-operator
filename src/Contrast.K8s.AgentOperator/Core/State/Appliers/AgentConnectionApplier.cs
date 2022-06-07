@@ -24,12 +24,13 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers
         {
             var spec = entity.Spec;
 
-            var uri = new Uri("https://app.contrastsecurity.com/Contrast");
+            var uri = "https://app.contrastsecurity.com/Contrast";
             if (spec.Url != null)
             {
-                if (Uri.TryCreate(spec.Url, UriKind.Absolute, out var parsedUri))
+                if (Uri.TryCreate(spec.Url, UriKind.Absolute, out _))
                 {
-                    uri = parsedUri;
+                    // Don't use the parsed version, or we can run into looping if the parsed version is normalized.
+                    uri = spec.Url;
                 }
                 else
                 {
