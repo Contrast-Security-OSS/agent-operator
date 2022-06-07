@@ -130,7 +130,7 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching
 
             yield return new V1EnvVar("CONTRAST_MOUNT_PATH", contrastMountPath);
 
-            yield return new V1EnvVar("CONTRAST__API__URL", connection.TeamServerUri.ToString());
+            yield return new V1EnvVar("CONTRAST__API__URL", connection.TeamServerUri);
             yield return new V1EnvVar(
                 "CONTRAST__API__API_KEY",
                 valueFrom: new V1EnvVarSource(

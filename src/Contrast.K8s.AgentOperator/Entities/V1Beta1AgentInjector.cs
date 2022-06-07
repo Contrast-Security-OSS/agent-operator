@@ -48,8 +48,7 @@ namespace Contrast.K8s.AgentOperator.Entities
             /// <summary>
             /// The connection the injected agent will use to communicate with Contrast.
             /// </summary>
-            [Required]
-            public AgentInjectorConnectionSpec Connection { get; set; } = new();
+            public AgentInjectorConnectionSpec? Connection { get; set; } = new();
 
             /// <summary>
             /// The configuration the injected agent will use.
@@ -119,16 +118,16 @@ namespace Contrast.K8s.AgentOperator.Entities
         {
             /// <summary>
             /// The name of AgentConnection resource. Must exist within the same namespace.
-            /// Required.
+            /// Defaults a AgentConnection specified by a ClusterAgentConnection.
             /// </summary>
-            [Required]
-            public string Name { get; set; } = null!;
+            public string? Name { get; set; }
         }
 
         public class AgentInjectorConfigurationSpec
         {
             /// <summary>
             /// The name of a AgentConfiguration resource. Must exist within the same namespace.
+            /// Defaults a AgentConfiguration specified by a ClusterAgentConnection.
             /// </summary>
             public string? Name { get; set; }
         }

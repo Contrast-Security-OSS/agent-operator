@@ -97,27 +97,28 @@ spec:
                 type: object
               connection:
                 description: The connection the injected agent will use to communicate with Contrast.
+                nullable: true
                 properties:
                   name:
                     description: |-
                       The name of AgentConnection resource. Must exist within the same namespace.
-                      Required.
+                      Defaults a AgentConnection specified by a ClusterAgentConnection.
+                    nullable: true
                     type: string
-                required:
-                - name
                 type: object
               configuration:
                 description: The configuration the injected agent will use.
                 nullable: true
                 properties:
                   name:
-                    description: The name of a AgentConfiguration resource. Must exist within the same namespace.
+                    description: |-
+                      The name of a AgentConfiguration resource. Must exist within the same namespace.
+                      Defaults a AgentConfiguration specified by a ClusterAgentConnection.
                     nullable: true
                     type: string
                 type: object
             required:
             - type
-            - connection
             type: object
         type: object
     served: true

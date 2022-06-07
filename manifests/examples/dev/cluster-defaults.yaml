@@ -45,3 +45,20 @@ stringData:
   apiKey: apiKey
   serviceKey: serviceKey
   userName: userName
+---
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: AgentInjector
+metadata:
+  name: cluster-dotnet-core
+  namespace: default
+spec:
+  enabled: true
+  type: dotnet-core
+  image:
+    pullSecretName: contrastdotnet-pull-secret
+  selector:
+    images:
+      - "*"
+    labels:
+      - name: app
+        value: cluster-dotnet-core

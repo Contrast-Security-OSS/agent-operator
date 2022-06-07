@@ -1,4 +1,5 @@
 resources:
+  - sample-apps/cluster-dotnet-core.yaml
   - sample-apps/dotnet-core-chaining.yaml
   - sample-apps/dotnet-core.yaml
   - sample-apps/java.yaml

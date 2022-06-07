@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cluster-dotnet-core
+  namespace: default
+  labels:
+    app: cluster-dotnet-core
+spec:
+  replicas: 2
+  revisionHistoryLimit: 1
+  selector:
+    matchLabels:
+      app: cluster-dotnet-core
+  template:
+    metadata:
+      labels:
+        app: cluster-dotnet-core
+      annotations:
+        test: test
+    spec:
+      containers:
+        - image: mcr.microsoft.com/dotnet/samples:aspnetapp
+          name: cluster-dotnet-core
+          ports:
+            - containerPort: 80
+              name: http
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+          resources:
+            limits:
+              cpu: '1'
+              memory: 1024M

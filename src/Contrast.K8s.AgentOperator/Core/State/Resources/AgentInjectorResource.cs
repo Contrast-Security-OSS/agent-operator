@@ -9,7 +9,7 @@ namespace Contrast.K8s.AgentOperator.Core.State.Resources
         ContainerImageReference Image,
         ResourceWithPodSpecSelector Selector,
         AgentInjectorConnectionReference ConnectionReference,
-        AgentConfigurationReference? ConfigurationReference,
+        AgentConfigurationReference ConfigurationReference,
         SecretReference? ImagePullSecret,
         string ImagePullPolicy
     ) : INamespacedResource;
