@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Telemetry.Models;
 using k8s.Autorest;
 using NLog;
@@ -33,6 +34,11 @@ namespace Contrast.K8s.AgentOperator.Core.Telemetry.Services.Exceptions
                 {
                     return;
                 }
+            }
+
+            if (logEvent.Exception is TaskCanceledException)
+            {
+                return;
             }
 
             var report = new ExceptionReport(loggerName, Layout.Render(logEvent), logEvent.Exception);
