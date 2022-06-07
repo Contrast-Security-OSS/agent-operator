@@ -1,0 +1,19 @@
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: ClusterAgentConnection
+metadata:
+  name: cluster-agent-connection
+  namespace: testing-agent-operator
+spec:
+  template:
+    spec:
+      url: http://not-localhost
+      apiKey:
+        secretName: cluster-agent-connection-secret
+        secretKey: apiKey
+      serviceKey:
+        secretName: cluster-agent-connection-secret
+        secretKey: serviceKey
+      userName:
+        secretName: cluster-agent-connection-secret
+        secretKey: userName
+  # namespaces: defaults to all

@@ -53,7 +53,7 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection
             {
                 var container = result.Spec.Containers.Single();
                 container.Env.Should().Contain(x => x.Name == "CONTRAST_MOUNT_PATH").Which.Value.Should().Be("/contrast");
-                container.Env.Should().Contain(x => x.Name == "CONTRAST__API__URL").Which.Value.Should().Be("http://localhost/");
+                container.Env.Should().Contain(x => x.Name == "CONTRAST__API__URL").Which.Value.Should().Be("http://localhost");
 
                 // Of course, this won't be here if telemetry is disabled.
                 //container.Env.Should().Contain(x => x.Name == "CONTRAST_CLUSTER_ID").Which.Value.Should().NotBeNull();

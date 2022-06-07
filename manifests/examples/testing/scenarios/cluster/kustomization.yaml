@@ -1,0 +1,5 @@
+resources:
+  - cluster-agent-configuration.yaml
+  - cluster-agent-connection-secret.yaml
+  - cluster-agent-connection.yaml
+  - injection-cluster.yaml

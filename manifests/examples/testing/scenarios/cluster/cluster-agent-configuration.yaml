@@ -1,0 +1,14 @@
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: ClusterAgentConfiguration
+metadata:
+  name: cluster-agent-configuration
+  namespace: testing-agent-operator
+spec:
+  template:
+    spec:
+      yaml: |
+        enabled: false
+        foo:
+          bar: "foobar"
+  namespaces:
+    - test*

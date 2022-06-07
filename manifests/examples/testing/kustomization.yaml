@@ -1,20 +1,3 @@
-namespace: testing
-resources:
-  - ./scenarios/shared/testing-agent-configuration.yaml
-  - ./scenarios/shared/testing-agent-connection-secret.yaml
-  - ./scenarios/shared/testing-agent-connection.yaml
-  - ./scenarios/custom-images.yaml
-  - ./scenarios/custom-version.yaml
-  - ./scenarios/glob-selecting.yaml
-  - ./scenarios/injection-dotnet.yaml
-  - ./scenarios/injection-dotnetchaining.yaml
-  - ./scenarios/injection-dummy.yaml
-  - ./scenarios/injection-java.yaml
-  - ./scenarios/injection-nodejs.yaml
-  - ./scenarios/injection-php.yaml
-  - ./scenarios/missing-deps.yaml
-  - ./scenarios/multiple-images.yaml
-  - ./scenarios/namespace.yaml
-  - ./scenarios/type-daemonset.yaml
-  - ./scenarios/type-deployment.yaml
-  - ./scenarios/type-statefulset.yaml
+bases:
+  - ./scenarios/cluster
+  - ./scenarios/namespaced

@@ -1,0 +1,20 @@
+namespace: testing
+resources:
+  - ./shared/testing-agent-configuration.yaml
+  - ./shared/testing-agent-connection-secret.yaml
+  - ./shared/testing-agent-connection.yaml
+  - ./custom-images.yaml
+  - ./custom-version.yaml
+  - ./glob-selecting.yaml
+  - ./injection-dotnet.yaml
+  - ./injection-dotnetchaining.yaml
+  - ./injection-dummy.yaml
+  - ./injection-java.yaml
+  - ./injection-nodejs.yaml
+  - ./injection-php.yaml
+  - ./missing-deps.yaml
+  - ./multiple-images.yaml
+  - ./namespace.yaml
+  - ./type-daemonset.yaml
+  - ./type-deployment.yaml
+  - ./type-statefulset.yaml
