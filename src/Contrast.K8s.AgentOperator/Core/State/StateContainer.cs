@@ -70,6 +70,9 @@ namespace Contrast.K8s.AgentOperator.Core.State
                 {
                     if (_resourceComparer.AreEqual(existing.Resource, resource))
                     {
+                        // Make sure to clear the IsDirty flag.
+                        _resources[identity] = new ResourceHolder(resource);
+
                         // No change.
                         return new StateUpdateResult<T>(false, null, (T)existing.Resource);
                     }
