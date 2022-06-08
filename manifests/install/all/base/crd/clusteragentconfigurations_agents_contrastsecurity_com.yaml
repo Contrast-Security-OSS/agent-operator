@@ -2,6 +2,8 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   name: clusteragentconfigurations.agents.contrastsecurity.com
+  labels:
+    app.kubernetes.io/part-of: contrast-agent-operator
 spec:
   group: agents.contrastsecurity.com
   names:
@@ -45,8 +47,8 @@ spec:
                 type: object
               namespaces:
                 description: |-
-                  The namespaces to apply this AgentConfiguration template to. Splat syntax is supported.
-                  Optional, defaults to '*', selecting all namespaces.
+                  The namespaces to apply this AgentConfiguration template to. Glob syntax is supported.
+                  Optional, defaults to selecting all namespaces.
                 items:
                   type: string
                 type: array

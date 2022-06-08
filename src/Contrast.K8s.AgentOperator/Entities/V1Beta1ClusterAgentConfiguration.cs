@@ -22,8 +22,8 @@ namespace Contrast.K8s.AgentOperator.Entities
             public V1Beta1AgentConfiguration? Template { get; set; }
 
             /// <summary>
-            /// The namespaces to apply this AgentConfiguration template to. Splat syntax is supported.
-            /// Optional, defaults to '*', selecting all namespaces.
+            /// The namespaces to apply this AgentConfiguration template to. Glob syntax is supported.
+            /// Optional, defaults to selecting all namespaces.
             /// </summary>
             public IReadOnlyCollection<string> Namespaces { get; set; } = Array.Empty<string>();
         }

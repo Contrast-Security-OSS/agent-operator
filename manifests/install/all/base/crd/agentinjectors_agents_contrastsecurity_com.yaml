@@ -2,6 +2,8 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   name: agentinjectors.agents.contrastsecurity.com
+  labels:
+    app.kubernetes.io/part-of: contrast-agent-operator
 spec:
   group: agents.contrastsecurity.com
   names:
@@ -25,7 +27,7 @@ spec:
                 type: boolean
               version:
                 description: |-
-                  The version of the agent to inject. The literal 'latest' will inject the latest version detected.
+                  The version of the agent to inject. The literal 'latest' will inject the last version. Partial version matches are supported, e.g. '2' will select the version '2.1.0'.
                   Defaults to 'latest'.
                 nullable: true
                 pattern: ^(latest|(\d+(\.\d+){0,3}(-.+)?))$
@@ -41,7 +43,7 @@ spec:
                 properties:
                   registry:
                     description: |-
-                      The fully qualified name of the registry to pull agent images from. This registry must be accessible by the pods being injected.
+                      The fully qualified name of the registry to pull agent images from. This registry must be accessible by the pods being injected and the operator.
                       Defaults to the official Contrast container image registry.
                     nullable: true
                     type: string
@@ -52,7 +54,7 @@ spec:
                     nullable: true
                     type: string
                   pullSecretName:
-                    description: The name of a pull secret to append to the pod's imagePullSecrets.
+                    description: The name of a pull secret to append to the pod's imagePullSecrets list.
                     nullable: true
                     type: string
                   pullPolicy:
@@ -71,14 +73,14 @@ spec:
                   images:
                     description: |-
                       Container images to inject the agent into. Glob patterns are supported.
-                      Defaults to ['*'].
+                      Selects all containers in Pod.
                     items:
                       type: string
                     type: array
                   labels:
                     description: |-
-                      Deployment/StatefulSet/DaemonSet labels whose pods are eligible for agent injection.
-                      Defaults to selecting everything.
+                      Deployment/StatefulSet/DaemonSet/DeploymentConfig labels whose pods are eligible for agent injection.
+                      Selects all workloads in namespace.
                     items:
                       properties:
                         name:
@@ -113,7 +115,7 @@ spec:
                   name:
                     description: |-
                       The name of a AgentConfiguration resource. Must exist within the same namespace.
-                      Defaults a AgentConfiguration specified by a ClusterAgentConnection.
+                      Defaults a AgentConfiguration specified by a ClusterAgentConfiguration.
                     nullable: true
                     type: string
                 type: object

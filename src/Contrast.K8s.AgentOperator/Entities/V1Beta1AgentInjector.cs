@@ -21,7 +21,7 @@ namespace Contrast.K8s.AgentOperator.Entities
             public bool Enabled { get; set; } = true;
 
             /// <summary>
-            /// The version of the agent to inject. The literal 'latest' will inject the latest version detected.
+            /// The version of the agent to inject. The literal 'latest' will inject the last version. Partial version matches are supported, e.g. '2' will select the version '2.1.0'.
             /// Defaults to 'latest'.
             /// </summary>
             [Pattern(RegexConstants.InjectorVersionRegex)]
@@ -59,7 +59,7 @@ namespace Contrast.K8s.AgentOperator.Entities
         public class AgentInjectorImageSpec
         {
             /// <summary>
-            /// The fully qualified name of the registry to pull agent images from. This registry must be accessible by the pods being injected.
+            /// The fully qualified name of the registry to pull agent images from. This registry must be accessible by the pods being injected and the operator.
             /// Defaults to the official Contrast container image registry.
             /// </summary>
             public string? Registry { get; set; }
@@ -71,7 +71,7 @@ namespace Contrast.K8s.AgentOperator.Entities
             public string? Name { get; set; }
 
             /// <summary>
-            /// The name of a pull secret to append to the pod's imagePullSecrets.
+            /// The name of a pull secret to append to the pod's imagePullSecrets list.
             /// </summary>
             public string? PullSecretName { get; set; }
 
@@ -87,13 +87,13 @@ namespace Contrast.K8s.AgentOperator.Entities
         {
             /// <summary>
             /// Container images to inject the agent into. Glob patterns are supported.
-            /// Defaults to ['*'].
+            /// Selects all containers in Pod.
             /// </summary>
             public IReadOnlyCollection<string> Images { get; set; } = Array.Empty<string>();
 
             /// <summary>
-            /// Deployment/StatefulSet/DaemonSet labels whose pods are eligible for agent injection.
-            /// Defaults to selecting everything.
+            /// Deployment/StatefulSet/DaemonSet/DeploymentConfig labels whose pods are eligible for agent injection.
+            /// Selects all workloads in namespace.
             /// </summary>
             public IReadOnlyCollection<LabelSelectorSpec> Labels { get; set; } = Array.Empty<LabelSelectorSpec>();
         }
@@ -127,7 +127,7 @@ namespace Contrast.K8s.AgentOperator.Entities
         {
             /// <summary>
             /// The name of a AgentConfiguration resource. Must exist within the same namespace.
-            /// Defaults a AgentConfiguration specified by a ClusterAgentConnection.
+            /// Defaults a AgentConfiguration specified by a ClusterAgentConfiguration.
             /// </summary>
             public string? Name { get; set; }
         }

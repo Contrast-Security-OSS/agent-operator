@@ -20,9 +20,9 @@ dotnet run --no-build --project $project -- generator crd -o $output\crd\
 # Remove-Item -Recurse $output\installer\ -ErrorAction Ignore
 # dotnet run --no-build --project $project -- generator installer -o $output\installer\
 
-Write-Host "Generating operator."
-Remove-Item -Recurse $output\operator\ -ErrorAction Ignore
-dotnet run --no-build --project $project -- generator operator -o $output\operator\
+# Write-Host "Generating operator."
+# Remove-Item -Recurse $output\operator\ -ErrorAction Ignore
+# dotnet run --no-build --project $project -- generator operator -o $output\operator\
 
 Write-Host "Generating rbac."
 Remove-Item -Recurse $output\rbac\ -ErrorAction Ignore
