@@ -43,6 +43,8 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection.Agents
                          .Which.Value.Should().Be("kubernetes-operator");
                 container.Env.Should().Contain(x => x.Name == "CONTRAST_CORECLR_INSTALL_DIRECTORY")
                          .Which.Value.Should().Be("/contrast");
+                container.Env.Should().Contain(x => x.Name == "CONTRAST__AGENT__DOTNET__ENABLE_FILE_WATCHING")
+                    .Which.Value.Should().Be("false");
             }
         }
 

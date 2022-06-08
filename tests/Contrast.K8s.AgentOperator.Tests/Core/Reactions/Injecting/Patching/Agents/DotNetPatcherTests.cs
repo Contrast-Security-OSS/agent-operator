@@ -26,6 +26,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting.Patching.Age
                 "CORECLR_ENABLE_PROFILING",
                 "CONTRAST_SOURCE",
                 "CONTRAST_CORECLR_INSTALL_DIRECTORY",
+                "CONTRAST__AGENT__DOTNET__ENABLE_FILE_WATCHING"
             };
 
             // Act
