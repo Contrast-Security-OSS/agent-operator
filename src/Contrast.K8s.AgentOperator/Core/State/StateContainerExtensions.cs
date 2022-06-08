@@ -18,13 +18,6 @@ namespace Contrast.K8s.AgentOperator.Core.State
             var injector = await state.GetById<AgentInjectorResource>(name, @namespace, cancellationToken);
             if (injector is { Enabled: true })
             {
-                var configurationReferenceFound = injector.ConfigurationReference is not { } configurationRef
-                                                  || await state.ExistsById<AgentConfigurationResource>(
-                                                      configurationRef.Name,
-                                                      configurationRef.Namespace,
-                                                      cancellationToken
-                                                  );
-
                 var connectionResourceFound = injector.ConnectionReference is { } connectionRef
                                               && await state.GetReadyAgentConnectionById(
                                                   connectionRef.Name,
@@ -35,7 +28,7 @@ namespace Contrast.K8s.AgentOperator.Core.State
                 var pullSecretFound = injector.ImagePullSecret == null
                                       || await state.HasSecretKey(injector.ImagePullSecret, cancellationToken);
 
-                if (configurationReferenceFound && connectionResourceFound && pullSecretFound)
+                if (connectionResourceFound && pullSecretFound)
                 {
                     return injector;
                 }
