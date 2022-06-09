@@ -20,7 +20,7 @@ namespace Contrast.K8s.AgentOperator.Core.Telemetry.Client
         public ITelemetryClient Create()
         {
             var client = RestClient.For<ITelemetryClient>(TelemetryUri);
-            client.UserAgent = $"AgentUpgrader/{_state.OperatorVersion}";
+            client.UserAgent = $"AgentOperator/{_state.OperatorVersion}";
             return client;
         }
     }
