@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Telemetry.Cluster;
+using Contrast.K8s.AgentOperator.Core.Telemetry.Getters;
 using Contrast.K8s.AgentOperator.Core.Telemetry.Models;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Hosting;
@@ -17,18 +18,28 @@ namespace Contrast.K8s.AgentOperator.Core.Telemetry.Services.Metrics
         private readonly IClusterIdState _clusterIdState;
         private readonly TelemetryService _telemetryService;
         private readonly StatusReportGenerator _statusReportGenerator;
+        private readonly IsPublicTelemetryBuildGetter _isPublicTelemetryBuildGetter;
 
-        public TelemetryMetricsWorker(ITelemetryOptOut optOut, IClusterIdState clusterIdState, TelemetryService telemetryService,
-                                      StatusReportGenerator statusReportGenerator)
+        public TelemetryMetricsWorker(ITelemetryOptOut optOut,
+                                      IClusterIdState clusterIdState,
+                                      TelemetryService telemetryService,
+                                      StatusReportGenerator statusReportGenerator,
+                                      IsPublicTelemetryBuildGetter isPublicTelemetryBuildGetter)
         {
             _optOut = optOut;
             _clusterIdState = clusterIdState;
             _telemetryService = telemetryService;
             _statusReportGenerator = statusReportGenerator;
+            _isPublicTelemetryBuildGetter = isPublicTelemetryBuildGetter;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            if (!_isPublicTelemetryBuildGetter.IsPublicBuild())
+            {
+                Logger.Warn("This instance is not running a public build.");
+            }
+
             if (_optOut.IsOptOutActive())
             {
                 await Task.Delay(Timeout.Infinite, stoppingToken);
