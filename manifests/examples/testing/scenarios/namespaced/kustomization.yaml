@@ -6,6 +6,7 @@ resources:
   - ./config-optional.yaml
   - ./custom-images.yaml
   - ./custom-version.yaml
+  - ./enabled-flag.yaml
   - ./glob-selecting.yaml
   - ./injection-dotnet.yaml
   - ./injection-dotnetchaining.yaml
