@@ -345,7 +345,7 @@ jobs:
         with:
           environment: production
           ignore_empty: true
-          version: ${{ env.BUILD_VERSION }}
+          version: agent-operator@${{ env.BUILD_VERSION }}
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: sentry
