@@ -63,5 +63,21 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection
                 userName.ValueFrom.SecretKeyRef.Key.Should().Be("username");
             }
         }
+
+        [Fact]
+        public async Task When_injected_then_pod_should_use_generated_configuration()
+        {
+            var client = await _context.GetClient();
+
+            // Act
+            var result = await client.GetInjectedPodByPrefix(ScenarioName);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                var container = result.Spec.Containers.Single();
+                container.Env.Should().Contain(x => x.Name == "CONTRAST__FOO__BAR").Which.Value.Should().Be("foobar");
+            }
+        }
     }
 }
