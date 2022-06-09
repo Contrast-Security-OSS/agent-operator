@@ -340,6 +340,17 @@ jobs:
           artifacts: ${{ steps.download-artifacts.outputs.download-path }}/*.yaml
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
+      - name: Create Sentry Release
+        uses: getsentry/action-release@v1
+        with:
+          environment: production
+          ignore_empty: true
+          version: ${{ env.BUILD_VERSION }}
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: sentry
+          SENTRY_PROJECT: agent-operator
+          SENTRY_URL: https://sentry.prod.dotnet.contsec.com
       - uses: act10ns/slack@v1
         with:
           status: ${{ job.status }}
