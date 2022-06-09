@@ -241,7 +241,6 @@ jobs:
     environment: internal
     concurrency:
       group: internal
-      cancel-in-progress: true
     needs:
       - generate-version
       - build-image
