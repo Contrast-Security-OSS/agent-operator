@@ -21,12 +21,9 @@ spec:
             description: Specification of the kubernetes object.
             properties:
               yaml:
-                description: |-
-                  The contrast_security.yaml file. Multiple lines are supported.
-                  Required.
+                description: The contrast_security.yaml file. Multiple lines are supported.
+                nullable: true
                 type: string
-            required:
-            - yaml
             type: object
         type: object
     served: true

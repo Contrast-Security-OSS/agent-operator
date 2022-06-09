@@ -29,10 +29,10 @@ Remove-Item -Recurse $output\rbac\ -ErrorAction Ignore
 dotnet run --no-build --project $project -- generator rbac -o $output\rbac\
 
 @(
-    "$($output)operator\ca-key.pem"
-    "$($output)operator\ca.csr"
-    "$($output)operator\ca.pem"
-    "$($output)operator\kustomization.yaml"
+    # "$($output)operator\ca-key.pem"
+    # "$($output)operator\ca.csr"
+    # "$($output)operator\ca.pem"
+    # "$($output)operator\kustomization.yaml"
     "$($output)crd\deploymentconfigs_apps_openshift_io.yaml"
     "$($output)crd\kustomization.yaml"
 ) | ForEach-Object {

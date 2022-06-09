@@ -21,7 +21,7 @@ namespace Contrast.K8s.AgentOperator.Entities
             public bool Enabled { get; set; } = true;
 
             /// <summary>
-            /// The version of the agent to inject. The literal 'latest' will inject the last version. Partial version matches are supported, e.g. '2' will select the version '2.1.0'.
+            /// The version of the agent to inject. The literal 'latest' will inject the latest version. Partial version matches are supported, e.g. '2' will select the version '2.1.0'.
             /// Defaults to 'latest'.
             /// </summary>
             [Pattern(RegexConstants.InjectorVersionRegex)]

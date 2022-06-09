@@ -24,7 +24,8 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers
         public override ValueTask<AgentConfigurationResource> CreateFrom(V1Beta1AgentConfiguration entity, CancellationToken cancellationToken = default)
         {
             var yamlValues = new Dictionary<string, string>();
-            if (entity.Spec.Yaml is { } yaml)
+            if (entity.Spec.Yaml is { } yaml
+                && !string.IsNullOrWhiteSpace(yaml))
             {
                 var parsedYaml = _yamlParser.Parse(yaml, out var result);
                 if (!result.IsValid)
