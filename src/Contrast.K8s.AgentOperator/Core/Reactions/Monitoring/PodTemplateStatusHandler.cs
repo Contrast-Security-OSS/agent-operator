@@ -37,7 +37,8 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Monitoring
 
             var injectionDesired = injector != null;
 
-            await foreach (var (podIdentity, podResource) in GetMatchingPods(target.Resource.Selector, cancellationToken).WithCancellation(cancellationToken))
+            await foreach (var (podIdentity, podResource) in GetMatchingPods(target.Resource.Selector, target.Identity.Namespace, cancellationToken)
+                               .WithCancellation(cancellationToken))
             {
                 var desiredStatus = GetDesiredStatus(injectionDesired, podResource.IsInjected);
                 if (podResource.InjectionStatus != desiredStatus)
@@ -64,11 +65,13 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Monitoring
         }
 
         private async IAsyncEnumerable<ResourceIdentityPair<PodResource>> GetMatchingPods(PodSelector podSelector,
+                                                                                          string @namespace,
                                                                                           [EnumeratorCancellation] CancellationToken cancellationToken =
                                                                                               default)
         {
             var pods = await _state.GetByType<PodResource>(cancellationToken);
-            foreach (var pod in pods.Where(pod => PodMatchesSelector(pod.Resource, podSelector)))
+            foreach (var pod in pods.Where(pod => string.Equals(pod.Identity.Namespace, @namespace, StringComparison.OrdinalIgnoreCase)
+                                                  && PodMatchesSelector(pod.Resource, podSelector)))
             {
                 yield return pod;
             }
