@@ -113,9 +113,9 @@ jobs:
       matrix:
         k3s-version:
           # - 1.24 # EOL: 2023-09-29
-          - 1.23.6 # EOL: 2023-02-28
-          - 1.22.9 # EOL: 2022-10-28
-          - 1.21.12 # EOL: 2022-06-28
+          - 1.23 # EOL: 2023-02-28
+          - 1.22 # EOL: 2022-10-28
+          - 1.21 # EOL: 2022-06-28
       fail-fast: false
     env:
       IMAGE: contrastdotnet.azurecr.io/agent-operator/agent-operator@${{ needs.build-image.outputs.digest }}
