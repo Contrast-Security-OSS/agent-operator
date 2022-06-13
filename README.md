@@ -10,6 +10,7 @@ Supported Versions:
 
 | Kubernetes Version | OpenShift Version | Supported | End-of-Support |
 |--------------------|-------------------|-----------|----------------|
+| v1.24              |                   | Yes       | 2023-09-29     |
 | v1.23              | v4.10             | Yes       | 2023-02-28     |
 | v1.22              | v4.9              | Yes       | 2022-10-28     |
 | v1.21              | v4.8              | Yes       | 2022-06-28     |
