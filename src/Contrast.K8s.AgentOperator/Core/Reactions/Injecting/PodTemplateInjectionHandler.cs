@@ -36,25 +36,34 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting
             }
 
             var (target, injector) = notification;
-            var desiredState = await GetDesiredState(injector, cancellationToken);
+            var desiredState = await GetDesiredState(injector, target, cancellationToken);
 
-            var templateAnnotations = target.Resource.PodTemplate.Annotations;
-            if ((templateAnnotations.GetAnnotation(InjectionConstants.HashAttributeName) != desiredState.Hash)
-                || (templateAnnotations.GetAnnotation(InjectionConstants.NameAttributeName) != desiredState.Name)
-                || (templateAnnotations.GetAnnotation(InjectionConstants.NamespaceAttributeName) != desiredState.Namespace))
+            if (ChangesNeeded(target, desiredState))
             {
                 await PatchToDesiredState(desiredState, target);
             }
         }
 
-        private async Task<DesiredState> GetDesiredState(ResourceIdentityPair<AgentInjectorResource>? injector, CancellationToken cancellationToken = default)
+        private static bool ChangesNeeded(ResourceIdentityPair<IResourceWithPodTemplate> target, DesiredState desiredState)
+        {
+            var annotations = target.Resource.PodTemplate.Annotations;
+            return (annotations.GetAnnotation(InjectionConstants.InjectorHashAttributeName) != desiredState.InjectorHash)
+                   || (annotations.GetAnnotation(InjectionConstants.InjectorNameAttributeName) != desiredState.InjectorName)
+                   || (annotations.GetAnnotation(InjectionConstants.InjectorNamespaceAttributeName) != desiredState.InjectorNamespace)
+                   || (annotations.GetAnnotation(InjectionConstants.WorkloadNameAttributeName) != desiredState.WorkloadName)
+                   || (annotations.GetAnnotation(InjectionConstants.WorkloadNamespaceAttributeName) != desiredState.WorkloadNamespace);
+        }
+
+        private async Task<DesiredState> GetDesiredState(ResourceIdentityPair<AgentInjectorResource>? injector,
+                                                         ResourceIdentityPair<IResourceWithPodTemplate> target,
+                                                         CancellationToken cancellationToken = default)
         {
             if (injector != null
                 && await _state.GetInjectorBundle(injector.Identity.Name, injector.Identity.Namespace, cancellationToken)
                     is var (_, connection, configuration, secrets))
             {
-                var hash = _hasher.GetHash(injector.Resource, connection, configuration, secrets);
-                return new DesiredState(hash, injector.Identity.Name, injector.Identity.Namespace);
+                var injectorHash = _hasher.GetHash(injector.Resource, connection, configuration, secrets);
+                return new DesiredState(injectorHash, injector.Identity.Name, injector.Identity.Namespace, target.Identity.Name, target.Identity.Namespace);
             }
 
             return DesiredState.Empty;
@@ -107,9 +116,11 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting
             annotations.RemovePrefixed(InjectionConstants.OperatorAttributePrefix);
 
             // If not null, then add.
-            annotations.SetOrRemove(InjectionConstants.HashAttributeName, desiredState.Hash);
-            annotations.SetOrRemove(InjectionConstants.NameAttributeName, desiredState.Name);
-            annotations.SetOrRemove(InjectionConstants.NamespaceAttributeName, desiredState.Namespace);
+            annotations.SetOrRemove(InjectionConstants.InjectorHashAttributeName, desiredState.InjectorHash);
+            annotations.SetOrRemove(InjectionConstants.InjectorNameAttributeName, desiredState.InjectorName);
+            annotations.SetOrRemove(InjectionConstants.InjectorNamespaceAttributeName, desiredState.InjectorNamespace);
+            annotations.SetOrRemove(InjectionConstants.WorkloadNameAttributeName, desiredState.WorkloadName);
+            annotations.SetOrRemove(InjectionConstants.WorkloadNamespaceAttributeName, desiredState.WorkloadNamespace);
 
             // If at the end of everything, no annotations exist, delete the collection.
             // This reverses the EnsureAnnotations step.
@@ -119,9 +130,13 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting
             }
         }
 
-        private record DesiredState(string? Hash, string? Name, string? Namespace)
+        private record DesiredState(string? InjectorHash,
+                                    string? InjectorName,
+                                    string? InjectorNamespace,
+                                    string? WorkloadName,
+                                    string? WorkloadNamespace)
         {
-            public static DesiredState Empty { get; } = new(null, null, null);
+            public static DesiredState Empty { get; } = new(null, null, null, null, null);
         }
     }
 }

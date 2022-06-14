@@ -26,16 +26,18 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting
 
         public async Task<EntityCreatingMutationResult<V1Pod>> Handle(EntityCreating<V1Pod> request, CancellationToken cancellationToken)
         {
-            if (request.Entity.Metadata.Annotations != null
-                && request.Entity.Metadata.Annotations.TryGetValue(InjectionConstants.NameAttributeName, out var injectorName)
-                && request.Entity.Metadata.Annotations.TryGetValue(InjectionConstants.NamespaceAttributeName, out var injectorNamespace)
+            if (request.Entity.Metadata.Annotations is { } annotations
+                && annotations.TryGetValue(InjectionConstants.InjectorNameAttributeName, out var injectorName)
+                && annotations.TryGetValue(InjectionConstants.InjectorNamespaceAttributeName, out var injectorNamespace)
+                && annotations.TryGetValue(InjectionConstants.WorkloadNameAttributeName, out var workloadName)
+                && annotations.TryGetValue(InjectionConstants.WorkloadNamespaceAttributeName, out var workloadNamespace)
                 && await _state.GetInjectorBundle(injectorName, injectorNamespace, cancellationToken)
                     is var (injector, connection, configuration, _))
             {
-                var context = new PatchingContext(injector, connection, configuration, "/contrast");
+                var context = new PatchingContext(workloadName, workloadNamespace, injector, connection, configuration, "/contrast");
                 await _patcher.Patch(context, request.Entity, cancellationToken);
 
-                Logger.Trace($"Patching pod using injector '{injectorNamespace}/{injectorName}'.");
+                Logger.Trace($"Patching pod from '{workloadNamespace}/{workloadName}' using injector '{injectorNamespace}/{injectorName}'.");
                 return new NeedsChangeEntityCreatingMutationResult<V1Pod>(request.Entity);
             }
 

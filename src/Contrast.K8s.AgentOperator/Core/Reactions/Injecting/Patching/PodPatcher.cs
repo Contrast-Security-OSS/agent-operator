@@ -86,8 +86,7 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching
                     new V1LocalObjectReference(pullSecret.Name));
             }
 
-            var matchingContainers = GetMatchingContainers(context, pod);
-            foreach (var container in matchingContainers)
+            foreach (var container in GetMatchingContainers(context, pod))
             {
                 var volumeMount = new V1VolumeMount(context.ContrastMountPath, volume.Name, readOnlyProperty: true);
                 container.VolumeMounts ??= new List<V1VolumeMount>();
@@ -126,7 +125,7 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching
 
         private IEnumerable<V1EnvVar> GenerateEnvVars(PatchingContext context)
         {
-            var (_, connection, configuration, contrastMountPath) = context;
+            var (workloadName, workloadNamespace, _, connection, configuration, contrastMountPath) = context;
 
             yield return new V1EnvVar("CONTRAST_MOUNT_PATH", contrastMountPath);
 
@@ -160,6 +159,18 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching
                         yield return new V1EnvVar($"CONTRAST__{key.Replace(".", "__").ToUpperInvariant()}", value);
                     }
                 }
+            }
+
+            if (configuration?.SuppressDefaultServerName != true
+                && !string.IsNullOrWhiteSpace(workloadNamespace))
+            {
+                yield return new V1EnvVar("CONTRAST__SERVER__NAME", $"kubernetes-{workloadNamespace}");
+            }
+
+            if (configuration?.SuppressDefaultApplicationName != true
+                && !string.IsNullOrWhiteSpace(workloadName))
+            {
+                yield return new V1EnvVar("CONTRAST__APPLICATION__NAME", workloadName);
             }
 
             if (_clusterIdState.GetClusterId() is { } clusterId)

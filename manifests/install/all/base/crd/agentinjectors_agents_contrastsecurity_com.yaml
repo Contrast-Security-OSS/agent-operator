@@ -104,7 +104,7 @@ spec:
                   name:
                     description: |-
                       The name of AgentConnection resource. Must exist within the same namespace.
-                      Defaults a AgentConnection specified by a ClusterAgentConnection.
+                      Defaults to the AgentConnection specified by a ClusterAgentConnection.
                     nullable: true
                     type: string
                 type: object
@@ -115,7 +115,7 @@ spec:
                   name:
                     description: |-
                       The name of a AgentConfiguration resource. Must exist within the same namespace.
-                      Defaults a AgentConfiguration specified by a ClusterAgentConfiguration.
+                      Defaults to the AgentConfiguration specified by a ClusterAgentConfiguration.
                     nullable: true
                     type: string
                 type: object

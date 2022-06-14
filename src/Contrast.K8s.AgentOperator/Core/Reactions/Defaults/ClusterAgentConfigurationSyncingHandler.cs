@@ -47,7 +47,9 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults
                 Metadata = new V1ObjectMeta(name: targetName, namespaceProperty: targetNamespace),
                 Spec = new V1Beta1AgentConfiguration.AgentConfigurationSpec
                 {
-                    Yaml = yaml
+                    Yaml = yaml,
+                    SuppressDefaultApplicationName = desiredResource.SuppressDefaultApplicationName,
+                    SuppressDefaultServerName = desiredResource.SuppressDefaultServerName
                 }
             })!;
         }

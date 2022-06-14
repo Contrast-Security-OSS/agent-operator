@@ -45,7 +45,11 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers
                 }
             }
 
-            var resource = new AgentConfigurationResource(yamlValues);
+            var resource = new AgentConfigurationResource(
+                yamlValues,
+                entity.Spec.SuppressDefaultServerName,
+                entity.Spec.SuppressDefaultApplicationName
+            );
             return ValueTask.FromResult(resource);
         }
     }
