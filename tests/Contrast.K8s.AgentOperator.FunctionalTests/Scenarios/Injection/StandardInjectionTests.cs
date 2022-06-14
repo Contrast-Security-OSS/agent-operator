@@ -69,6 +69,11 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection
                 var userName = container.Env.Should().Contain(x => x.Name == "CONTRAST__API__USER_NAME").Subject;
                 userName.ValueFrom.SecretKeyRef.Name.Should().Be("testing-agent-connection-secret");
                 userName.ValueFrom.SecretKeyRef.Key.Should().Be("userName");
+
+                container.Env.Should().Contain(x => x.Name == "CONTRAST__SERVER__NAME")
+                         .Which.Value.Should().Be("kubernetes-default");
+                container.Env.Should().Contain(x => x.Name == "CONTRAST__APPLICATION__NAME")
+                         .Which.Value.Should().Be("injection-dummy");
             }
         }
 
