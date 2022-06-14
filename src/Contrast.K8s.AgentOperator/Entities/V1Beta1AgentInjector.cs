@@ -118,7 +118,7 @@ namespace Contrast.K8s.AgentOperator.Entities
         {
             /// <summary>
             /// The name of AgentConnection resource. Must exist within the same namespace.
-            /// Defaults a AgentConnection specified by a ClusterAgentConnection.
+            /// Defaults to the AgentConnection specified by a ClusterAgentConnection.
             /// </summary>
             public string? Name { get; set; }
         }
@@ -127,7 +127,7 @@ namespace Contrast.K8s.AgentOperator.Entities
         {
             /// <summary>
             /// The name of a AgentConfiguration resource. Must exist within the same namespace.
-            /// Defaults a AgentConfiguration specified by a ClusterAgentConfiguration.
+            /// Defaults to the AgentConfiguration specified by a ClusterAgentConfiguration.
             /// </summary>
             public string? Name { get; set; }
         }
