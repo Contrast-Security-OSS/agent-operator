@@ -54,7 +54,7 @@ jobs:
         with:
           install: true
           version: latest
-      - uses: docker/login-action@v1
+      - uses: docker/login-action@v2
         with:
           registry: contrastdotnet.azurecr.io
           username: ${{ secrets.AZURE_CLIENT_ID }}
@@ -121,7 +121,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: true
-      - uses: docker/login-action@v1
+      - uses: docker/login-action@v2
         with:
           registry: contrastdotnet.azurecr.io
           username: ${{ secrets.AZURE_CLIENT_ID }}
@@ -251,7 +251,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Login (Azure)
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           registry: contrastdotnet.azurecr.io
           username: ${{ secrets.AZURE_CLIENT_ID }}
@@ -294,13 +294,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Login (Azure)
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           registry: contrastdotnet.azurecr.io
           username: ${{ secrets.AZURE_CLIENT_ID }}
           password: ${{ secrets.AZURE_CLIENT_SECRET }}
       - name: Login (Dockerhub)
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PAT }}
