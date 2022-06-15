@@ -61,7 +61,7 @@ jobs:
           password: ${{ secrets.AZURE_CLIENT_SECRET }}
       - name: Docker Meta
         id: meta
-        uses: docker/metadata-action@v3
+        uses: docker/metadata-action@v4
         with:
           images: ${{ env.IMAGE_NAME }}
           tags: |
@@ -258,7 +258,7 @@ jobs:
           password: ${{ secrets.AZURE_CLIENT_SECRET }}
       - name: Docker Meta
         id: meta
-        uses: docker/metadata-action@v3
+        uses: docker/metadata-action@v4
         with:
           images: ${{ env.IMAGE_NAME }}
           tags: |
@@ -306,7 +306,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PAT }}
       - name: Docker Meta
         id: meta
-        uses: docker/metadata-action@v3
+        uses: docker/metadata-action@v4
         with:
           images: ${{ env.IMAGE_NAME }}
           tags: |
