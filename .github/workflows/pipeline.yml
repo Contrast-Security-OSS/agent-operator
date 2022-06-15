@@ -73,10 +73,9 @@ jobs:
         with:
           file: Dockerfile
           context: .
-          push: ${{ github.actor != 'dependabot[bot]' }}
+          push: true
           cache-from: ${{ github.actor != 'dependabot[bot]' && format('type=registry,ref={0}:cache', env.IMAGE_NAME) || ''}}
           cache-to: ${{ github.actor != 'dependabot[bot]' && format('type=registry,ref={0}:cache,mode=max', env.IMAGE_NAME) || ''}}
-
           build-args: |
             BUILD_VERSION=${{ env.BUILD_VERSION }}
             IS_PUBLIC_BUILD=${{ env.IS_PUBLIC_BUILD }}
@@ -108,7 +107,6 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - build-image
-    if: ${{ github.actor != 'dependabot[bot]' }}
     strategy:
       matrix:
         k3s-version:
