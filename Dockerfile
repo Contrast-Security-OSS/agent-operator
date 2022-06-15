@@ -1,7 +1,7 @@
-FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:6.0.6 AS base
 WORKDIR /app
 
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:6.0.301 AS build
 COPY src/Contrast.K8s.AgentOperator/Contrast.K8s.AgentOperator.csproj /source/src/Contrast.K8s.AgentOperator/
 COPY tests/Contrast.K8s.AgentOperator.Tests/Contrast.K8s.AgentOperator.Tests.csproj /source/tests/Contrast.K8s.AgentOperator.Tests/
 COPY tests/Contrast.K8s.AgentOperator.FunctionalTests/Contrast.K8s.AgentOperator.FunctionalTests.csproj /source/tests/Contrast.K8s.AgentOperator.FunctionalTests/
