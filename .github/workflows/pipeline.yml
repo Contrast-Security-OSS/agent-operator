@@ -46,7 +46,7 @@ jobs:
       BUILD_VERSION: ${{ needs.generate-version.outputs.version }}
       IS_PUBLIC_BUILD: ${{ needs.generate-version.outputs.is-public-build }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
       - uses: docker/setup-buildx-action@v1
@@ -87,7 +87,7 @@ jobs:
     env:
       BUILD_VERSION: ${{ needs.generate-version.outputs.version }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Generate Manifests
         run: |
           set -xe
@@ -118,7 +118,7 @@ jobs:
     env:
       IMAGE: contrastdotnet.azurecr.io/agent-operator/agent-operator@${{ needs.build-image.outputs.digest }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
       - uses: docker/login-action@v1
@@ -249,7 +249,7 @@ jobs:
       IMAGE_NAME: contrastdotnet.azurecr.io/agent-operator/agent-operator
     if: ${{ github.event_name != 'pull_request' && github.actor != 'dependabot[bot]' }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Login (Azure)
         uses: docker/login-action@v1
         with:
@@ -292,7 +292,7 @@ jobs:
       IMAGE_NAME: docker.io/contrast/agent-operator
     if: ${{ needs.generate-version.outputs.version != '0.0.1' }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Login (Azure)
         uses: docker/login-action@v1
         with:
