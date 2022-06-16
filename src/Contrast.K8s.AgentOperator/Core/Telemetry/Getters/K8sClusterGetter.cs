@@ -1,4 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿// Contrast Security, Inc licenses this file to you under the Apache 2.0 License.
+// See the LICENSE file in the project root for more information.
+
+using System.Threading.Tasks;
 using DotnetKubernetesClient;
 
 namespace Contrast.K8s.AgentOperator.Core.Telemetry.Getters

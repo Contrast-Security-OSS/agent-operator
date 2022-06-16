@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Contrast Security, Inc licenses this file to you under the Apache 2.0 License.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Generic;
 using Contrast.K8s.AgentOperator.Core.Kube;
 using k8s.Models;
@@ -8,7 +11,8 @@ using KubeOps.Operator.Rbac;
 
 namespace Contrast.K8s.AgentOperator.Entities
 {
-    [KubernetesEntity(Group = "agents.contrastsecurity.com", ApiVersion = "v1beta1", Kind = "ClusterAgentConfiguration", PluralName = "clusteragentconfigurations")]
+    [KubernetesEntity(Group = "agents.contrastsecurity.com", ApiVersion = "v1beta1", Kind = "ClusterAgentConfiguration",
+        PluralName = "clusteragentconfigurations")]
     [EntityRbac(typeof(V1Beta1ClusterAgentConfiguration), Verbs = VerbConstants.ReadOnly)]
     public class V1Beta1ClusterAgentConfiguration : CustomKubernetesEntity<V1Beta1ClusterAgentConfiguration.ClusterAgentConfigurationSpec>
     {

@@ -1,4 +1,7 @@
-﻿using System.Linq;
+﻿// Contrast Security, Inc licenses this file to you under the Apache 2.0 License.
+// See the LICENSE file in the project root for more information.
+
+using System.Linq;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.FunctionalTests.Fixtures;
 using FluentAssertions;

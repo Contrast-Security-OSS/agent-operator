@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Contrast Security, Inc licenses this file to you under the Apache 2.0 License.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
@@ -38,7 +41,8 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents
                 && GetFirstOrDefaultEnvVar(container.Env, "CONTRAST_EXISTING_LD_PRELOAD") is null)
             {
                 container.Env.AddOrUpdate(new V1EnvVar("CONTRAST_EXISTING_LD_PRELOAD", currentLdPreloadValue));
-                container.Env.AddOrUpdate(new V1EnvVar("LD_PRELOAD", $"{context.ContrastMountPath}/runtimes/linux-x64/native/ContrastChainLoader.so:{currentLdPreloadValue}"));
+                container.Env.AddOrUpdate(new V1EnvVar("LD_PRELOAD",
+                    $"{context.ContrastMountPath}/runtimes/linux-x64/native/ContrastChainLoader.so:{currentLdPreloadValue}"));
             }
         }
 

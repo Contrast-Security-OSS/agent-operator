@@ -1,8 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿// Contrast Security, Inc licenses this file to you under the Apache 2.0 License.
+// See the LICENSE file in the project root for more information.
+
+using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.FunctionalTests.Fixtures;
 using FluentAssertions;
 using FluentAssertions.Execution;
-using k8s.Models;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -44,7 +46,7 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection.Agents
                 container.Env.Should().Contain(x => x.Name == "CONTRAST_CORECLR_INSTALL_DIRECTORY")
                          .Which.Value.Should().Be("/contrast");
                 container.Env.Should().Contain(x => x.Name == "CONTRAST__AGENT__DOTNET__ENABLE_FILE_WATCHING")
-                    .Which.Value.Should().Be("false");
+                         .Which.Value.Should().Be("false");
             }
         }
 
