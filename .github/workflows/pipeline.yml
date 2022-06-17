@@ -342,7 +342,8 @@ jobs:
         with:
           environment: production
           ignore_empty: true
-          version: agent-operator@${{ env.BUILD_VERSION }}
+          # BUILD_VERSION is the semantic version, but the operator will send the .NET version i.e. X.X.X.X.
+          version: agent-operator@${{ env.BUILD_VERSION }}.0
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: sentry
