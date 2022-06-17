@@ -1,10 +1,10 @@
 ﻿// Contrast Security, Inc licenses this file to you under the Apache 2.0 License.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
-using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Telemetry.Models;
 using k8s.Autorest;
 using NLog;
@@ -28,18 +28,23 @@ namespace Contrast.K8s.AgentOperator.Core.Telemetry.Services.Exceptions
                 // Ignore any of the common exceptions we don't care about.
 
                 if (logEvent.Exception is HttpOperationException httpOperationException
-                    && httpOperationException.Response.StatusCode is HttpStatusCode.NotFound)
+                    && httpOperationException.Response.StatusCode is not HttpStatusCode.BadRequest)
                 {
                     return;
                 }
 
-                if (logEvent.Exception is HttpRequestException { InnerException: EndOfStreamException })
+                if (logEvent.Exception is HttpRequestException { InnerException: IOException })
+                {
+                    return;
+                }
+
+                if (logEvent.Exception is IOException)
                 {
                     return;
                 }
             }
 
-            if (logEvent.Exception is TaskCanceledException)
+            if (logEvent.Exception is OperationCanceledException)
             {
                 return;
             }

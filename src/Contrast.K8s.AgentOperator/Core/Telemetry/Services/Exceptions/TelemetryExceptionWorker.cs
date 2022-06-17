@@ -62,7 +62,7 @@ namespace Contrast.K8s.AgentOperator.Core.Telemetry.Services.Exceptions
                 catch (OperationCanceledException)
                 {
                 }
-                catch (Exception e) when (e is not TaskCanceledException)
+                catch (Exception e)
                 {
                     Logger.Trace(e, "A failure occurred during telemetry submission.");
                 }
