@@ -1,10 +1,28 @@
 # Development
 
+## Building the Operator
+
+> Make sure to restore the submodules in the `./vendor` directory and you have the latest .NET LTS installed!
+
+The Contrast Agent Operator is a standard .NET application and can be built as such.
+
+```
+dotnet build
+```
+
+And when everything is ready,
+
+```
+dotnet run
+```
+
+## Running the Operator Locally
+
 As this is an operator, local development requires the interactions of a K8s cluster.
 
-## Development with Docker Desktop
+For everything to work correctly, make sure you have the `contrast-agent-operator` namespace created (either manually or by deploying `./manifests/install/dev`). This allows the operator to create the required resources in its namespace (e.g. TLS certificates).
 
-### Local K8s
+### Development with Docker Desktop
 
 The easiest method to develop "pull" features (features that does not require the back plane to communicate with our app) is using Docker Desktop in K8s mode.
 
@@ -48,3 +66,25 @@ To run the task:
 And select the generated task:
 
 ![Bridge Task](./assets/bridge-task.png)
+
+## Running the Tests
+
+There are currently two test projects, one for Unit Tests, the other for Functional tests. Both are run in CI - unit tests during the container image build, and functional tests against every K8s version we support.
+
+Running the unit tests requires no dependency setup, but to run the functional tests locally, some setup is required.
+
+```bash
+# Build a local image of the operator (this of course only works if using Docker Desktop with a shared Docker image cache).
+docker build . -t local/agent-operator:latest
+
+# Make sure any development resources are gone.
+kubectl delete -k ./manifests/install/dev/
+
+# Install the operator in the testing namespace.
+kubectl apply -k ./manifests/install/testing/
+
+# Install the required test fixtures.
+kubectl apply -k ./manifests/examples/testing/
+```
+
+Afterwards, the functional tests are ready to be ran.

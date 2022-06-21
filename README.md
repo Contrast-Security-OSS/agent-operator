@@ -2,9 +2,17 @@
 
 A K8s operator to inject agents into existing K8s workloads.
 
-Managed by the Contrast .NET agent team.
+Managed by the Contrast .NET Agent team.
 
-Supported Versions:
+Features:
+- Automatic injection of agents into cluster workloads without modifying "golden images" or maintaining base images.
+- Management of automatic agent updates.
+- Declarative configuration using Kubernetes native objects.
+- Centralized agent configuration/connection management across an entire cluster.
+
+## Getting Started
+
+Make sure the operator supports your cluster version.
 
 | Kubernetes Version | OpenShift Version | Supported | End-of-Support |
 |--------------------|-------------------|-----------|----------------|
@@ -13,9 +21,17 @@ Supported Versions:
 | v1.22              | v4.9              | Yes       | 2022-10-28     |
 | v1.21              | v4.8              | Yes       | 2022-06-28     |
 
-## Artifacts
+To install the latest version of the operator into a cluster, apply the installation YAML containing all the required manifests, including the CRDs and RBACs.
 
-Builds released into the the `public` environment are are published to DockerHub. Manifest are uploaded to the [GitHub releases page](https://github.com/Contrast-Security-Inc/agent-operator/releases).
+```bash
+kubectl apply -f https://github.com/Contrast-Security-OSS/agent-operator/releases/latest/download/install-prod.yaml
+```
+
+## Releases
+
+Builds released into the the `public` environment are are published to DockerHub. Manifests are uploaded to the [GitHub releases page](https://github.com/Contrast-Security-OSS/agent-operator/releases).
+
+Releases are tagged using the following format:
 
 ```
 contrast/agent-operator:1.0.0
@@ -24,12 +40,12 @@ contrast/agent-operator:1
 contrast/agent-operator:latest
 ```
 
-## Design
+See [DockerHub tags](https://hub.docker.com/repository/docker/contrast/agent-operator/tags?page=1&ordering=last_updated) for a list of all available tags.
 
-Data flow is unidirectional when possible.
+## Contributing
 
-![Data Flow](./docs/assets/data-flow.png)
+See [./CONTRIBUTING.md](./CONTRIBUTING.md).
 
-## Development
+## Security
 
-See [./docs/development.md](./docs/development.md)
+See [./SECURITY.md](./SECURITY.md).
