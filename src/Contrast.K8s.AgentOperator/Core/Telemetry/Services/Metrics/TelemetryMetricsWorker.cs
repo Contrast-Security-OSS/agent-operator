@@ -55,7 +55,7 @@ namespace Contrast.K8s.AgentOperator.Core.Telemetry.Services.Metrics
                 const string message = "The Contrast Agent Operator collects usage data in order to help us improve compatibility and security coverage. "
                                        + "The data is anonymous and does not contain application data. It is collected by Contrast and is never shared. "
                                        + "You can opt-out of telemetry by setting the CONTRAST_AGENT_TELEMETRY_OPTOUT environment variable to '1' or 'true'. "
-                                       + "Read more about Contrast Agent Operator telemetry: https://docs.contrastsecurity.com/en/-net-telemetry.html";
+                                       + "Read more about Contrast Agent Operator telemetry: https://docs.contrastsecurity.com/en/agent-operator-telemetry.html";
 
                 Logger.Info(message);
             }
