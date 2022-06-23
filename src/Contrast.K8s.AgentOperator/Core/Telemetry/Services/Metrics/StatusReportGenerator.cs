@@ -7,6 +7,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.State;
+using Contrast.K8s.AgentOperator.Core.State.Resources;
+using Contrast.K8s.AgentOperator.Core.Telemetry.Counters;
 using Contrast.K8s.AgentOperator.Core.Telemetry.Models;
 
 namespace Contrast.K8s.AgentOperator.Core.Telemetry.Services.Metrics
@@ -15,11 +17,13 @@ namespace Contrast.K8s.AgentOperator.Core.Telemetry.Services.Metrics
     {
         private readonly TelemetryState _telemetryState;
         private readonly IStateContainer _clusterState;
+        private readonly PerformanceCounterContainer _performanceCounterContainer;
 
-        public StatusReportGenerator(TelemetryState telemetryState, IStateContainer clusterState)
+        public StatusReportGenerator(TelemetryState telemetryState, IStateContainer clusterState, PerformanceCounterContainer performanceCounterContainer)
         {
             _telemetryState = telemetryState;
             _clusterState = clusterState;
+            _performanceCounterContainer = performanceCounterContainer;
         }
 
         public async Task<TelemetryMeasurement> Generate(CancellationToken cancellationToken = default)
@@ -31,8 +35,17 @@ namespace Contrast.K8s.AgentOperator.Core.Telemetry.Services.Metrics
                 { "UptimeSeconds", uptimeSeconds }
             };
 
-            var resourceStatistics = await GetResourceStatistics(cancellationToken);
-            foreach (var (key, value) in resourceStatistics)
+            foreach (var (key, value) in await GetResourceStatistics(cancellationToken))
+            {
+                values.Add(key, value);
+            }
+
+            foreach (var (key, value) in await GetInjectionStatistics(cancellationToken))
+            {
+                values.Add(key, value);
+            }
+
+            foreach (var (key, value) in await GetPerformanceStatistics())
             {
                 values.Add(key, value);
             }
@@ -66,6 +79,34 @@ namespace Contrast.K8s.AgentOperator.Core.Telemetry.Services.Metrics
 
                 var resourcesCount = keys.Select(x => new { x.Name, x.Namespace }).Distinct().Count();
                 metrics.Add("Resources.Global.ResourcesCount", resourcesCount);
+            }
+
+            return metrics;
+        }
+
+        private async Task<Dictionary<string, decimal>> GetInjectionStatistics(CancellationToken cancellationToken)
+        {
+            var metrics = new Dictionary<string, decimal>();
+
+            var pods = await _clusterState.GetByType<PodResource>(cancellationToken);
+            var podsInjectedCount = pods.Count(x => x.Resource.IsInjected);
+            metrics.Add("Injected.PodsCount", podsInjectedCount);
+
+            return metrics;
+        }
+
+        private async Task<Dictionary<string, decimal>> GetPerformanceStatistics()
+        {
+            var metrics = new Dictionary<string, decimal>();
+
+            var counters = await _performanceCounterContainer.GetCounters();
+            foreach (var (key, value) in counters)
+            {
+                var normalizedKey = key.Replace(" ", "")
+                                       .Replace("(", "")
+                                       .Replace(")", "")
+                                       .Replace("%", "Percent");
+                metrics.Add($"Performance.{normalizedKey}", value);
             }
 
             return metrics;

@@ -14,6 +14,7 @@ using Contrast.K8s.AgentOperator.Core.State;
 using Contrast.K8s.AgentOperator.Core.Telemetry;
 using Contrast.K8s.AgentOperator.Core.Telemetry.Client;
 using Contrast.K8s.AgentOperator.Core.Telemetry.Cluster;
+using Contrast.K8s.AgentOperator.Core.Telemetry.Counters;
 using Contrast.K8s.AgentOperator.Core.Tls;
 using Contrast.K8s.AgentOperator.Options;
 using DotnetKubernetesClient;
@@ -48,6 +49,10 @@ namespace Contrast.K8s.AgentOperator
                     })
                     .AddReadinessCheck<ReadinessCheck>();
             services.AddCertificateManager();
+            services.AddControllers();
+
+            // Not actually used, but hot-reload uses it?
+            services.AddRazorPages();
         }
 
         // ReSharper disable once UnusedMember.Global
@@ -78,6 +83,7 @@ namespace Contrast.K8s.AgentOperator
 
             // Telemetry
             builder.Register(x => x.Resolve<ITelemetryClientFactory>().Create()).As<ITelemetryClient>().SingleInstance();
+            builder.RegisterType<PerformanceCounterContainer>().AsSelf().SingleInstance();
 
             // MediatR
             builder.RegisterType<Mediator>()
@@ -117,6 +123,9 @@ namespace Contrast.K8s.AgentOperator
             }
 
             app.UseKubernetesOperator();
+
+            app.UseRouting();
+            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }
 
         private static void RegisterOptions(ContainerBuilder builder)

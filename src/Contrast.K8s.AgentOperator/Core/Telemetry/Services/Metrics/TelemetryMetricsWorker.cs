@@ -61,7 +61,7 @@ namespace Contrast.K8s.AgentOperator.Core.Telemetry.Services.Metrics
             }
 
             // Wait for things to settle.
-            await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+            await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
 
             while (!stoppingToken.IsCancellationRequested)
             {
