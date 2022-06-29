@@ -27,6 +27,8 @@ To install the latest version of the operator into a cluster, apply the installa
 kubectl apply -f https://github.com/Contrast-Security-OSS/agent-operator/releases/latest/download/install-prod.yaml
 ```
 
+Further documentation and examples can be found on [docs.contrastsecurity.com](https://docs.contrastsecurity.com/en/agent-operator.html) ([en](https://docs.contrastsecurity.com/en/agent-operator.html)/[jp](https://docs.contrastsecurity.jp/ja/agent-operator.html)).
+
 ## Releases
 
 Builds released into the the `public` environment are are published to DockerHub. Manifests are uploaded to the [GitHub releases page](https://github.com/Contrast-Security-OSS/agent-operator/releases).
