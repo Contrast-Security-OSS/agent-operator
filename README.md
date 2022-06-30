@@ -1,8 +1,10 @@
 # agent-operator
 
+[![contrast/agent-operator](https://img.shields.io/docker/v/contrast/agent-operator?label=contrast%2Fagent-operator&logo=docker&logoColor=white&style=flat-square&cacheSeconds=86400)](https://hub.docker.com/repository/docker/contrast/agent-operator)
+
 A K8s operator to inject agents into existing K8s workloads.
 
-Managed by the Contrast .NET Agent team.
+Managed by the Contrast .NET agent team. Images are built from [agent-operator-images](https://github.com/Contrast-Security-OSS/agent-operator-images).
 
 Features:
 - Automatic injection of agents into cluster workloads without modifying "golden images" or maintaining base images.
