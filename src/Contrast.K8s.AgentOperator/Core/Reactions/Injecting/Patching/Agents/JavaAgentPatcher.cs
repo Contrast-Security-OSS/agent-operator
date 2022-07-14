@@ -13,7 +13,6 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents
 
         public IEnumerable<V1EnvVar> GenerateEnvVars(PatchingContext context)
         {
-            // TODO Double check this for correctness.
             yield return new V1EnvVar("JAVA_TOOL_OPTIONS", $"-javaagent:{context.ContrastMountPath}/contrast-agent.jar");
         }
 
