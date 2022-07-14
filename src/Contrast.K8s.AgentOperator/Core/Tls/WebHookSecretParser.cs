@@ -30,7 +30,6 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
 
         public bool TryGetWebHookCertificateSecret(V1Secret secret, [NotNullWhen(true)] out TlsCertificateChain? chain)
         {
-            // TODO Check case sensitive logic.
             if (secret.Name() == _tlsStorageOptions.SecretName
                 && string.Equals(secret.Namespace(), _tlsStorageOptions.SecretNamespace, StringComparison.OrdinalIgnoreCase)
                 && secret.Data != null

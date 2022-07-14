@@ -151,7 +151,6 @@ namespace Contrast.K8s.AgentOperator
 
             builder.Register(_ =>
             {
-                // TODO Need to set this for public releases.
                 if (Environment.GetEnvironmentVariable("CONTRAST_DEFAULT_REGISTRY")
                     is { } defaultRegistry)
                 {
