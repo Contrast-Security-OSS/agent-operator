@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Net.Sockets;
 using Contrast.K8s.AgentOperator.Core.Telemetry.Models;
 using k8s.Autorest;
 using NLog;
@@ -17,40 +18,52 @@ namespace Contrast.K8s.AgentOperator.Core.Telemetry.Services.Exceptions
     {
         protected override void Write(LogEventInfo logEvent)
         {
-            if (logEvent.Exception == null)
+            if (logEvent.Exception is { } exception)
             {
-                return;
+                var loggerName = logEvent.LoggerName ?? "<unknown>";
+                if (ShouldReport(loggerName, exception))
+                {
+                    var report = new ExceptionReport(
+                        GetShortLoggerName(loggerName),
+                        Layout.Render(logEvent),
+                        exception
+                    );
+                    TelemetryExceptionsBuffer.Instance.Add(report);
+                }
             }
+        }
 
-            var loggerName = logEvent.LoggerName ?? "<unknown>";
+        public static bool ShouldReport(string loggerName, Exception exception)
+        {
             if (loggerName == "KubeOps.Operator.Kubernetes.ResourceWatcher")
             {
                 // Ignore any of the common exceptions we don't care about.
-
-                if (logEvent.Exception is HttpOperationException httpOperationException
-                    && httpOperationException.Response.StatusCode is not HttpStatusCode.BadRequest)
+                switch (exception)
                 {
-                    return;
-                }
-
-                if (logEvent.Exception is HttpRequestException { InnerException: IOException })
-                {
-                    return;
-                }
-
-                if (logEvent.Exception is IOException)
-                {
-                    return;
+                    case HttpOperationException httpOperationException
+                        when httpOperationException.Response.StatusCode is not HttpStatusCode.BadRequest:
+                    case HttpRequestException { InnerException: IOException }:
+                    case HttpRequestException { InnerException: SocketException { SocketErrorCode: SocketError.ConnectionRefused } }:
+                    case IOException:
+                        return false;
                 }
             }
 
-            if (logEvent.Exception is OperationCanceledException)
+            return exception is not OperationCanceledException;
+        }
+
+        public static string GetShortLoggerName(string loggerName)
+        {
+            var split = loggerName.LastIndexOf('.');
+            if (split > -1
+                && split < loggerName.Length
+                && loggerName[(split + 1)..] is { } shortName
+                && !string.IsNullOrWhiteSpace(shortName))
             {
-                return;
+                return shortName.Trim();
             }
 
-            var report = new ExceptionReport(loggerName, Layout.Render(logEvent), logEvent.Exception);
-            TelemetryExceptionsBuffer.Instance.Add(report);
+            return loggerName;
         }
     }
 }
