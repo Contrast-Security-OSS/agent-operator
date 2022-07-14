@@ -39,7 +39,7 @@ namespace Contrast.K8s.AgentOperator.Core.State
                 }
                 catch (HttpOperationException e)
                 {
-                    Logger.Warn(e, $"An error occurred. Response body: {e.Response.Content}");
+                    Logger.Warn(e, $"An error occurred. Response body: '{e.Response.Content}'.");
                 }
                 catch (Exception e) when (e is TaskCanceledException or OperationCanceledException)
                 {
