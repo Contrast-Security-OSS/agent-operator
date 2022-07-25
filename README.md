@@ -1,6 +1,6 @@
 # agent-operator
 
-[![contrast/agent-operator](https://img.shields.io/docker/v/contrast/agent-operator?label=contrast%2Fagent-operator&logo=docker&logoColor=white&style=flat-square&cacheSeconds=86400)](https://hub.docker.com/repository/docker/contrast/agent-operator)
+[![contrast/agent-operator](https://img.shields.io/docker/v/contrast/agent-operator?label=contrast%2Fagent-operator&logo=docker&logoColor=white&style=flat-square&cacheSeconds=86400)](https://hub.docker.com/r/contrast/agent-operator)
 
 A K8s operator to inject agents into existing K8s workloads.
 
@@ -44,7 +44,7 @@ contrast/agent-operator:1
 contrast/agent-operator:latest
 ```
 
-See [DockerHub tags](https://hub.docker.com/repository/docker/contrast/agent-operator/tags?page=1&ordering=last_updated) for a list of all available tags.
+See [DockerHub tags](https://hub.docker.com/r/contrast/agent-operator/tags) for a list of all available tags.
 
 ## Contributing
 
