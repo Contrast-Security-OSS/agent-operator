@@ -26,13 +26,13 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Matching
             return readyInjectors.Where(injector => InjectorMatchesTarget(injector, target));
         }
 
-        public bool InjectorMatchesTarget(ResourceIdentityPair<AgentInjectorResource> injector,
-                                          ResourceIdentityPair<IResourceWithPodTemplate> target)
+        private bool InjectorMatchesTarget(ResourceIdentityPair<AgentInjectorResource> injector,
+                                           ResourceIdentityPair<IResourceWithPodTemplate> target)
         {
             var (_, labelPatterns, namespaces) = injector.Resource.Selector;
 
             var matchesNamespace = namespaces.Contains(target.Identity.Namespace, StringComparer.OrdinalIgnoreCase);
-            var matchesLabel = !labelPatterns.Any() || labelPatterns.Any(x => MatchesLabel(target.Resource, x.Key, x.Value));
+            var matchesLabel = !labelPatterns.Any() || labelPatterns.All(x => MatchesLabel(target.Resource, x.Key, x.Value));
             return matchesNamespace && matchesLabel;
         }
 
