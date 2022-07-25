@@ -167,12 +167,16 @@ jobs:
           dotnet test ./tests/Contrast.K8s.AgentOperator.FunctionalTests/Contrast.K8s.AgentOperator.FunctionalTests.csproj
         shell: bash
       - name: Dump Operator Logs
+        uses: nick-fields/retry@v2
         if: ${{ always() }}
-        run: |
-          set -xe
-          kubectl --namespace testing-agent-operator get deployment contrast-agent-operator -o yaml
-          kubectl --namespace testing-agent-operator logs deployment/contrast-agent-operator
-        shell: bash
+        with:
+          timeout_minutes: 10
+          max_attempts: 5
+          command: |
+            set -xe
+            kubectl --namespace testing-agent-operator get deployment contrast-agent-operator -o yaml
+            kubectl --namespace testing-agent-operator logs deployment/contrast-agent-operator
+          shell: bash
   test-manifests:
     runs-on: ubuntu-latest
     needs:
