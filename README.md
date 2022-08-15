@@ -6,6 +6,8 @@ A K8s operator to inject agents into existing K8s workloads.
 
 Managed by the Contrast .NET agent team. Images are built from [agent-operator-images](https://github.com/Contrast-Security-OSS/agent-operator-images).
 
+![Layout](./docs/assets/operator-layout.svg)
+
 Features:
 - Automatic injection of agents into cluster workloads without modifying "golden images" or maintaining base images.
 - Management of automatic agent updates.
