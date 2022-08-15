@@ -28,6 +28,8 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers
             var isInjected = entity.GetAnnotation(InjectionConstants.IsInjectedAttributeName) is { } isInjectedAnnotation
                              && isInjectedAnnotation.Equals(true.ToString(), StringComparison.OrdinalIgnoreCase);
 
+            var injectionType = GetInjectionType(entity);
+
             var injectionStatus = entity.Status?.Conditions?.Where(x => x.Type == PodConditionConstants.InjectionConvergenceConditionType)
                                         .Select(x => new PodInjectionConvergenceCondition(x.Status, x.Reason, x.Message))
                                         .SingleOrDefault();
@@ -35,10 +37,23 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers
             var resource = new PodResource(
                 entity.Metadata.GetLabels(),
                 isInjected,
-                injectionStatus
+                injectionStatus,
+                injectionType
             );
 
             return ValueTask.FromResult(resource);
+        }
+
+        private static AgentInjectionType? GetInjectionType(V1Pod entity)
+        {
+            AgentInjectionType? injectionType = null;
+            if (entity.GetAnnotation(InjectionConstants.IsInjectedAttributeName) is { } injectionTypeAnnotation
+                && Enum.TryParse<AgentInjectionType>(injectionTypeAnnotation, true, out var injectionTypeEnum))
+            {
+                injectionType = injectionTypeEnum;
+            }
+
+            return injectionType;
         }
     }
 }
