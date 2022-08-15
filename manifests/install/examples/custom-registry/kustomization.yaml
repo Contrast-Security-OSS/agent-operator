@@ -1,0 +1,27 @@
+namespace: contrast-agent-operator
+bases:
+  - ../../all
+
+# 1. Update `contrast/agent-operator` (DockerHub by default) to your custom registry.
+images:
+  - name: contrast/agent-operator
+    newName: contrastdotnet.azurecr.io/agent-operator/agent-operator
+    newTag: latest
+
+# 2. Update the default registry to your custom registry.
+patchesStrategicMerge:
+  - |-
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: contrast-agent-operator
+      namespace: contrast-agent-operator
+    spec:
+      template:
+        spec:
+          containers:
+            - name: contrast-agent-operator
+              env:
+                - name: CONTRAST_DEFAULT_REGISTRY
+                  value: "contrastdotnet.azurecr.io/agent-operator"
+
