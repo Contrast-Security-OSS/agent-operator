@@ -40,6 +40,7 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection
                 result.Annotations().Should().ContainKey("agents.contrastsecurity.com/injector-name").WhoseValue.Should().Be(ScenarioName);
                 result.Annotations().Should().ContainKey("agents.contrastsecurity.com/injector-namespace").WhoseValue.Should().Be("testing");
                 result.Annotations().Should().ContainKey("agents.contrastsecurity.com/is-injected").WhoseValue.Should().Be("True");
+                result.Annotations().Should().ContainKey("agents.contrastsecurity.com/injector-type").WhoseValue.Should().Be("Dummy");
             }
         }
 
