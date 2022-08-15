@@ -35,15 +35,19 @@ namespace Contrast.K8s.AgentOperator.Core.Telemetry.Services.Exceptions
 
         public static bool ShouldReport(string loggerName, Exception exception)
         {
-            if (loggerName == "KubeOps.Operator.Kubernetes.ResourceWatcher")
+            switch (exception)
             {
-                // Ignore any of the common exceptions we don't care about.
+                case HttpOperationException httpOperationException
+                    when httpOperationException.Response.StatusCode is not HttpStatusCode.BadRequest:
+                case HttpRequestException { InnerException: IOException }:
+                case HttpRequestException { InnerException: SocketException { SocketErrorCode: SocketError.ConnectionRefused } }:
+                    return false;
+            }
+
+            if (loggerName.StartsWith("KubeOps."))
+            {
                 switch (exception)
                 {
-                    case HttpOperationException httpOperationException
-                        when httpOperationException.Response.StatusCode is not HttpStatusCode.BadRequest:
-                    case HttpRequestException { InnerException: IOException }:
-                    case HttpRequestException { InnerException: SocketException { SocketErrorCode: SocketError.ConnectionRefused } }:
                     case IOException:
                         return false;
                 }
