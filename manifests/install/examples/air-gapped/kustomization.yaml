@@ -1,0 +1,36 @@
+namespace: contrast-agent-operator
+bases:
+  - ../../all
+
+# 1. Update `contrast/agent-operator` (DockerHub by default) to your internal registry.
+images:
+  - name: contrast/agent-operator
+    newName: contrastdotnet.azurecr.io/agent-operator/agent-operator
+    newTag: latest
+
+# 2. Update the default registry to your internal registry.
+#    For example, if the imported images are in the form of `contrastdotnet.azurecr.io/agent-operator/agent-dotnet-core`,
+#     then `CONTRAST_DEFAULT_REGISTRY=contrastdotnet.azurecr.io/agent-operator` should be set.
+#    Make sure to import all images built by https://github.com/Contrast-Security-OSS/agent-operator-images,
+#     and make sure to add the image from https://github.com/Contrast-Security-OSS/agent-operator.
+patchesStrategicMerge:
+  - |-
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: contrast-agent-operator
+      namespace: contrast-agent-operator
+    spec:
+      template:
+        spec:
+          containers:
+            - name: contrast-agent-operator
+              env:
+                - name: CONTRAST_DEFAULT_REGISTRY
+                  value: "contrastdotnet.azurecr.io/agent-operator"
+
+# Note that this assumes your default cluster pull secrets allow pulling from this custom registry
+#  (or anonymous pull is supported).
+# In the future the operator may reach out to this registry to query for version/digest information.
+#  to support such a feature, it is recommended that the custom registry support at least V2 of the Docker Registry API.
+#  network policies should also allow the operator to reach out to the registry service.
