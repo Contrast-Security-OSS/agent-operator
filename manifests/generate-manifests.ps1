@@ -34,6 +34,7 @@ dotnet run --no-build --project $project -- generator rbac -o $output\rbac\
     # "$($output)operator\ca.pem"
     # "$($output)operator\kustomization.yaml"
     "$($output)crd\deploymentconfigs_apps_openshift_io.yaml"
+    "$($output)crd\dynakubes_dynatrace_com.yaml"
     "$($output)crd\kustomization.yaml"
 ) | ForEach-Object {
     Write-Host "Cleaning up bad object $_"
