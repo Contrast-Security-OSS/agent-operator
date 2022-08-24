@@ -205,6 +205,20 @@ namespace Contrast.K8s.AgentOperator
                 var @namespace = x.Resolve<OperatorOptions>().Namespace;
                 return new TelemetryOptions("contrast-cluster-id", @namespace);
             }).SingleInstance();
+
+            builder.Register(_ =>
+            {
+                if (Environment.GetEnvironmentVariable("CONTRAST_ENABLE_EARLY_CHAINING") is { } earlyChaining)
+                {
+                    if (earlyChaining.Equals("1", StringComparison.OrdinalIgnoreCase)
+                        || earlyChaining.Equals("true", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return new InjectorOptions(true);
+                    }
+                }
+
+                return new InjectorOptions();
+            }).SingleInstance();
         }
     }
 }

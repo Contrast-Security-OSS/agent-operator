@@ -1,0 +1,20 @@
+namespace: contrast-agent-operator
+bases:
+  - ../../all
+
+patchesStrategicMerge:
+  - |-
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: contrast-agent-operator
+      namespace: contrast-agent-operator
+    spec:
+      template:
+        spec:
+          containers:
+            - name: contrast-agent-operator
+              env:
+                - name: CONTRAST_ENABLE_EARLY_CHAINING
+                  value: "true"
+
