@@ -28,7 +28,7 @@ namespace Contrast.K8s.AgentOperator
 
             try
             {
-                logger.Info($"Starting the Contrast Secruity Agent Operator {OperatorVersion.Version}.");
+                logger.Info($"Starting the Contrast Security Agent Operator {OperatorVersion.Version}.");
 
                 return await CreateHostBuilder(args)
                              .Build()

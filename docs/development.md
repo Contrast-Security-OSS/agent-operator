@@ -1,21 +1,5 @@
 # Development
 
-## Building the Operator
-
-> Make sure to restore the submodules in the `./vendor` directory and you have the latest .NET LTS installed!
-
-The Contrast Agent Operator is a standard .NET application and can be built as such.
-
-```
-dotnet build
-```
-
-And when everything is ready,
-
-```
-dotnet run
-```
-
 ## Running the Operator Locally
 
 As this is an operator, local development requires the interactions of a K8s cluster.
@@ -49,23 +33,36 @@ https://docs.microsoft.com/en-us/visualstudio/bridge/bridge-to-kubernetes-vs-cod
 
 - Ensure `manifests\install\dev` is deployed into your local cluster.
 - Ensure the VS Code extension is installed.
+- Open the `manifests` folder in VSCode.
 - Select the operator namespace.
 
 ![Select Namespace](./assets/select-namespace.png)
 
-- Finally, create a local tunnel from the cluster to your machine. Select the port your local operator instance is running on (for us, port 5001).
-
-![Debug Service](./assets/debug-service.png)
-
-After following the prompts and running the generated task, connections for the operator wil be redirected to your local machine.
-
-To run the task:
+To run the task (Ctrl+Shift+P to open this menu):
 
 ![Run Task](./assets/run-task.png)
 
 And select the generated task:
 
 ![Bridge Task](./assets/bridge-task.png)
+
+Note: If you get the error `Error: Process 'PID 4 System Service' binds to port '443' on all addresses. This will prevent 'Bridge To Kubernetes' from forwarding network traffic on this port. Please stop this process or service and try again.` this is probably IIS binding to port 443.
+
+## Building the Operator
+
+> Make sure to restore the submodules in the `./vendor` directory and you have the latest .NET LTS installed!
+
+The Contrast Agent Operator is a standard .NET application and can be built as such.
+
+```
+dotnet build
+```
+
+And when everything is ready,
+
+```
+dotnet run
+```
 
 ## Running the Tests
 
