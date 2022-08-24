@@ -167,6 +167,7 @@ jobs:
     strategy:
       matrix:
         k3s-version:
+          - 1.25 # EOL: 2023-10-27
           - 1.24 # EOL: 2023-09-29
           - 1.23 # EOL: 2023-02-28
           - 1.22 # EOL: 2022-10-28
@@ -245,6 +246,7 @@ jobs:
           - manifests
           - helm-manifests
         k3s-version:
+          - 1.25 # EOL: 2023-10-27
           - 1.24 # EOL: 2023-09-29
           - 1.23 # EOL: 2023-02-28
           - 1.22 # EOL: 2022-10-28
