@@ -32,14 +32,12 @@ rules:
 - apiGroups:
   - apps
   - ""
-  - dynatrace.com
   - apps.openshift.io
   resources:
   - daemonsets
   - deployments
   - statefulsets
   - pods
-  - dynakubes
   - deploymentconfigs
   verbs:
   - get
@@ -54,8 +52,10 @@ rules:
   - '*'
 - apiGroups:
   - agents.contrastsecurity.com
+  - dynatrace.com
   resources:
   - clusteragentconnections
+  - dynakubes
   - clusteragentconfigurations
   verbs:
   - get
