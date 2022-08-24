@@ -52,7 +52,3 @@ metadata:
 spec:
   yaml: |
     enabled: true
-    agent:
-      dotnet:
-        secret:
-          should_connect: false
