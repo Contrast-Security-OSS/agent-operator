@@ -8,42 +8,12 @@ metadata:
 rules:
 - apiGroups:
   - ""
-  - apps
-  - apps.openshift.io
-  resources:
-  - pods
-  - daemonsets
-  - deploymentconfigs
-  - deployments
-  - statefulsets
-  verbs:
-  - get
-  - list
-  - watch
-  - patch
-- apiGroups:
   - agents.contrastsecurity.com
-  resources:
-  - clusteragentconfigurations
-  - clusteragentconnections
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - agents.contrastsecurity.com
-  resources:
-  - agentinjectors
-  verbs:
-  - '*'
-- apiGroups:
-  - agents.contrastsecurity.com
-  - ""
   - coordination.k8s.io
   resources:
-  - agentconfigurations
   - secrets
   - agentconnections
+  - agentconfigurations
   - leases
   verbs:
   - '*'
@@ -59,6 +29,38 @@ rules:
   - patch
   - update
   - delete
+- apiGroups:
+  - apps
+  - ""
+  - dynatrace.com
+  - apps.openshift.io
+  resources:
+  - daemonsets
+  - deployments
+  - statefulsets
+  - pods
+  - dynakubes
+  - deploymentconfigs
+  verbs:
+  - get
+  - list
+  - watch
+  - patch
+- apiGroups:
+  - agents.contrastsecurity.com
+  resources:
+  - agentinjectors
+  verbs:
+  - '*'
+- apiGroups:
+  - agents.contrastsecurity.com
+  resources:
+  - clusteragentconnections
+  - clusteragentconfigurations
+  verbs:
+  - get
+  - list
+  - watch
 - apiGroups:
   - ""
   resources:
@@ -81,14 +83,6 @@ rules:
   - update
   - delete
 - apiGroups:
-  - ""
-  resources:
-  - pods/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
   - apps
   resources:
   - daemonsets/status
@@ -108,6 +102,14 @@ rules:
   - apps
   resources:
   - statefulsets/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - pods/status
   verbs:
   - get
   - patch
