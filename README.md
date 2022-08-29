@@ -35,7 +35,7 @@ Further documentation and examples can be found on [docs.contrastsecurity.com](h
 
 ## Releases
 
-Builds released into the the `public` environment are are published to DockerHub. Manifests are uploaded to the [GitHub releases page](https://github.com/Contrast-Security-OSS/agent-operator/releases).
+Builds released into the the `public` environment are are published to DockerHub and Quay. Manifests are uploaded to the [GitHub releases page](https://github.com/Contrast-Security-OSS/agent-operator/releases).
 
 Releases are tagged using the following format:
 
@@ -46,7 +46,7 @@ contrast/agent-operator:1
 contrast/agent-operator:latest
 ```
 
-See [DockerHub tags](https://hub.docker.com/r/contrast/agent-operator/tags) for a list of all available tags.
+See [DockerHub tags](https://hub.docker.com/r/contrast/agent-operator/tags) or [Quay tags](https://quay.io/repository/contrast/agent-operator?tab=tags) for a list of all available tags.
 
 ## Contributing
 

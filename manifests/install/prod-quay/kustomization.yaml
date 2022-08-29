@@ -1,0 +1,23 @@
+bases:
+  - ../prod
+
+images:
+  - name: contrast/agent-operator
+    newName: quay.io/contrast/agent-operator
+    newTag: latest
+
+patchesStrategicMerge:
+  - |-
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: contrast-agent-operator
+      namespace: contrast-agent-operator
+    spec:
+      template:
+        spec:
+          containers:
+            - name: contrast-agent-operator
+              env:
+                - name: CONTRAST_DEFAULT_REGISTRY
+                  value: "quay.io/contrast"

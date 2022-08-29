@@ -88,20 +88,36 @@ jobs:
       BUILD_VERSION: ${{ needs.generate-version.outputs.version }}
     steps:
       - uses: actions/checkout@v3
-      - name: Generate Manifests
+      - uses: imranismail/setup-kustomize@v1
+      - name: Generate Manifests (Prod)
         run: |
           set -xe
           cd ./manifests/install/prod
-          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
-          ./kustomize edit set image 'contrast/agent-operator:${{ env.BUILD_VERSION }}'
+          kustomize edit set image 'contrast/agent-operator:${{ env.BUILD_VERSION }}'
           cat ../../license-header.yaml > ./install-prod.yaml
-          ./kustomize build ./ >> ./install-prod.yaml
+          kustomize build ./ >> ./install-prod.yaml
+        shell: bash
+      - name: Generate Manifests (Prod-Quay)
+        run: |
+          set -xe
+          cd ./manifests/install/prod-quay
+          kustomize edit set image 'quay.io/contrast/agent-operator:${{ env.BUILD_VERSION }}'
+          cat ../../license-header.yaml > ./install-prod-quay.yaml
+          kustomize build ./ >> ./install-prod-quay.yaml
+        shell: bash
+      - name: Stage Manifests
+        run: |
+          set -xe
+          cp manifests/install/prod/install-prod.yaml ./install-prod.yaml
+          cp manifests/install/prod-quay/install-prod-quay.yaml ./install-prod-quay.yaml
         shell: bash
       - name: Publish (Artifacts)
         uses: actions/upload-artifact@v3
         with:
           name: manifests
-          path: manifests/install/prod/install-prod.yaml
+          path: |
+            install-prod.yaml
+            install-prod-quay.yaml
           retention-days: 7
   test-image:
     runs-on: ubuntu-latest
