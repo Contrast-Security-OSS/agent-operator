@@ -1,0 +1,9 @@
+resources:
+  - base/deployment.yaml
+  - base/disruption-budget.yaml
+  - base/namespace.yaml
+  - base/service.yaml
+  - base/webhook.yaml
+  - base/rbac/cluster-role-binding.yaml
+  - base/rbac/cluster-role.yaml
+  - base/rbac/service-account.yaml

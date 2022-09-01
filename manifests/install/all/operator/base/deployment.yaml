@@ -74,6 +74,8 @@ spec:
               value: $(CONTRAST_WEBHOOK_SERVICENAME),$(CONTRAST_WEBHOOK_SERVICENAME).$(POD_NAMESPACE).svc,$(CONTRAST_WEBHOOK_SERVICENAME).$(POD_NAMESPACE).svc.cluster.local
             - name: CONTRAST_DEFAULT_REGISTRY
               value: "contrast"
+            - name: CONTRAST_INSTALL_SOURCE
+              value: "kustomize"
           livenessProbe:
             httpGet:
               path: /health

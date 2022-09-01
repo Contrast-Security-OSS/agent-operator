@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: contrast-agent-operator
+  namespace: contrast-agent-operator
+spec:
+  template:
+    spec:
+      containers:
+        - name: contrast-agent-operator
+          env:
+            - name: CONTRAST_WEBHOOK_SERVICENAME
+              value: '{{ .Release.Namespace }}'
+            - name: CONTRAST_DEFAULT_REGISTRY
+              value: '{{ required "operator.defaultRegistry is required." .Values.operator.defaultRegistry }}'
+            - name: CONTRAST_SETTLE_DURATION
+              value: '{{ .Values.operator.settleDuration }}'
+            - name: CONTRAST_WEBHOOK_SECRET
+              value: '{{ .Values.operator.webhookSecretName }}'
+            - name: CONTRAST_WEBHOOK_CONFIGURATION
+              value: '{{ .Values.operator.webhookConfiguration }}'
+            - name: CONTRAST_ENABLE_EARLY_CHAINING
+              value: '{{ .Values.operator.enableEarlyChaining }}'
+            - name: CONTRAST_INSTALL_SOURCE
+              value: helm
