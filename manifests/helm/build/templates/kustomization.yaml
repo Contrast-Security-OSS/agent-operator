@@ -1,0 +1,15 @@
+namespace: >-
+  {{ .Values.namespace }}
+
+bases:
+  - ../../../install/all/operator
+
+images:
+  - name: contrast/agent-operator
+    newName: >-
+      {{ .Values.image.registry }}/{{ .Values.image.repository }}
+    newTag: >-
+      {{ default .Chart.AppVersion .Values.image.tag }}
+
+patchesStrategicMerge:
+  - overlays/deployment.yaml

@@ -1,0 +1,37 @@
+# Release.Namespace is ignored. The operator must be created in a separate namespace.
+namespace: contrast-agent-operator
+image:
+  registry: contrast
+  repository: agent-operator
+  # Defaults to the version specified in Chart.AppVersion.
+  tag:
+
+operator:
+  # The default registry to use, defaults to docker.io/contrast.
+  defaultRegistry: contrast
+  # The settle duration in seconds.
+  # The time to wait to sync with the cluster before making changes.
+  settleDuration: 10
+  # The secret containing the TLS certificates used for the webhook.
+  # Used for to cache TLS certificate generation across restarts,
+  # and to share the same certificate across operator instances (when running in HA mode).
+  webhookSecretName: contrast-web-hook-secret
+  # The name of the webhook to patch after certificate generation occurs.
+  webhookConfiguration: contrast-web-hook-configuration
+  # Enable early chaining. Should normally be disabled unless DynaKube is used in classicStack mode.
+  enableEarlyChaining: false
+
+clusterDefaults:
+  # If enabled, configure cluster-wide defaults.
+  enabled: false
+  # Required. The Contrast UI instance to use. Defaults at the general SAAS instance.
+  url: https://app.contrastsecurity.com/Contrast
+  # Required. The API Key from the Contrast UI.
+  apiKeyValue:
+  # Required. The Service Key from the Contrast UI.
+  serviceKeyValue:
+  # Required. The User Name from the Contrast UI.
+  userNameValue:
+  # Optional. Any custom configuration to use. Must be in the format of the standard YAML file.
+  yaml: |-
+    enable: true
