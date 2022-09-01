@@ -1,3 +1,4 @@
+{{ if .Values.clusterDefaults.enabled }}
 apiVersion: agents.contrastsecurity.com/v1beta1
 kind: ClusterAgentConfiguration
 metadata:
@@ -45,3 +46,4 @@ stringData:
     {{ required "The key clusterDefaults.serviceKeyValue must be set if clusterDefaults.enabled is true" .Values.clusterDefaults.serviceKeyValue }}
   userName: >-
     {{ required "The key clusterDefaults.userNameValue must be set if clusterDefaults.enabled is true" .Values.clusterDefaults.userNameValue }}
+{{ end }}

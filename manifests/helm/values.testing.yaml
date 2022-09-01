@@ -1,0 +1,9 @@
+clusterDefaults:
+  enabled: true
+  url: https://app.contrastsecurity.com/Contrast
+  apiKeyValue: testing
+  serviceKeyValue: testing
+  userNameValue: testing
+  yaml: |-
+    enable: true
+    second-line: something
