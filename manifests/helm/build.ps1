@@ -19,7 +19,11 @@ Invoke-Kustomize -BasePath "$root/build/templates" -OutputFilePath "$root/templa
 
 # Package
 Write-Host "Linting chart."
-helm lint $root
+helm lint $root --values "$root/values.testing.yaml"
+if (-Not $?)
+{
+    throw "Linting failed."
+}
 
 Write-Host "Packaging chart."
 helm package `
@@ -27,3 +31,7 @@ helm package `
     --app-version $AppVersion `
     --version $ChartVersion `
     --destination "$root/dist"
+if (-Not $?)
+{
+    throw "Packing failed."
+}

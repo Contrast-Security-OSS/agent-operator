@@ -119,6 +119,47 @@ jobs:
             install-prod.yaml
             install-prod-quay.yaml
           retention-days: 7
+  build-helm-chart:
+    runs-on: ubuntu-latest
+    needs: generate-version
+    env:
+      BUILD_VERSION: ${{ needs.generate-version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: imranismail/setup-kustomize@v1
+      - uses: azure/setup-helm@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Generate Chart
+        run: |
+          set -xe
+          pwsh ./manifests/helm/build.ps1 \
+            -AppVersion ${{ env.BUILD_VERSION }} \
+            -ChartVersion ${{ env.BUILD_VERSION }}
+        shell: bash
+      - name: Render Manifests
+        run: |
+          set -xe
+          helm template test \
+            ./manifests/helm/dist/contrast-agent-operator-${{ env.BUILD_VERSION }}.tgz \
+            --values ./manifests/helm/values.testing.yaml \
+            --include-crds \
+            | tee ./manifests/helm/dist/output.yaml
+        shell: bash
+      - name: Publish (Chart)
+        uses: actions/upload-artifact@v3
+        with:
+          name: helm-chart
+          path: |
+            manifests/helm/dist/*.tgz
+          retention-days: 7
+      - name: Publish (Manifests)
+        uses: actions/upload-artifact@v3
+        with:
+          name: helm-manifests
+          path: |
+            manifests/helm/dist/output.yaml
+          retention-days: 7
   test-image:
     runs-on: ubuntu-latest
     needs:
@@ -197,8 +238,12 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - build-manifests
+      - build-helm-chart
     strategy:
       matrix:
+        artifact:
+          - manifests
+          - helm-manifests
         k3s-version:
           - 1.24 # EOL: 2023-09-29
           - 1.23 # EOL: 2023-02-28
@@ -222,7 +267,7 @@ jobs:
         uses: actions/download-artifact@v3
         id: download-artifacts
         with:
-          name: manifests
+          name: ${{ matrix.artifact }}
           path: ./artifacts
       - name: Validate Manifests
         run: |
@@ -232,19 +277,24 @@ jobs:
           which pluto
           which polaris
 
-          # https://github.com/yannh/kubeconform/issues/100#issuecomment-1096832969
-          kubeconform \
-            --verbose \
-            --summary \
-            --kubernetes-version ${{ matrix.k3s-version }}.0 \
-            -schema-location "default" \
-            -schema-location "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/{{ .NormalizedKubernetesVersion }}/{{ .ResourceKind }}{{ .KindSuffix }}.json" \
-            ./artifacts/install-prod.yaml
+          for manifest in ./artifacts/*.yaml;
+          do
+            # https://github.com/yannh/kubeconform/issues/100#issuecomment-1096832969
+            # Skipping the custom manifests for now.
+            kubeconform \
+              --verbose \
+              --summary \
+              --kubernetes-version ${{ matrix.k3s-version }}.0 \
+              -schema-location "default" \
+              -schema-location "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/{{ .NormalizedKubernetesVersion }}/{{ .ResourceKind }}{{ .KindSuffix }}.json" \
+              -ignore-missing-schemas \
+              $manifest
 
-          pluto detect \
-            --output wide \
-            --target-versions k8s=v${{ matrix.k3s-version }}.0 \
-            ./artifacts/install-prod.yaml
+            pluto detect \
+              --output wide \
+              --target-versions k8s=v${{ matrix.k3s-version }}.0 \
+              $manifest
+          done
 
           polaris audit \
             --audit-path ./artifacts/ \
@@ -376,6 +426,13 @@ jobs:
           artifacts: ${{ steps.download-artifacts.outputs.download-path }}/*.yaml
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
+      - name: Publish Helm Chart
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.GH_PR_WRITE_PAT }}
+          repository: Contrast-Security-OSS/helm-charts
+          event-type: oob-update
+          client-payload: '{"type":"agent-operator","runId":${{ env.GITHUB_RUN_ID }},"artifactName":"helm-chart"}'
       - name: Create Sentry Release
         uses: getsentry/action-release@v1
         with:
