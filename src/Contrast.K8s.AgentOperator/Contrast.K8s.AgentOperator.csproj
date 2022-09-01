@@ -31,7 +31,7 @@
         <PackageReference Include="Autofac" Version="6.4.0" />
         <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="8.0.0" />
 
-        <PackageReference Include="NLog" Version="5.0.2" />
+        <PackageReference Include="NLog" Version="5.0.3" />
         <PackageReference Include="NLog.Web.AspNetCore" Version="5.1.1" />
 
         <PackageReference Include="Glob" Version="1.1.9" />
