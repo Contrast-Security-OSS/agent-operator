@@ -432,7 +432,12 @@ jobs:
           token: ${{ secrets.GH_PR_WRITE_PAT }}
           repository: Contrast-Security-OSS/helm-charts
           event-type: oob-update
-          client-payload: '{"type":"agent-operator","runId":${{ env.GITHUB_RUN_ID }},"artifactName":"helm-chart"}'
+          client-payload: |
+            {
+                "type": "agent-operator",
+                "runId": "${{ github.run_id }}",
+                "artifactName": "helm-chart"
+            }
       - name: Create Sentry Release
         uses: getsentry/action-release@v1
         with:
