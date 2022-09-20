@@ -97,7 +97,7 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Matching
                 {
                     readyAgentInjectors.Add(new ResourceIdentityPair<AgentInjectorResource>(identity, isReadyResult.Data));
                 }
-                else if(result is NotReadyResult<AgentInjectorResource> notReadyResult)
+                else if (result is NotReadyResult<AgentInjectorResource> notReadyResult)
                 {
                     Logger.Info($"Ignoring the not ready '{identity}'. (Errors: [{notReadyResult.FormatFailureReasons()}])");
                 }

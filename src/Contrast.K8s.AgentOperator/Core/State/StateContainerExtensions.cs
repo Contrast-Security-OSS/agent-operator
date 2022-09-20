@@ -14,9 +14,9 @@ namespace Contrast.K8s.AgentOperator.Core.State
     public static class StateContainerExtensions
     {
         public static async ValueTask<ReadyResult<AgentInjectorResource>> GetReadyAgentInjectorById(this IStateContainer state,
-                                                                                                     string name,
-                                                                                                     string @namespace,
-                                                                                                     CancellationToken cancellationToken = default)
+                                                                                                    string name,
+                                                                                                    string @namespace,
+                                                                                                    CancellationToken cancellationToken = default)
         {
             var context = new ReadyContext();
 
@@ -68,19 +68,22 @@ namespace Contrast.K8s.AgentOperator.Core.State
                 var hasApiKeySecret = await state.HasSecretKey(connection.ApiKey, cancellationToken);
                 if (!hasApiKeySecret)
                 {
-                    readyContext.AddFailureReason($"Secret '{connection.ApiKey.Namespace}/{connection.ApiKey.Name}' with key '{connection.ApiKey.Key}' could not be found.");
+                    readyContext.AddFailureReason(
+                        $"Secret '{connection.ApiKey.Namespace}/{connection.ApiKey.Name}' with key '{connection.ApiKey.Key}' could not be found.");
                 }
 
                 var hasServiceKeySecret = await state.HasSecretKey(connection.ServiceKey, cancellationToken);
                 if (!hasServiceKeySecret)
                 {
-                    readyContext.AddFailureReason($"Secret '{connection.ServiceKey.Namespace}/{connection.ServiceKey.Name}' with key '{connection.ServiceKey.Key}' could not be found.");
+                    readyContext.AddFailureReason(
+                        $"Secret '{connection.ServiceKey.Namespace}/{connection.ServiceKey.Name}' with key '{connection.ServiceKey.Key}' could not be found.");
                 }
 
                 var hasUserNameSecret = await state.HasSecretKey(connection.UserName, cancellationToken);
                 if (!hasUserNameSecret)
                 {
-                    readyContext.AddFailureReason($"Secret '{connection.UserName.Namespace}/{connection.UserName.Name}' with key '{connection.UserName.Key}' could not be found.");
+                    readyContext.AddFailureReason(
+                        $"Secret '{connection.UserName.Namespace}/{connection.UserName.Name}' with key '{connection.UserName.Key}' could not be found.");
                 }
 
                 if (hasApiKeySecret
