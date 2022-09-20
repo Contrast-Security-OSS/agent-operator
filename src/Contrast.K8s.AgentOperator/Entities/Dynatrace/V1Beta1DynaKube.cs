@@ -27,15 +27,19 @@ namespace Contrast.K8s.AgentOperator.Entities.Dynatrace
     public class OneAgentSpec
     {
         [JsonPropertyName("classicFullStack")]
-        public object? ClassicFullStack { get; set; }
+        public EmptyObject? ClassicFullStack { get; set; }
 
         [JsonPropertyName("applicationMonitoring")]
-        public object? ApplicationMonitoring { get; set; }
+        public EmptyObject? ApplicationMonitoring { get; set; }
 
         [JsonPropertyName("hostMonitoring")]
-        public object? HostMonitoring { get; set; }
+        public EmptyObject? HostMonitoring { get; set; }
 
         [JsonPropertyName("cloudNativeFullStack")]
-        public object? CloudNativeFullStack { get; set; }
+        public EmptyObject? CloudNativeFullStack { get; set; }
+    }
+
+    public class EmptyObject
+    {
     }
 }
