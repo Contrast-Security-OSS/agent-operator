@@ -18,13 +18,13 @@ Features:
 
 Make sure the operator supports your cluster version.
 
-| Kubernetes Version | OpenShift Version | Supported | End-of-Support |
-|--------------------|-------------------|-----------|----------------|
-| v1.25              |                   | Yes       | 2023-10-27     |
-| v1.24              |                   | Yes       | 2023-09-29     |
-| v1.23              | v4.10             | Yes       | 2023-02-28     |
-| v1.22              | v4.9              | Yes       | 2022-10-28     |
-| v1.21              | v4.8              | Yes       | 2022-06-28     |
+| Kubernetes Version | OpenShift Version | Operator Version | End-of-Support |
+|--------------------|-------------------|------------------|----------------|
+| v1.25              |                   | v0.8.0+          | 2023-10-27     |
+| v1.24              |                   | v0.4.0+          | 2023-09-29     |
+| v1.23              | v4.10             | v0.1.0+          | 2023-02-28     |
+| v1.22              | v4.9              | v0.1.0+          | 2022-10-28     |
+| v1.21              | v4.8              | v0.1.0+          | 2022-06-28     |
 
 To install the latest version of the operator into a cluster, apply the installation YAML containing all the required manifests, including the CRDs and RBACs.
 
