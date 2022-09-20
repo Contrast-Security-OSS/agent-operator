@@ -1,6 +1,7 @@
 ﻿// Contrast Security, Inc licenses this file to you under the Apache 2.0 License.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -91,13 +92,18 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Matching
             var injectorIdentities = await _state.GetKeysByType<AgentInjectorResource>(cancellationToken);
             foreach (var identity in injectorIdentities)
             {
-                if (await _state.GetReadyAgentInjectorById(identity.Name, identity.Namespace, cancellationToken) is { } agentInjector)
+                var result = await _state.GetReadyAgentInjectorById(identity.Name, identity.Namespace, cancellationToken);
+                if (result is IsReadyResult<AgentInjectorResource> isReadyResult)
                 {
-                    readyAgentInjectors.Add(new ResourceIdentityPair<AgentInjectorResource>(identity, agentInjector));
+                    readyAgentInjectors.Add(new ResourceIdentityPair<AgentInjectorResource>(identity, isReadyResult.Data));
+                }
+                else if(result is NotReadyResult<AgentInjectorResource> notReadyResult)
+                {
+                    Logger.Info($"Ignoring the not ready '{identity}'. (Errors: [{notReadyResult.FormatFailureReasons()}])");
                 }
                 else
                 {
-                    Logger.Info($"Ignoring the not ready '{identity}'.");
+                    throw new ArgumentOutOfRangeException();
                 }
             }
 
