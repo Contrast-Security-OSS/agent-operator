@@ -37,9 +37,9 @@ namespace Contrast.K8s.AgentOperator.Entities.Dynatrace
 
         [JsonPropertyName("cloudNativeFullStack")]
         public EmptyObject? CloudNativeFullStack { get; set; }
-    }
 
-    public class EmptyObject
-    {
+        public class EmptyObject
+        {
+        }
     }
 }
