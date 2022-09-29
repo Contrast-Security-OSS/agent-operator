@@ -4,6 +4,7 @@
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using Contrast.K8s.AgentOperator.Options;
 using MediatR;
 using NLog;
 
@@ -17,8 +18,15 @@ namespace Contrast.K8s.AgentOperator.Core.State
 
     public class EventStream : IEventStream
     {
+        private readonly OperatorOptions _operatorOptions;
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-        private readonly Channel<INotification> _channel = Channel.CreateBounded<INotification>(CreateChannelOptions(), ItemDropped);
+        private readonly Channel<INotification> _channel;
+
+        public EventStream(OperatorOptions operatorOptions)
+        {
+            _operatorOptions = operatorOptions;
+            _channel = Channel.CreateBounded<INotification>(CreateChannelOptions(), ItemDropped);
+        }
 
         public ValueTask DispatchDeferred<T>(T request, CancellationToken cancellationToken = default) where T : INotification
         {
@@ -30,9 +38,9 @@ namespace Contrast.K8s.AgentOperator.Core.State
             return _channel.Reader.ReadAsync(cancellationToken);
         }
 
-        private static BoundedChannelOptions CreateChannelOptions()
+        private BoundedChannelOptions CreateChannelOptions()
         {
-            return new BoundedChannelOptions(10 * 1024)
+            return new BoundedChannelOptions(_operatorOptions.EventQueueSize)
             {
                 FullMode = BoundedChannelFullMode.DropOldest
             };
@@ -40,7 +48,7 @@ namespace Contrast.K8s.AgentOperator.Core.State
 
         private static void ItemDropped(INotification obj)
         {
-            Logger.Error($"Unable to process events quick enough, drop event '{obj.GetType().FullName}' for safety. "
+            Logger.Error($"Unable to process events quick enough, dropped event '{obj.GetType().FullName}' for safety. "
                          + "Cluster snapshot will be out of date until this operator is restarted.");
         }
     }

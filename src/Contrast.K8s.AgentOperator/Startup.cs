@@ -146,7 +146,15 @@ namespace Contrast.K8s.AgentOperator
                     settleDuration = parsedSettleDuration;
                 }
 
-                return new OperatorOptions(@namespace, SettlingDurationSeconds: settleDuration);
+                var eventQueueSize = 10 * 1024;
+                if (Environment.GetEnvironmentVariable("CONTRAST_EVENT_QUEUE_SIZE") is { } eventQueueSizeStr
+                    && int.TryParse(eventQueueSizeStr, out var parsedEventQueueSize)
+                    && parsedEventQueueSize > -1)
+                {
+                    eventQueueSize = parsedEventQueueSize;
+                }
+
+                return new OperatorOptions(@namespace, SettlingDurationSeconds: settleDuration, EventQueueSize: eventQueueSize);
             }).SingleInstance();
 
             builder.Register(_ =>

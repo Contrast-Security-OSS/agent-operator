@@ -3,5 +3,8 @@
 
 namespace Contrast.K8s.AgentOperator.Options
 {
-    public record OperatorOptions(string Namespace, string FieldManagerName = "agents.contrastsecurity.com", int SettlingDurationSeconds = 10);
+    public record OperatorOptions(string Namespace,
+                                  string FieldManagerName = "agents.contrastsecurity.com",
+                                  int SettlingDurationSeconds = 10,
+                                  int EventQueueSize = 10 * 1024);
 }
