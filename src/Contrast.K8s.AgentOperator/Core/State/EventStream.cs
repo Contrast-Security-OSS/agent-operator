@@ -42,7 +42,7 @@ namespace Contrast.K8s.AgentOperator.Core.State
         {
             return new BoundedChannelOptions(_operatorOptions.EventQueueSize)
             {
-                FullMode = BoundedChannelFullMode.DropOldest
+                FullMode = _operatorOptions.EventQueueFullMode
             };
         }
 

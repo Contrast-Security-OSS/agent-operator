@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Channels;
 using Autofac;
 using Autofac.Features.Variance;
 using Contrast.K8s.AgentOperator.Autofac;
@@ -154,7 +155,19 @@ namespace Contrast.K8s.AgentOperator
                     eventQueueSize = parsedEventQueueSize;
                 }
 
-                return new OperatorOptions(@namespace, SettlingDurationSeconds: settleDuration, EventQueueSize: eventQueueSize);
+                // Wait:
+                //   Waits for space to be available in order to complete the write operation.
+                //   This might be useful for larger clusters, allow the queue to create back pressure on the "get the world" calls during startup.
+                // DropOldest:
+                //   Removes and ignores the oldest item in the channel in order to make room for the item being written.
+                var fullMode = BoundedChannelFullMode.DropOldest;
+                if (Environment.GetEnvironmentVariable("CONTRAST_EVENT_QUEUE_FULL_MODE") is { } fullModeStr
+                    && Enum.TryParse<BoundedChannelFullMode>(fullModeStr, out var parsedFullMode))
+                {
+                    fullMode = parsedFullMode;
+                }
+
+                return new OperatorOptions(@namespace, settleDuration, eventQueueSize, fullMode);
             }).SingleInstance();
 
             builder.Register(_ =>
