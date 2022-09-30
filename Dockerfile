@@ -2,6 +2,13 @@
 # See the LICENSE file in the project root for more information.
 
 FROM mcr.microsoft.com/dotnet/aspnet:6.0.9 AS base
+
+# To aid in debugging.
+RUN set -xe \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends curl jq \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0.401 AS build
@@ -33,10 +40,17 @@ RUN set -xe \
     && useradd -G operator-group operator-user
 
 WORKDIR /app
+COPY src/get-info.sh /get-info.sh
 COPY --from=build /app .
-RUN chown operator-user:operator-group -R .
+
+RUN set -xe \
+    && chown operator-user:operator-group -R . \
+    && chmod +x /get-info.sh
 
 USER operator-user
+
+ARG BUILD_VERSION=0.0.1 \
+    IS_PUBLIC_BUILD=False
 
 ENV ASPNETCORE_URLS=https://+:5001 \
     ASPNETCORE_ENVIRONMENT=Production \

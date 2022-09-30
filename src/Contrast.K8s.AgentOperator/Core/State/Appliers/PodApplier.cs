@@ -47,7 +47,7 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers
         private static AgentInjectionType? GetInjectionType(V1Pod entity)
         {
             AgentInjectionType? injectionType = null;
-            if (entity.GetAnnotation(InjectionConstants.IsInjectedAttributeName) is { } injectionTypeAnnotation
+            if (entity.GetAnnotation(InjectionConstants.InjectorTypeAttributeName) is { } injectionTypeAnnotation
                 && Enum.TryParse<AgentInjectionType>(injectionTypeAnnotation, true, out var injectionTypeEnum))
             {
                 injectionType = injectionTypeEnum;

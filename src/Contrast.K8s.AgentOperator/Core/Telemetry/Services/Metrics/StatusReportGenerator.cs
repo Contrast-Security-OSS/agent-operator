@@ -91,7 +91,10 @@ namespace Contrast.K8s.AgentOperator.Core.Telemetry.Services.Metrics
             var pods = await _clusterState.GetByType<PodResource>(cancellationToken);
             foreach (var g in pods.GroupBy(x => x.Resource.InjectionType))
             {
-                metrics.Add($"Injected.{g.Key}.PodsCount", g.Count());
+                if (g.Key.HasValue)
+                {
+                    metrics.Add($"Injected.{g.Key}.PodsCount", g.Count());
+                }
             }
 
             var podsInjectedCount = pods.Count(x => x.Resource.IsInjected);
