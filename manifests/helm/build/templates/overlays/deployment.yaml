@@ -15,6 +15,10 @@ spec:
               value: '{{ required "operator.defaultRegistry is required." .Values.operator.defaultRegistry }}'
             - name: CONTRAST_SETTLE_DURATION
               value: '{{ .Values.operator.settleDuration }}'
+            - name: CONTRAST_EVENT_QUEUE_SIZE
+              value: '{{ .Values.operator.eventQueueSize }}'
+            - name: CONTRAST_EVENT_QUEUE_FULL_MODE
+              value: '{{ .Values.operator.eventQueueFullMode }}'
             - name: CONTRAST_WEBHOOK_SECRET
               value: '{{ .Values.operator.webhookSecretName }}'
             - name: CONTRAST_WEBHOOK_CONFIGURATION

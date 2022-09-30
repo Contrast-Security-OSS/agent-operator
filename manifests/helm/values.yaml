@@ -12,11 +12,23 @@ operator:
   # The settle duration in seconds.
   # The time to wait to sync with the cluster before making changes.
   settleDuration: 10
+  # Max number of events to queue from the K8s event stream.
+  eventQueueSize: 10000
+  # The action to perform when the event queue is full,
+  # and the operator is unable to process events fast enough.
+  # Wait:
+  #   Waits for space to be available in order to complete the write operation.
+  #   This might be useful for larger clusters, allow the queue to create back pressure on the "get the world" calls during startup.
+  # DropOldest:
+  #   Removes and ignores the oldest item in the channel in order to make room for the item being written.
+  eventQueueFullMode: DropOldest
   # The secret containing the TLS certificates used for the webhook.
   # Used for to cache TLS certificate generation across restarts,
   # and to share the same certificate across operator instances (when running in HA mode).
+  # Should not normally need to change.
   webhookSecretName: contrast-web-hook-secret
   # The name of the webhook to patch after certificate generation occurs.
+  # Should not normally need to change.
   webhookConfiguration: contrast-web-hook-configuration
   # Enable early chaining. Should normally be disabled unless DynaKube is used in classicStack mode.
   enableEarlyChaining: false
