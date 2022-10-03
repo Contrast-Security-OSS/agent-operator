@@ -7,6 +7,7 @@
         <LangVersion>latest</LangVersion>
         <IsPackable>false</IsPackable>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <ServerGarbageCollection>true</ServerGarbageCollection>
         <!--Ignore warnings about missing XML docs.-->
         <NoWarn>CS1591</NoWarn>
         <IsPublicBuild Condition="'$(IsPublicBuild)' == ''">false</IsPublicBuild>
