@@ -94,7 +94,7 @@ namespace Contrast.K8s.AgentOperator
             {
                 var c = context.Resolve<IComponentContext>();
                 return t => c.Resolve(t);
-            });
+            }).SingleInstance();
             builder.RegisterSource(new ContravariantRegistrationSource());
             builder.RegisterAssemblyTypes(assembly)
                    .PublicOnly()
