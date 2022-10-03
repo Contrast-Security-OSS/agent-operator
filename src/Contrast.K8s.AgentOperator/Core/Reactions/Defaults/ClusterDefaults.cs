@@ -75,14 +75,7 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults
             using var sha256 = SHA256.Create();
             var bytes = Encoding.UTF8.GetBytes(text);
             var hash = sha256.ComputeHash(bytes);
-            var hashString = new StringBuilder();
-            for (var index = 0; index < hash.Length && hashString.Length <= 8; index++)
-            {
-                var x = hash[index];
-                hashString.AppendFormat("{0:x2}", x);
-            }
-
-            return hashString.ToString();
+            return HexConverter.ToLowerHex(hash, 8);
         }
     }
 }

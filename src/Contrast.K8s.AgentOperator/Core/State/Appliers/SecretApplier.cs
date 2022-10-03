@@ -34,16 +34,8 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers
         private static string Sha256(byte[] data)
         {
             using var sha256 = SHA256.Create();
-
-            var hash = new StringBuilder();
             var bytes = sha256.ComputeHash(data);
-
-            foreach (var b in bytes)
-            {
-                hash.Append(b.ToString("x2"));
-            }
-
-            return hash.ToString();
+            return HexConverter.ToLowerHex(bytes);
         }
     }
 }
