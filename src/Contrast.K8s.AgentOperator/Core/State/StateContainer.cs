@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Interfaces;
+using Nito.AsyncEx;
 
 namespace Contrast.K8s.AgentOperator.Core.State
 {
@@ -48,7 +49,7 @@ namespace Contrast.K8s.AgentOperator.Core.State
 
     public class StateContainer : IStateContainer
     {
-        private readonly SemaphoreSlim _lock = new(1, 1);
+        private readonly AsyncLock _lock = new();
         private readonly Dictionary<NamespacedResourceIdentity, ResourceHolder> _resources = new(NamespacedResourceIdentity.Comparer);
         private readonly IResourceComparer _resourceComparer;
 
@@ -65,8 +66,7 @@ namespace Contrast.K8s.AgentOperator.Core.State
                                                                          CancellationToken cancellationToken = default)
             where T : class, INamespacedResource
         {
-            await _lock.WaitAsync(cancellationToken);
-            try
+            using (await _lock.LockAsync(cancellationToken))
             {
                 var identity = NamespacedResourceIdentity.Create<T>(name, @namespace);
                 if (_resources.TryGetValue(identity, out var existing) && existing.Resource != null)
@@ -91,10 +91,6 @@ namespace Contrast.K8s.AgentOperator.Core.State
                     return new StateUpdateResult<T>(true, null, resource);
                 }
             }
-            finally
-            {
-                _lock.Release();
-            }
         }
 
         public async ValueTask<StateUpdateResult<T>> RemoveById<T>(string name,
@@ -102,8 +98,7 @@ namespace Contrast.K8s.AgentOperator.Core.State
                                                                    CancellationToken cancellationToken = default)
             where T : class, INamespacedResource
         {
-            await _lock.WaitAsync(cancellationToken);
-            try
+            using (await _lock.LockAsync(cancellationToken))
             {
                 var identity = NamespacedResourceIdentity.Create<T>(name, @namespace);
                 if (_resources.TryGetValue(identity, out var existing) && existing.Resource != null)
@@ -114,10 +109,6 @@ namespace Contrast.K8s.AgentOperator.Core.State
 
                 return new StateUpdateResult<T>(false, null, null);
             }
-            finally
-            {
-                _lock.Release();
-            }
         }
 
         public async ValueTask<T?> GetById<T>(string name,
@@ -125,8 +116,7 @@ namespace Contrast.K8s.AgentOperator.Core.State
                                               CancellationToken cancellationToken = default)
             where T : class, INamespacedResource
         {
-            await _lock.WaitAsync(cancellationToken);
-            try
+            using (await _lock.LockAsync(cancellationToken))
             {
                 var identity = NamespacedResourceIdentity.Create<T>(name, @namespace);
                 if (_resources.TryGetValue(identity, out var ret) && ret.Resource != null)
@@ -136,10 +126,6 @@ namespace Contrast.K8s.AgentOperator.Core.State
 
                 return default;
             }
-            finally
-            {
-                _lock.Release();
-            }
         }
 
         public async ValueTask<bool> ExistsById<T>(string name,
@@ -147,68 +133,47 @@ namespace Contrast.K8s.AgentOperator.Core.State
                                                    CancellationToken cancellationToken = default)
             where T : class, INamespacedResource
         {
-            await _lock.WaitAsync(cancellationToken);
-            try
+            using (await _lock.LockAsync(cancellationToken))
             {
                 return _resources.ContainsKey(NamespacedResourceIdentity.Create<T>(name, @namespace));
-            }
-            finally
-            {
-                _lock.Release();
             }
         }
 
         public async ValueTask<IReadOnlyCollection<ResourceIdentityPair<T>>> GetByType<T>(CancellationToken cancellationToken = default)
             where T : class, INamespacedResource
         {
-            await _lock.WaitAsync(cancellationToken);
-            try
+            using (await _lock.LockAsync(cancellationToken))
             {
                 return _resources.Where(x => x.Key.Type.IsAssignableTo(typeof(T)))
                                  .Where(x => x.Value.Resource != null)
                                  .Select(x => new ResourceIdentityPair<T>(x.Key, (T)x.Value.Resource!))
                                  .ToList();
             }
-            finally
-            {
-                _lock.Release();
-            }
         }
 
         public async ValueTask<IReadOnlyCollection<NamespacedResourceIdentity>> GetAllKeys(CancellationToken cancellationToken = default)
         {
-            await _lock.WaitAsync(cancellationToken);
-            try
+            using (await _lock.LockAsync(cancellationToken))
             {
                 return _resources.Select(x => x.Key).ToList();
-            }
-            finally
-            {
-                _lock.Release();
             }
         }
 
         public async ValueTask<IReadOnlyCollection<NamespacedResourceIdentity>> GetKeysByType<T>(CancellationToken cancellationToken = default)
             where T : class, INamespacedResource
         {
-            await _lock.WaitAsync(cancellationToken);
-            try
+            using (await _lock.LockAsync(cancellationToken))
             {
                 return _resources.Where(x => x.Key.Type.IsAssignableTo(typeof(T)))
                                  .Select(x => x.Key)
                                  .ToList();
-            }
-            finally
-            {
-                _lock.Release();
             }
         }
 
         public async ValueTask MarkAsDirty(NamespacedResourceIdentity identity,
                                            CancellationToken cancellationToken = default)
         {
-            await _lock.WaitAsync(cancellationToken);
-            try
+            using (await _lock.LockAsync(cancellationToken))
             {
                 if (_resources.ContainsKey(identity))
                 {
@@ -221,10 +186,6 @@ namespace Contrast.K8s.AgentOperator.Core.State
                 {
                     _resources[identity] = new ResourceHolder(null, true);
                 }
-            }
-            finally
-            {
-                _lock.Release();
             }
         }
 
@@ -239,8 +200,7 @@ namespace Contrast.K8s.AgentOperator.Core.State
         public async ValueTask<bool> GetIsDirty(NamespacedResourceIdentity identity,
                                                 CancellationToken cancellationToken = default)
         {
-            await _lock.WaitAsync(cancellationToken);
-            try
+            using (await _lock.LockAsync(cancellationToken))
             {
                 if (_resources.TryGetValue(identity, out var ret))
                 {
@@ -248,10 +208,6 @@ namespace Contrast.K8s.AgentOperator.Core.State
                 }
 
                 return false;
-            }
-            finally
-            {
-                _lock.Release();
             }
         }
 
@@ -265,27 +221,17 @@ namespace Contrast.K8s.AgentOperator.Core.State
 
         public async Task Settled(CancellationToken cancellationToken = default)
         {
-            await _lock.WaitAsync(cancellationToken);
-            try
+            using (await _lock.LockAsync(cancellationToken))
             {
                 _hasSettled = true;
-            }
-            finally
-            {
-                _lock.Release();
             }
         }
 
         public async Task<bool> GetHasSettled(CancellationToken cancellationToken = default)
         {
-            await _lock.WaitAsync(cancellationToken);
-            try
+            using (await _lock.LockAsync(cancellationToken))
             {
                 return _hasSettled;
-            }
-            finally
-            {
-                _lock.Release();
             }
         }
 

@@ -31,6 +31,7 @@
         <PackageReference Include="CertificateManager" Version="1.0.8" />
         <PackageReference Include="Autofac" Version="6.4.0" />
         <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="8.0.0" />
+        <PackageReference Include="Nito.AsyncEx" Version="5.1.2" />
 
         <PackageReference Include="NLog" Version="5.0.4" />
         <PackageReference Include="NLog.Web.AspNetCore" Version="5.1.4" />
