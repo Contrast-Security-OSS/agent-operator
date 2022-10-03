@@ -18,7 +18,8 @@ namespace Contrast.K8s.AgentOperator.Core.State
 
         private readonly CompareLogic _compareLogic = new(new ComparisonConfig
         {
-            MaxDifferences = 1
+            MaxDifferences = 1,
+            AutoClearCache = false
         });
 
         public bool AreEqual<T>(T left, T right) where T : INamespacedResource?

@@ -47,6 +47,9 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
         </PackageReference>
+
+        <!--https://github.com/dotnet/runtime/issues/60393-->
+        <PackageReference Include="HexMate" Version="0.0.3" />
     </ItemGroup>
 
     <ItemGroup>

@@ -8,6 +8,7 @@ using Autofac;
 using Autofac.Features.Variance;
 using Contrast.K8s.AgentOperator.Autofac;
 using Contrast.K8s.AgentOperator.Core;
+using Contrast.K8s.AgentOperator.Core.Extensions;
 using Contrast.K8s.AgentOperator.Core.Leading;
 using Contrast.K8s.AgentOperator.Core.Reactions;
 using Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents;
@@ -73,6 +74,7 @@ namespace Contrast.K8s.AgentOperator
             builder.RegisterType<GlobMatcher>().As<IGlobMatcher>().SingleInstance();
             builder.RegisterType<KestrelCertificateSelector>().As<IKestrelCertificateSelector>().SingleInstance();
             builder.RegisterType<LeaderElectionState>().As<ILeaderElectionState>().SingleInstance();
+            builder.RegisterType<ResourceComparer>().As<IResourceComparer>().SingleInstance();
 
             builder.RegisterType<ClusterIdState>().As<IClusterIdState>().SingleInstance();
             builder.RegisterType<TelemetryState>().AsSelf().SingleInstance();
