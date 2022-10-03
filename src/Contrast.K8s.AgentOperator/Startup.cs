@@ -22,6 +22,7 @@ using Contrast.K8s.AgentOperator.Options;
 using DotnetKubernetesClient;
 using k8s;
 using KubeOps.Operator;
+using KubeOps.Operator.Caching;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -83,6 +84,10 @@ namespace Contrast.K8s.AgentOperator
             RegisterOptions(builder);
             builder.RegisterAssemblyTypes(assembly).PublicOnly().AssignableTo<BackgroundService>().As<IHostedService>();
             builder.RegisterAssemblyTypes(assembly).PublicOnly().AssignableTo<IAgentPatcher>().As<IAgentPatcher>();
+
+            // Disable KubeOps cache, we will use our own.
+            // This has the side effect of breaking status modified events, which is fine for us.
+            builder.RegisterGenericDecorator(typeof(NoOpResourceCacheDecorator<>), typeof(IResourceCache<>));
 
             // Telemetry
             builder.Register(x => x.Resolve<ITelemetryClientFactory>().Create()).As<ITelemetryClient>().SingleInstance();
