@@ -100,17 +100,17 @@ namespace Contrast.K8s.AgentOperator
                    .PublicOnly()
                    .AssignableToOpenType(typeof(IRequestHandler<>))
                    .AsImplementedInterfaces()
-                   .InstancePerDependency();
+                   .InstancePerLifetimeScope();
             builder.RegisterAssemblyTypes(assembly)
                    .PublicOnly()
                    .AssignableToOpenType(typeof(IRequestHandler<,>))
                    .AsImplementedInterfaces()
-                   .InstancePerDependency();
+                   .InstancePerLifetimeScope();
             builder.RegisterAssemblyTypes(assembly)
                    .PublicOnly()
                    .AssignableToOpenType(typeof(INotificationHandler<>))
                    .AsImplementedInterfaces()
-                   .InstancePerDependency();
+                   .InstancePerLifetimeScope();
         }
 
         public void Configure(IApplicationBuilder app)
