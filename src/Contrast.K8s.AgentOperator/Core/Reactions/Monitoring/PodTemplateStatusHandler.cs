@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Events;
@@ -30,19 +29,26 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Monitoring
 
         public async Task Handle(InjectorMatched notification, CancellationToken cancellationToken)
         {
-            if (await _state.GetIsDirty(notification.Target.Identity, cancellationToken))
+            var injector = notification.Injector;
+            var target = notification.Target;
+
+            if (await _state.GetIsDirty(target.Identity, cancellationToken))
             {
                 return;
             }
 
-            var injector = notification.Injector;
-            var target = notification.Target;
-
             var injectionDesired = injector != null;
+            var pods = await _state.GetByType<PodResource>(cancellationToken);
+            var podsByNamespace = pods.ToLookup(x => x.Identity.Namespace, x => x, StringComparer.OrdinalIgnoreCase)
+                                      .ToDictionary(x => x.Key, x => (IReadOnlyCollection<ResourceIdentityPair<PodResource>>)x.ToList());
 
-            await foreach (var (podIdentity, podResource) in GetMatchingPods(target.Resource.Selector, target.Identity.Namespace, cancellationToken)
-                               .WithCancellation(cancellationToken))
+            foreach (var (podIdentity, podResource) in GetMatchingPods(podsByNamespace, target.Resource.Selector, target.Identity.Namespace))
             {
+                if (await _state.GetIsDirty(podIdentity, cancellationToken))
+                {
+                    continue;
+                }
+
                 var desiredStatus = GetDesiredStatus(injectionDesired, podResource.IsInjected);
                 if (podResource.InjectionStatus != desiredStatus)
                 {
@@ -67,16 +73,17 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Monitoring
             }
         }
 
-        private async IAsyncEnumerable<ResourceIdentityPair<PodResource>> GetMatchingPods(PodSelector podSelector,
-                                                                                          string @namespace,
-                                                                                          [EnumeratorCancellation] CancellationToken cancellationToken =
-                                                                                              default)
+        private static IEnumerable<ResourceIdentityPair<PodResource>> GetMatchingPods(
+            IReadOnlyDictionary<string, IReadOnlyCollection<ResourceIdentityPair<PodResource>>> podsByNamespace,
+            PodSelector podSelector,
+            string @namespace)
         {
-            var pods = await _state.GetByType<PodResource>(cancellationToken);
-            foreach (var pod in pods.Where(pod => string.Equals(pod.Identity.Namespace, @namespace, StringComparison.OrdinalIgnoreCase)
-                                                  && PodMatchesSelector(pod.Resource, podSelector)))
+            if (podsByNamespace.TryGetValue(@namespace, out var pods))
             {
-                yield return pod;
+                foreach (var pod in pods.Where(x => PodMatchesSelector(x.Resource, podSelector)))
+                {
+                    yield return pod;
+                }
             }
         }
 
