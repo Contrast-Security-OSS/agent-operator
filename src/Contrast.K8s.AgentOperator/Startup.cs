@@ -12,6 +12,7 @@ using Contrast.K8s.AgentOperator.Core.Extensions;
 using Contrast.K8s.AgentOperator.Core.Leading;
 using Contrast.K8s.AgentOperator.Core.Reactions;
 using Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents;
+using Contrast.K8s.AgentOperator.Core.Reactions.Merging;
 using Contrast.K8s.AgentOperator.Core.State;
 using Contrast.K8s.AgentOperator.Core.Telemetry;
 using Contrast.K8s.AgentOperator.Core.Telemetry.Client;
@@ -76,6 +77,7 @@ namespace Contrast.K8s.AgentOperator
             builder.RegisterType<KestrelCertificateSelector>().As<IKestrelCertificateSelector>().SingleInstance();
             builder.RegisterType<LeaderElectionState>().As<ILeaderElectionState>().SingleInstance();
             builder.RegisterType<ResourceComparer>().As<IResourceComparer>().SingleInstance();
+            builder.RegisterType<MergingStateProvider>().AsSelf().SingleInstance();
 
             builder.RegisterType<ClusterIdState>().As<IClusterIdState>().SingleInstance();
             builder.RegisterType<TelemetryState>().AsSelf().SingleInstance();
@@ -174,7 +176,14 @@ namespace Contrast.K8s.AgentOperator
                     fullMode = parsedFullMode;
                 }
 
-                return new OperatorOptions(@namespace, settleDuration, eventQueueSize, fullMode);
+                var eventQueueMergeWindowSeconds = 10;
+                if (Environment.GetEnvironmentVariable("CONTRAST_EVENT_QUEUE_MERGE_WINDOW_SECONDS") is { } eventQueueMergeWindowSecondsStr
+                    && int.TryParse(eventQueueMergeWindowSecondsStr, out var parsedEventQueueMergeWindowSeconds))
+                {
+                    eventQueueMergeWindowSeconds = parsedEventQueueMergeWindowSeconds;
+                }
+
+                return new OperatorOptions(@namespace, settleDuration, eventQueueSize, fullMode, eventQueueMergeWindowSeconds);
             }).SingleInstance();
 
             builder.Register(_ =>

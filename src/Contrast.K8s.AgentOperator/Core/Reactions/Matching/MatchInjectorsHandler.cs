@@ -18,7 +18,7 @@ using NLog;
 namespace Contrast.K8s.AgentOperator.Core.Reactions.Matching
 {
     [UsedImplicitly]
-    public class MatchInjectorsHandler : INotificationHandler<StateModified>
+    public class MatchInjectorsHandler : INotificationHandler<DeferredStateModified>
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
@@ -35,20 +35,20 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Matching
             _reactionHelper = reactionHelper;
         }
 
-        public async Task Handle(StateModified notification, CancellationToken cancellationToken)
+        public async Task Handle(DeferredStateModified notification, CancellationToken cancellationToken)
         {
             if (await _reactionHelper.CanReact(cancellationToken))
             {
                 var stopwatch = Stopwatch.StartNew();
-                Logger.Trace("Cluster state changed, re-calculating injection points.");
+                Logger.Debug($"Cluster state changed, re-calculating injection points ({notification.MergedChanges} changes merged).");
 
                 await Handle(cancellationToken);
 
-                Logger.Trace($"Completed re-calculating injection points after {stopwatch.ElapsedMilliseconds}ms.");
+                Logger.Debug($"Completed re-calculating injection points after {stopwatch.ElapsedMilliseconds}ms.");
             }
             else
             {
-                Logger.Trace("Reactions are disabled, cluster state is settling or instance is not leading.");
+                Logger.Debug("Reactions are disabled, cluster state is settling or instance is not leading.");
             }
         }
 
@@ -59,7 +59,7 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Matching
             var rootResources = await _state.GetByType<IResourceWithPodTemplate>(cancellationToken);
             foreach (var target in rootResources)
             {
-                Logger.Trace($"Calculating changes needed for '{target.Identity}'...");
+                Logger.Debug($"Calculating changes needed for '{target.Identity}'...");
                 var bestInjector = GetBestInjector(readyAgentInjectors, target);
                 await _mediator.Publish(new InjectorMatched(target, bestInjector), cancellationToken);
             }

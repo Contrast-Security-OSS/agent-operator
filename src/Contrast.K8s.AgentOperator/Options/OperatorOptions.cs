@@ -9,5 +9,6 @@ namespace Contrast.K8s.AgentOperator.Options
                                   int SettlingDurationSeconds,
                                   int EventQueueSize,
                                   BoundedChannelFullMode EventQueueFullMode,
+                                  int EventQueueMergeWindowSeconds,
                                   string FieldManagerName = "agents.contrastsecurity.com");
 }

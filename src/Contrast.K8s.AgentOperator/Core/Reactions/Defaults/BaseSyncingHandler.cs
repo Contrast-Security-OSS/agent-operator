@@ -21,7 +21,7 @@ using NLog;
 namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults
 {
     public abstract class BaseSyncingHandler<TClusterResource, TTargetResource, TEntity>
-        : INotificationHandler<StateModified>
+        : INotificationHandler<DeferredStateModified>
         where TClusterResource : class, INamespacedResource
         where TTargetResource : class, INamespacedResource, IMutableResource
         where TEntity : class, IKubernetesObject<V1ObjectMeta>
@@ -53,7 +53,7 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults
             _reactionHelper = reactionHelper;
         }
 
-        public async Task Handle(StateModified notification, CancellationToken cancellationToken)
+        public async Task Handle(DeferredStateModified notification, CancellationToken cancellationToken)
         {
             if (!await _reactionHelper.CanReact(cancellationToken))
             {

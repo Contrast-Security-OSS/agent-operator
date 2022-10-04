@@ -17,4 +17,9 @@ namespace Contrast.K8s.AgentOperator.Core.Events
             return new StateModified<TResource>(previous, current);
         }
     }
+
+    public record DeferredStateModified(int MergedChanges) : INotification
+    {
+        public static DeferredStateModified NothingMerged { get; } = new(0);
+    }
 }
