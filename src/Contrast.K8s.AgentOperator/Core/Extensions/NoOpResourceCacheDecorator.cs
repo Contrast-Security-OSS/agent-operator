@@ -10,11 +10,9 @@ namespace Contrast.K8s.AgentOperator.Core.Extensions
 {
     public class NoOpResourceCacheDecorator<TEntity> : IResourceCache<TEntity> where TEntity : IKubernetesObject<V1ObjectMeta>
     {
-        private readonly IResourceCache<TEntity> _inner;
-
-        public NoOpResourceCacheDecorator(IResourceCache<TEntity> inner)
+        // ReSharper disable once UnusedParameter.Local
+        public NoOpResourceCacheDecorator(IResourceCache<TEntity> _)
         {
-            _inner = inner;
         }
 
         public TEntity Get(string id)
