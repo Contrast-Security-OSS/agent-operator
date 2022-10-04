@@ -15,7 +15,7 @@ namespace Contrast.K8s.AgentOperator.Core.Kube
 {
     public static class KubernetesClientExtensions
     {
-        public static async Task Patch<T>(this IKubernetesClient client, T resource, PatchDocument patchDocument, string fieldManager)
+        public static async ValueTask Patch<T>(this IKubernetesClient client, T resource, PatchDocument patchDocument, string fieldManager)
             where T : IKubernetesObject<V1ObjectMeta>
         {
             var apiClient = client.ApiClient;
@@ -47,7 +47,7 @@ namespace Contrast.K8s.AgentOperator.Core.Kube
             }
         }
 
-        public static async Task PatchStatus<T>(this IKubernetesClient client, T resource, PatchDocument patchDocument, string fieldManager)
+        public static async ValueTask PatchStatus<T>(this IKubernetesClient client, T resource, PatchDocument patchDocument, string fieldManager)
             where T : IKubernetesObject<V1ObjectMeta>
         {
             var apiClient = client.ApiClient;
@@ -79,11 +79,11 @@ namespace Contrast.K8s.AgentOperator.Core.Kube
             }
         }
 
-        public static async Task PatchStatus<T>(this IKubernetesClient client,
-                                                string name,
-                                                string? @namespace,
-                                                GenericCondition condition,
-                                                string fieldManager)
+        public static async ValueTask PatchStatus<T>(this IKubernetesClient client,
+                                                     string name,
+                                                     string? @namespace,
+                                                     GenericCondition condition,
+                                                     string fieldManager)
             where T : IKubernetesObject<V1ObjectMeta>
         {
             var apiClient = client.ApiClient;

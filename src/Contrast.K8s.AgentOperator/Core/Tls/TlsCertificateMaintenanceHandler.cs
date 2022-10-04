@@ -82,7 +82,7 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
             }
         }
 
-        private async Task GenerateAndPublishCertificate()
+        private async ValueTask GenerateAndPublishCertificate()
         {
             Logger.Info("Generating new certificates.");
             var stopwatch = Stopwatch.StartNew();

@@ -31,10 +31,10 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults
             _clusterDefaults = clusterDefaults;
         }
 
-        protected override Task<V1Beta1AgentConfiguration?> CreateTargetEntity(ResourceIdentityPair<ClusterAgentConfigurationResource> baseResource,
-                                                                               AgentConfigurationResource desiredResource,
-                                                                               string targetName,
-                                                                               string targetNamespace)
+        protected override ValueTask<V1Beta1AgentConfiguration?> CreateTargetEntity(ResourceIdentityPair<ClusterAgentConfigurationResource> baseResource,
+                                                                                    AgentConfigurationResource desiredResource,
+                                                                                    string targetName,
+                                                                                    string targetNamespace)
         {
             var builder = new StringBuilder();
             foreach (var yamlKey in desiredResource.YamlKeys)
@@ -45,7 +45,7 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults
 
             var yaml = builder.ToString();
 
-            return Task.FromResult(new V1Beta1AgentConfiguration
+            return ValueTask.FromResult(new V1Beta1AgentConfiguration
             {
                 Metadata = new V1ObjectMeta(name: targetName, namespaceProperty: targetNamespace),
                 Spec = new V1Beta1AgentConfiguration.AgentConfigurationSpec

@@ -42,8 +42,8 @@ namespace Contrast.K8s.AgentOperator.Core.State
         ValueTask<bool> GetIsDirty<T>(string name, string @namespace, CancellationToken cancellationToken = default)
             where T : class, INamespacedResource, IMutableResource;
 
-        Task Settled(CancellationToken cancellationToken = default);
-        Task<bool> GetHasSettled(CancellationToken cancellationToken = default);
+        ValueTask Settled(CancellationToken cancellationToken = default);
+        ValueTask<bool> GetHasSettled(CancellationToken cancellationToken = default);
         ValueTask<IReadOnlyCollection<NamespacedResourceIdentity>> GetAllKeys(CancellationToken cancellationToken = default);
     }
 
@@ -219,7 +219,7 @@ namespace Contrast.K8s.AgentOperator.Core.State
             return GetIsDirty(NamespacedResourceIdentity.Create<T>(name, @namespace), cancellationToken);
         }
 
-        public async Task Settled(CancellationToken cancellationToken = default)
+        public async ValueTask Settled(CancellationToken cancellationToken = default)
         {
             using (await _lock.LockAsync(cancellationToken))
             {
@@ -227,7 +227,7 @@ namespace Contrast.K8s.AgentOperator.Core.State
             }
         }
 
-        public async Task<bool> GetHasSettled(CancellationToken cancellationToken = default)
+        public async ValueTask<bool> GetHasSettled(CancellationToken cancellationToken = default)
         {
             using (await _lock.LockAsync(cancellationToken))
             {

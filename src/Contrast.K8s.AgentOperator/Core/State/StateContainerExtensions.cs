@@ -101,17 +101,17 @@ namespace Contrast.K8s.AgentOperator.Core.State
             return null;
         }
 
-        private static async Task<bool> HasSecretKey(this IStateContainer state,
-                                                     SecretReference secretRef,
-                                                     CancellationToken cancellationToken = default)
+        private static async ValueTask<bool> HasSecretKey(this IStateContainer state,
+                                                          SecretReference secretRef,
+                                                          CancellationToken cancellationToken = default)
         {
             return await state.GetById<SecretResource>(secretRef.Name, secretRef.Namespace, cancellationToken) is { } secret
                    && secret.KeyPairs.Any(x => string.Equals(x.Key, secretRef.Key, StringComparison.OrdinalIgnoreCase));
         }
 
-        private static async Task<SecretResource?> GetSecret(this IStateContainer state,
-                                                             SecretReference secretRef,
-                                                             CancellationToken cancellationToken = default)
+        private static async ValueTask<SecretResource?> GetSecret(this IStateContainer state,
+                                                                  SecretReference secretRef,
+                                                                  CancellationToken cancellationToken = default)
         {
             return await state.GetById<SecretResource>(secretRef.Name, secretRef.Namespace, cancellationToken);
         }

@@ -13,7 +13,7 @@ namespace Contrast.K8s.AgentOperator.Core.Leading
     public interface ILeaderElectionState
     {
         bool IsLeader();
-        Task SetLeaderState(LeaderState state);
+        ValueTask SetLeaderState(LeaderState state);
     }
 
     public class LeaderElectionState : ILeaderElectionState
@@ -33,7 +33,7 @@ namespace Contrast.K8s.AgentOperator.Core.Leading
             return _state == LeaderState.Leader;
         }
 
-        public async Task SetLeaderState(LeaderState state)
+        public async ValueTask SetLeaderState(LeaderState state)
         {
             var lastState = _state;
             if (lastState != state)

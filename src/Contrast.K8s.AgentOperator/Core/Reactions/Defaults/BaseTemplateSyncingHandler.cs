@@ -33,7 +33,7 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults
             _matcher = matcher;
         }
 
-        protected override Task<ResourceIdentityPair<TClusterResource>?> GetBestBaseForNamespace(
+        protected override ValueTask<ResourceIdentityPair<TClusterResource>?> GetBestBaseForNamespace(
             IEnumerable<ResourceIdentityPair<TClusterResource>> clusterResources,
             string @namespace)
         {
@@ -45,16 +45,16 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults
                 Logger.Warn($"Multiple {EntityName} entities "
                             + $"[{string.Join(", ", matchingDefaultBase.Select(x => x.Identity.Name))}] match the namespace '{@namespace}'. "
                             + "Selecting first alphabetically to solve for ambiguity.");
-                return Task.FromResult(matchingDefaultBase.OrderBy(x => x.Identity.Name).First())!;
+                return ValueTask.FromResult(matchingDefaultBase.OrderBy(x => x.Identity.Name).First())!;
             }
 
-            return Task.FromResult(matchingDefaultBase.SingleOrDefault());
+            return ValueTask.FromResult(matchingDefaultBase.SingleOrDefault());
         }
 
-        protected override Task<TTargetResource?> CreateDesiredResource(ResourceIdentityPair<TClusterResource> baseResource, string targetName,
-                                                                        string targetNamespace)
+        protected override ValueTask<TTargetResource?> CreateDesiredResource(ResourceIdentityPair<TClusterResource> baseResource, string targetName,
+                                                                             string targetNamespace)
         {
-            return Task.FromResult(baseResource.Resource.Template)!;
+            return ValueTask.FromResult(baseResource.Resource.Template)!;
         }
     }
 }

@@ -20,8 +20,8 @@ namespace Contrast.K8s.AgentOperator.Core.Kube
 {
     public interface IResourcePatcher
     {
-        Task<bool> Patch<T>(string name, string? @namespace, Action<T> mutator) where T : class, IKubernetesObject<V1ObjectMeta>;
-        Task<bool> PatchStatus<T>(string name, string? @namespace, GenericCondition condition) where T : class, IKubernetesObject<V1ObjectMeta>;
+        ValueTask<bool> Patch<T>(string name, string? @namespace, Action<T> mutator) where T : class, IKubernetesObject<V1ObjectMeta>;
+        ValueTask<bool> PatchStatus<T>(string name, string? @namespace, GenericCondition condition) where T : class, IKubernetesObject<V1ObjectMeta>;
     }
 
     public class ResourcePatcher : IResourcePatcher
@@ -41,7 +41,7 @@ namespace Contrast.K8s.AgentOperator.Core.Kube
             _operatorOptions = operatorOptions;
         }
 
-        public async Task<bool> Patch<T>(string name, string? @namespace, Action<T> mutator) where T : class, IKubernetesObject<V1ObjectMeta>
+        public async ValueTask<bool> Patch<T>(string name, string? @namespace, Action<T> mutator) where T : class, IKubernetesObject<V1ObjectMeta>
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -66,7 +66,7 @@ namespace Contrast.K8s.AgentOperator.Core.Kube
             return entity != null;
         }
 
-        private async Task Patch<T>(T entity, Action<T> mutator) where T : IKubernetesObject<V1ObjectMeta>
+        private async ValueTask Patch<T>(T entity, Action<T> mutator) where T : IKubernetesObject<V1ObjectMeta>
         {
             var stopwatch = Stopwatch.StartNew();
             var entityCopy = _jsonSerializer.DeepClone(entity);
@@ -94,7 +94,7 @@ namespace Contrast.K8s.AgentOperator.Core.Kube
             }
         }
 
-        public async Task<bool> PatchStatus<T>(string name, string? @namespace, GenericCondition condition) where T : class, IKubernetesObject<V1ObjectMeta>
+        public async ValueTask<bool> PatchStatus<T>(string name, string? @namespace, GenericCondition condition) where T : class, IKubernetesObject<V1ObjectMeta>
         {
             if (string.IsNullOrEmpty(name))
             {

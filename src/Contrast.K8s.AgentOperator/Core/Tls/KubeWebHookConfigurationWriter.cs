@@ -15,8 +15,8 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
 {
     public interface IKubeWebHookConfigurationWriter
     {
-        Task<V1Secret?> FetchCurrentCertificate();
-        Task UpdateClusterWebHookConfiguration(TlsCertificateChainExport chainExport);
+        ValueTask<V1Secret?> FetchCurrentCertificate();
+        ValueTask UpdateClusterWebHookConfiguration(TlsCertificateChainExport chainExport);
     }
 
     public class KubeWebHookConfigurationWriter : IKubeWebHookConfigurationWriter
@@ -38,19 +38,19 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
             _resourcePatcher = resourcePatcher;
         }
 
-        public async Task<V1Secret?> FetchCurrentCertificate()
+        public async ValueTask<V1Secret?> FetchCurrentCertificate()
         {
             var existingSecret = await _kubernetesClient.Get<V1Secret>(_tlsStorageOptions.SecretName, _tlsStorageOptions.SecretNamespace);
             return existingSecret;
         }
 
-        public async Task UpdateClusterWebHookConfiguration(TlsCertificateChainExport chainExport)
+        public async ValueTask UpdateClusterWebHookConfiguration(TlsCertificateChainExport chainExport)
         {
             await PublishCertificateSecret(chainExport);
             await UpdateWebHookConfiguration(chainExport);
         }
 
-        private async Task PublishCertificateSecret(TlsCertificateChainExport chainExport)
+        private async ValueTask PublishCertificateSecret(TlsCertificateChainExport chainExport)
         {
             var (caCertificatePfx, caPublicPem, serverCertificatePfx) = chainExport;
 
@@ -74,7 +74,7 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
             await _kubernetesClient.Save(secret);
         }
 
-        private async Task UpdateWebHookConfiguration(TlsCertificateChainExport chainExport)
+        private async ValueTask UpdateWebHookConfiguration(TlsCertificateChainExport chainExport)
         {
             Logger.Info($"Ensuring web hook ca bundle in '{_mutatingWebHookOptions.ConfigurationName}' is correct.");
 

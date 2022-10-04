@@ -39,7 +39,7 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults
             _matcher = matcher;
         }
 
-        protected override Task<ResourceIdentityPair<ClusterAgentConnectionResource>?> GetBestBaseForNamespace(
+        protected override ValueTask<ResourceIdentityPair<ClusterAgentConnectionResource>?> GetBestBaseForNamespace(
             IEnumerable<ResourceIdentityPair<ClusterAgentConnectionResource>> clusterResources,
             string @namespace)
         {
@@ -51,15 +51,15 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults
                 Logger.Warn($"Multiple {EntityName} entities "
                             + $"[{string.Join(", ", matchingDefaultBase.Select(x => x.Identity.Name))}] match the namespace '{@namespace}'. "
                             + "Selecting first alphabetically to solve for ambiguity.");
-                return Task.FromResult(matchingDefaultBase.OrderBy(x => x.Identity.Name).First())!;
+                return ValueTask.FromResult(matchingDefaultBase.OrderBy(x => x.Identity.Name).First())!;
             }
 
-            return Task.FromResult(matchingDefaultBase.SingleOrDefault());
+            return ValueTask.FromResult(matchingDefaultBase.SingleOrDefault());
         }
 
-        protected override async Task<SecretResource?> CreateDesiredResource(ResourceIdentityPair<ClusterAgentConnectionResource> baseResource,
-                                                                             string targetName,
-                                                                             string targetNamespace)
+        protected override async ValueTask<SecretResource?> CreateDesiredResource(ResourceIdentityPair<ClusterAgentConnectionResource> baseResource,
+                                                                                  string targetName,
+                                                                                  string targetNamespace)
         {
             var @namespace = baseResource.Identity.Namespace;
             var template = baseResource.Resource.Template;
@@ -84,10 +84,10 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults
             return new SecretResource(secretKeyValues.NormalizeSecrets());
         }
 
-        protected override async Task<V1Secret?> CreateTargetEntity(ResourceIdentityPair<ClusterAgentConnectionResource> baseResource,
-                                                                    SecretResource desiredResource,
-                                                                    string targetName,
-                                                                    string targetNamespace)
+        protected override async ValueTask<V1Secret?> CreateTargetEntity(ResourceIdentityPair<ClusterAgentConnectionResource> baseResource,
+                                                                         SecretResource desiredResource,
+                                                                         string targetName,
+                                                                         string targetNamespace)
         {
             var @namespace = baseResource.Identity.Namespace;
             var template = baseResource.Resource.Template;
@@ -123,7 +123,7 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults
             return _clusterDefaults.GetDefaultAgentConnectionSecretName(targetNamespace);
         }
 
-        private async Task<string?> GetDataHashByRef(string name, string @namespace, string key)
+        private async ValueTask<string?> GetDataHashByRef(string name, string @namespace, string key)
         {
             return (await _state.GetById<SecretResource>(name, @namespace))
                    ?.KeyPairs
@@ -131,7 +131,7 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults
                    ?.DataHash;
         }
 
-        private async Task<byte[]?> GetLiveDataByRef(string name, string @namespace, string key)
+        private async ValueTask<byte[]?> GetLiveDataByRef(string name, string @namespace, string key)
         {
             var liveSecret = await _kubernetesClient.Get<V1Secret>(name, @namespace);
             if (liveSecret?.Data != null

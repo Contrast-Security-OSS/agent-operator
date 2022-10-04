@@ -30,12 +30,12 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults
             _clusterDefaults = clusterDefaults;
         }
 
-        protected override Task<V1Beta1AgentConnection?> CreateTargetEntity(ResourceIdentityPair<ClusterAgentConnectionResource> baseResource,
-                                                                            AgentConnectionResource desiredResource,
-                                                                            string targetName,
-                                                                            string targetNamespace)
+        protected override ValueTask<V1Beta1AgentConnection?> CreateTargetEntity(ResourceIdentityPair<ClusterAgentConnectionResource> baseResource,
+                                                                                 AgentConnectionResource desiredResource,
+                                                                                 string targetName,
+                                                                                 string targetNamespace)
         {
-            return Task.FromResult(new V1Beta1AgentConnection
+            return ValueTask.FromResult(new V1Beta1AgentConnection
             {
                 Metadata = new V1ObjectMeta(name: targetName, namespaceProperty: targetNamespace),
                 Spec = new V1Beta1AgentConnection.AgentInjectorSpec
@@ -65,12 +65,12 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults
             return _clusterDefaults.GetDefaultAgentConnectionName(targetNamespace);
         }
 
-        protected override Task<AgentConnectionResource?> CreateDesiredResource(ResourceIdentityPair<ClusterAgentConnectionResource> baseResource,
-                                                                                string targetName,
-                                                                                string targetNamespace)
+        protected override ValueTask<AgentConnectionResource?> CreateDesiredResource(ResourceIdentityPair<ClusterAgentConnectionResource> baseResource,
+                                                                                     string targetName,
+                                                                                     string targetNamespace)
         {
             var secretName = _clusterDefaults.GetDefaultAgentConnectionSecretName(targetNamespace);
-            return Task.FromResult(baseResource.Resource.Template with
+            return ValueTask.FromResult(baseResource.Resource.Template with
             {
                 UserName = baseResource.Resource.Template.UserName with
                 {

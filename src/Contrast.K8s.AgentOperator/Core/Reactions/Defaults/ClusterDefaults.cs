@@ -44,7 +44,7 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults
             };
         }
 
-        public async Task<IReadOnlyCollection<string>> GetAllNamespaces(CancellationToken cancellationToken = default)
+        public async ValueTask<IReadOnlyCollection<string>> GetAllNamespaces(CancellationToken cancellationToken = default)
         {
             var namespaces = new HashSet<string>();
             var keys = await _state.GetKeysByType<INamespacedResource>(cancellationToken);
@@ -57,7 +57,7 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults
             return namespaces;
         }
 
-        public async Task<IReadOnlyCollection<string>> GetValidNamespacesForDefaults(CancellationToken cancellationToken = default)
+        public async ValueTask<IReadOnlyCollection<string>> GetValidNamespacesForDefaults(CancellationToken cancellationToken = default)
         {
             var namespaces = new HashSet<string>();
             var keys = await _state.GetKeysByType<AgentInjectorResource>(cancellationToken);

@@ -103,11 +103,11 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults
             Logger.Trace($"Completed checking for entity generation after {stopwatch.ElapsedMilliseconds}ms.");
         }
 
-        private async Task CreateOrUpdate(ResourceIdentityPair<TClusterResource> clusterResource,
-                                          string targetName,
-                                          string targetNamespace,
-                                          TTargetResource desiredResource,
-                                          CancellationToken cancellationToken)
+        private async ValueTask CreateOrUpdate(ResourceIdentityPair<TClusterResource> clusterResource,
+                                               string targetName,
+                                               string targetNamespace,
+                                               TTargetResource desiredResource,
+                                               CancellationToken cancellationToken)
         {
             Logger.Info($"Out-dated {EntityName} '{targetNamespace}/{targetName}' entity detected, preparing to create/patch.");
 
@@ -142,9 +142,9 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults
             }
         }
 
-        private async Task Delete(string targetName,
-                                  string targetNamespace,
-                                  CancellationToken cancellationToken)
+        private async ValueTask Delete(string targetName,
+                                       string targetNamespace,
+                                       CancellationToken cancellationToken)
         {
             Logger.Info($"Superfluous {EntityName} '{targetNamespace}/{targetName}' entity detected, preparing to delete.");
             await _state.MarkAsDirty<TTargetResource>(targetName, targetNamespace, cancellationToken);
@@ -165,7 +165,7 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults
             }
         }
 
-        private async Task<IReadOnlyCollection<ResourceIdentityPair<TClusterResource>>> GetAvailableClusterResources(
+        private async ValueTask<IReadOnlyCollection<ResourceIdentityPair<TClusterResource>>> GetAvailableClusterResources(
             CancellationToken cancellationToken)
         {
             var resources = new List<ResourceIdentityPair<TClusterResource>>();
@@ -180,18 +180,18 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults
             return resources;
         }
 
-        protected abstract Task<ResourceIdentityPair<TClusterResource>?> GetBestBaseForNamespace(
+        protected abstract ValueTask<ResourceIdentityPair<TClusterResource>?> GetBestBaseForNamespace(
             IEnumerable<ResourceIdentityPair<TClusterResource>> clusterResources,
             string @namespace);
 
-        protected abstract Task<TTargetResource?> CreateDesiredResource(ResourceIdentityPair<TClusterResource> baseResource,
-                                                                        string targetName,
-                                                                        string targetNamespace);
+        protected abstract ValueTask<TTargetResource?> CreateDesiredResource(ResourceIdentityPair<TClusterResource> baseResource,
+                                                                             string targetName,
+                                                                             string targetNamespace);
 
-        protected abstract Task<TEntity?> CreateTargetEntity(ResourceIdentityPair<TClusterResource> baseResource,
-                                                             TTargetResource desiredResource,
-                                                             string targetName,
-                                                             string targetNamespace);
+        protected abstract ValueTask<TEntity?> CreateTargetEntity(ResourceIdentityPair<TClusterResource> baseResource,
+                                                                  TTargetResource desiredResource,
+                                                                  string targetName,
+                                                                  string targetNamespace);
 
         protected abstract string GetTargetEntityName(string targetNamespace);
     }

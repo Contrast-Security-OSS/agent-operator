@@ -57,9 +57,9 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting
                    || (annotations.GetAnnotation(InjectionConstants.WorkloadNamespaceAttributeName) != desiredState.WorkloadNamespace);
         }
 
-        private async Task<DesiredState> GetDesiredState(ResourceIdentityPair<AgentInjectorResource>? injector,
-                                                         ResourceIdentityPair<IResourceWithPodTemplate> target,
-                                                         CancellationToken cancellationToken = default)
+        private async ValueTask<DesiredState> GetDesiredState(ResourceIdentityPair<AgentInjectorResource>? injector,
+                                                              ResourceIdentityPair<IResourceWithPodTemplate> target,
+                                                              CancellationToken cancellationToken = default)
         {
             if (injector != null
                 && await _state.GetInjectorBundle(injector.Identity.Name, injector.Identity.Namespace, cancellationToken)
