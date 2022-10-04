@@ -39,6 +39,7 @@ namespace Contrast.K8s.AgentOperator.Core
                 AgentInjectionType.DotNetCore => "agent-dotnet-core",
                 AgentInjectionType.Java => "agent-java",
                 AgentInjectionType.NodeJs => "agent-nodejs",
+                AgentInjectionType.NodeJsProtect => "agent-nodejs-protect",
                 AgentInjectionType.Php => "agent-php",
                 AgentInjectionType.Dummy => "busybox",
                 _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
@@ -53,7 +54,9 @@ namespace Contrast.K8s.AgentOperator.Core
                 "dotnet-core" => AgentInjectionType.DotNetCore,
                 "java" => AgentInjectionType.Java,
                 "node" => AgentInjectionType.NodeJs,
+                "node-protect" => AgentInjectionType.NodeJsProtect,
                 "nodejs" => AgentInjectionType.NodeJs,
+                "nodejs-protect" => AgentInjectionType.NodeJsProtect,
                 "php" => AgentInjectionType.Php,
                 "personal-home-page" => AgentInjectionType.Php,
                 "dummy" => AgentInjectionType.Dummy,
