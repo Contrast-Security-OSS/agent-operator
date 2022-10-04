@@ -16,6 +16,8 @@ namespace Contrast.K8s.AgentOperator.Tests.Entities
         [InlineData("java")]
         [InlineData("node")]
         [InlineData("nodejs")]
+        [InlineData("node-protect")]
+        [InlineData("nodejs-protect")]
         [InlineData("php")]
         [InlineData("personal-home-page")]
         [InlineData("dummy")]
