@@ -169,7 +169,7 @@ namespace Contrast.K8s.AgentOperator
                 //   This might be useful for larger clusters, allow the queue to create back pressure on the "get the world" calls during startup.
                 // DropOldest:
                 //   Removes and ignores the oldest item in the channel in order to make room for the item being written.
-                var fullMode = BoundedChannelFullMode.DropOldest;
+                var fullMode = BoundedChannelFullMode.Wait;
                 if (Environment.GetEnvironmentVariable("CONTRAST_EVENT_QUEUE_FULL_MODE") is { } fullModeStr
                     && Enum.TryParse<BoundedChannelFullMode>(fullModeStr, out var parsedFullMode))
                 {
