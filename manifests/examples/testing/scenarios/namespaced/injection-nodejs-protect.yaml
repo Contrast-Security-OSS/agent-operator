@@ -1,0 +1,39 @@
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: AgentInjector
+metadata:
+  name: injection-nodejs-protect
+spec:
+  enabled: true
+  type: nodejs
+  selector:
+    labels:
+      - name: app
+        value: injection-nodejs-protect
+  image:
+    pullPolicy: Never
+  connection:
+    name: testing-agent-connection
+  configuration:
+    name: testing-agent-configuration
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: injection-nodejs-protect
+  labels:
+    app: injection-nodejs-protect
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: injection-nodejs-protect
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: injection-nodejs-protect
+    spec:
+      containers:
+        - image: k8s.gcr.io/pause:3.3
+          name: pause

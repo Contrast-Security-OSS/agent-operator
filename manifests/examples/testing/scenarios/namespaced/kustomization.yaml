@@ -14,6 +14,7 @@ resources:
   - ./injection-java.yaml
   - ./injection-javatooloptions.yaml
   - ./injection-nodejs.yaml
+  - ./injection-nodejs-protect.yaml
   - ./injection-php.yaml
   - ./missing-deps.yaml
   - ./multiple-images.yaml
