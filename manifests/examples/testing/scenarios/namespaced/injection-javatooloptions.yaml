@@ -1,14 +1,14 @@
 apiVersion: agents.contrastsecurity.com/v1beta1
 kind: AgentInjector
 metadata:
-  name: injection-java-tooloptions
+  name: injection-javatooloptions
 spec:
   enabled: true
   type: java
   selector:
     labels:
       - name: app
-        value: injection-java-tooloptions
+        value: injection-javatooloptions
   image:
     pullPolicy: Never
   connection:
@@ -19,20 +19,20 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: injection-java-tooloptions
+  name: injection-javatooloptions
   labels:
-    app: injection-java-tooloptions
+    app: injection-javatooloptions
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: injection-java-tooloptions
+      app: injection-javatooloptions
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app: injection-java-tooloptions
+        app: injection-javatooloptions
     spec:
       containers:
         - image: k8s.gcr.io/pause:3.3
