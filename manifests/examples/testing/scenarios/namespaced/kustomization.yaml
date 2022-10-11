@@ -12,7 +12,7 @@ resources:
   - ./injection-dotnetchaining.yaml
   - ./injection-dummy.yaml
   - ./injection-java.yaml
-  - ./injection-java-tooloptions.yaml
+  - ./injection-javatooloptions.yaml
   - ./injection-nodejs.yaml
   - ./injection-php.yaml
   - ./missing-deps.yaml

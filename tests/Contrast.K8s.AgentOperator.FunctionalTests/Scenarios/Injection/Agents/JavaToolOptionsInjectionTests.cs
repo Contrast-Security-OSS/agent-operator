@@ -12,7 +12,7 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection.Agents
 {
     public class JavaToolOptionsInjectionTests : IClassFixture<TestingContext>
     {
-        private const string ScenarioName = "injection-java-tooloptions";
+        private const string ScenarioName = "injection-javatooloptions";
 
         private readonly TestingContext _context;
 
