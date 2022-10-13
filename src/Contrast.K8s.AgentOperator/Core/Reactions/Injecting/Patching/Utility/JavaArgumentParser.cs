@@ -105,7 +105,7 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Utility
                 {
                     if (state == State.InQuotedWord)
                     {
-                        throw new Exception("Unmatched quote in arguments");
+                        throw new JavaArgumentParserException("Unmatched quote in arguments");
                     }
                     state = State.EndOfInput;
                 }
@@ -135,6 +135,23 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Utility
             EndOfInput
         }
 
+
+    }
+    public class JavaArgumentParserException : Exception
+    {
+        public JavaArgumentParserException()
+        {
+        }
+
+        public JavaArgumentParserException(string message)
+            : base(message)
+        {
+        }
+
+        public JavaArgumentParserException(string message, Exception inner)
+            : base(message, inner)
+        {
+        }
     }
 
 }

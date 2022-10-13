@@ -36,7 +36,7 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents
                 {
                     var options = JavaArgumentParser.ParseArguments(currentJavaToolOptions).ToList();
                     //Patch contrast-agent.jar to the correct path
-                    var contrastJavaAgentIndex = options.FindIndex(x => x.StartsWith("-javaagent") && x.Contains("contrast-agent.jar"));
+                    var contrastJavaAgentIndex = options.FindIndex(x => x.StartsWith("-javaagent", StringComparison.OrdinalIgnoreCase) && x.Contains("contrast-agent.jar", StringComparison.OrdinalIgnoreCase));
                     if (contrastJavaAgentIndex >= 0)
                     {
                         options[contrastJavaAgentIndex] = contrastAgentArgument;
@@ -49,7 +49,7 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents
                 }
                 catch (Exception e)
                 {
-                    Logger.Warn($"Failed to parse existing JAVA_TOOL_OPTIONS, unable to patch!: {e}");
+                    Logger.Warn(e, $"Failed to parse existing JAVA_TOOL_OPTIONS, unable to patch!");
                 }
             }
         }
