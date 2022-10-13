@@ -159,7 +159,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting.Patching.Uti
             var action = () => JavaArgumentParser.ParseArguments(input).ToList();
 
             // Assert
-            action.Should().Throw<Exception>();
+            action.Should().Throw<JavaArgumentParserException>();
         }
 
         [Fact]
@@ -171,7 +171,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting.Patching.Uti
             var action = () => JavaArgumentParser.ParseArguments(input).ToList();
 
             // Assert
-            action.Should().Throw<Exception>();
+            action.Should().Throw<JavaArgumentParserException>();
         }
 
         [Fact]
@@ -183,7 +183,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting.Patching.Uti
             var action = () => JavaArgumentParser.ParseArguments(input).ToList();
 
             // Assert
-            action.Should().Throw<Exception>();
+            action.Should().Throw<JavaArgumentParserException>();
         }
 
         [Fact]

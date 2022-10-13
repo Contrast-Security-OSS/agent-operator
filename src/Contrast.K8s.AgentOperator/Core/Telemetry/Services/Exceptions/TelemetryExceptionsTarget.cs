@@ -6,6 +6,7 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
+using Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Utility;
 using Contrast.K8s.AgentOperator.Core.Telemetry.Models;
 using k8s.Autorest;
 using NLog;
@@ -37,6 +38,7 @@ namespace Contrast.K8s.AgentOperator.Core.Telemetry.Services.Exceptions
         {
             switch (exception)
             {
+                case JavaArgumentParserException:
                 case HttpOperationException httpOperationException
                     when httpOperationException.Response.StatusCode is not HttpStatusCode.BadRequest:
                 case HttpRequestException { InnerException: IOException }:
