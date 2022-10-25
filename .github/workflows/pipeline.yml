@@ -129,6 +129,7 @@ jobs:
       - uses: imranismail/setup-kustomize@v1
       - uses: azure/setup-helm@v3
         with:
+          version: v3.10.1
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Generate Chart
         run: |
