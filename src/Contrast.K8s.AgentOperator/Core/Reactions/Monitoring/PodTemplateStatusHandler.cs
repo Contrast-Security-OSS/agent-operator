@@ -38,11 +38,9 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Monitoring
             }
 
             var injectionDesired = injector != null;
-            var pods = await _state.GetByType<PodResource>(cancellationToken);
-            var podsByNamespace = pods.ToLookup(x => x.Identity.Namespace, x => x, StringComparer.OrdinalIgnoreCase)
-                                      .ToDictionary(x => x.Key, x => (IReadOnlyCollection<ResourceIdentityPair<PodResource>>)x.ToList());
+            var pods = await _state.GetByType<PodResource>(target.Identity.Namespace, cancellationToken);
 
-            foreach (var (podIdentity, podResource) in GetMatchingPods(podsByNamespace, target.Resource.Selector, target.Identity.Namespace))
+            foreach (var (podIdentity, podResource) in GetMatchingPods(pods, target.Resource.Selector, target.Identity.Namespace))
             {
                 if (await _state.GetIsDirty(podIdentity, cancellationToken))
                 {
@@ -73,25 +71,19 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Monitoring
             }
         }
 
-        private static IEnumerable<ResourceIdentityPair<PodResource>> GetMatchingPods(
-            IReadOnlyDictionary<string, IReadOnlyCollection<ResourceIdentityPair<PodResource>>> podsByNamespace,
-            PodSelector podSelector,
-            string @namespace)
+        private static IEnumerable<ResourceIdentityPair<PodResource>> GetMatchingPods(IEnumerable<ResourceIdentityPair<PodResource>> pods,
+                                                                                      PodSelector podSelector,
+                                                                                      string @namespace)
         {
-            if (podsByNamespace.TryGetValue(@namespace, out var pods))
-            {
-                foreach (var pod in pods.Where(x => PodMatchesSelector(x.Resource, podSelector)))
-                {
-                    yield return pod;
-                }
-            }
+            return pods.Where(x => x.Identity.Namespace.Equals(@namespace, StringComparison.OrdinalIgnoreCase)
+                                   && PodMatchesSelector(x.Resource, podSelector));
         }
 
         private static bool PodMatchesSelector(PodResource podResource, PodSelector selector)
         {
             foreach (var (key, @operator, values) in selector.Expressions)
             {
-                var value = podResource.Labels.FirstOrDefault(x => string.Equals(x.Name, key, StringComparison.OrdinalIgnoreCase))?.Value;
+                var value = GetFirstOrDefaultLabel(podResource, key);
                 var matches = @operator switch
                 {
                     LabelMatchOperation.In => values.Contains(value, StringComparer.OrdinalIgnoreCase),
@@ -108,6 +100,22 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Monitoring
             }
 
             return true;
+        }
+
+        private static string? GetFirstOrDefaultLabel(PodResource podResource, string name)
+        {
+            // This avoids a closure allocation over a FirstOrDefault.
+            // This showed up as a hot memory traffic path.
+            // ReSharper disable once LoopCanBeConvertedToQuery
+            foreach (var label in podResource.Labels)
+            {
+                if (string.Equals(label.Name, name, StringComparison.OrdinalIgnoreCase))
+                {
+                    return label.Value;
+                }
+            }
+
+            return null;
         }
 
         private static PodInjectionConvergenceCondition GetDesiredStatus(bool injectionDesired, bool isPodInjected)
