@@ -40,15 +40,15 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Matching
             if (await _reactionHelper.CanReact(cancellationToken))
             {
                 var stopwatch = Stopwatch.StartNew();
-                Logger.Debug($"Cluster state changed, re-calculating injection points ({notification.MergedChanges} changes merged).");
+                Logger.Info($"Cluster state changed, re-calculating injection points ({notification.MergedChanges} changes merged).");
 
                 await Handle(cancellationToken);
 
-                Logger.Debug($"Completed re-calculating injection points after {stopwatch.ElapsedMilliseconds}ms.");
+                Logger.Info($"Completed re-calculating injection points after {stopwatch.ElapsedMilliseconds}ms.");
             }
             else
             {
-                Logger.Debug("Reactions are disabled, cluster state is settling or instance is not leading.");
+                Logger.Info("Reactions are disabled, cluster state is settling or instance is not leading.");
             }
         }
 
