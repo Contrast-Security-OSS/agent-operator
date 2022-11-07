@@ -10,6 +10,7 @@
         "CONTRAST_SETTLE_DURATION": "2",
         "CONTRAST_DEVELOPMENT": "true",
         "CONTRAST_LOG_LEVEL": "Info",
+        "CONTRAST_EVENT_QUEUE_SIZE": "1000",
         "DOTNET_GCHeapHardLimit": "0x18000000" // Mimic a container with a 512Mi limit. Must be in hex.
       },
       "applicationUrl": "https://localhost:5001"
