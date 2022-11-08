@@ -37,11 +37,14 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Merging
                     }
 
                     var mergeUntil = DateTimeOffset.Now + _mergeInterval;
-                    Logger.Trace($"Merging state modified events until '{mergeUntil}'.");
+                    Logger.Info($"Merging state modified events until '{mergeUntil}'.");
 
                     // Not merging, start merging...
                     _state = new MergeState(mergeUntil);
-                    return DeferredStateModified.NothingMerged;
+
+                    // TODO Double check why this seems to fire multiple times when under heavy load.
+                    //return DeferredStateModified.NothingMerged;
+                    return null;
                 }
 
                 if (_state.MergeUntil > DateTimeOffset.Now)
