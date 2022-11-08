@@ -81,15 +81,19 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Monitoring
 
         private static bool PodMatchesSelector(PodResource podResource, PodSelector selector)
         {
-            foreach (var (key, @operator, values) in selector.Expressions)
+            // Hot path, reduce allocations.
+            // ReSharper disable once ForCanBeConvertedToForeach
+            for (var i = 0; i < selector.Expressions.Count; i++)
             {
-                var value = GetFirstOrDefaultLabel(podResource, key);
-                var matches = @operator switch
+                var (expressionKey, matchOperation, expressionValues) = selector.Expressions[i];
+
+                var labelValue = GetFirstOrDefaultLabel(podResource, expressionKey);
+                var matches = matchOperation switch
                 {
-                    LabelMatchOperation.In => values.Contains(value, StringComparer.OrdinalIgnoreCase),
-                    LabelMatchOperation.NotIn => !values.Contains(value, StringComparer.OrdinalIgnoreCase),
-                    LabelMatchOperation.Exists => value != null,
-                    LabelMatchOperation.DoesNotExist => value == null,
+                    LabelMatchOperation.In => ContainsLabel(expressionValues, labelValue),
+                    LabelMatchOperation.NotIn => !ContainsLabel(expressionValues, labelValue),
+                    LabelMatchOperation.Exists => labelValue != null,
+                    LabelMatchOperation.DoesNotExist => labelValue == null,
                     _ => throw new ArgumentOutOfRangeException()
                 };
 
@@ -106,9 +110,10 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Monitoring
         {
             // This avoids a closure allocation over a FirstOrDefault.
             // This showed up as a hot memory traffic path.
-            // ReSharper disable once LoopCanBeConvertedToQuery
-            foreach (var label in podResource.Labels)
+            // ReSharper disable once ForCanBeConvertedToForeach
+            for (var i = 0; i < podResource.Labels.Count; i++)
             {
+                var label = podResource.Labels[i];
                 if (string.Equals(label.Name, name, StringComparison.OrdinalIgnoreCase))
                 {
                     return label.Value;
@@ -116,6 +121,22 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Monitoring
             }
 
             return null;
+        }
+
+        private static bool ContainsLabel(IReadOnlyList<string> collection, string? value)
+        {
+            // Another hot path, reduce allocations.
+            // ReSharper disable once ForCanBeConvertedToForeach
+            for (var i = 0; i < collection.Count; i++)
+            {
+                var item = collection[i];
+                if (string.Equals(item, value, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private static PodInjectionConvergenceCondition GetDesiredStatus(bool injectionDesired, bool isPodInjected)

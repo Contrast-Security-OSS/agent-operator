@@ -11,7 +11,7 @@ namespace Contrast.K8s.AgentOperator.Core.Kube
 {
     public static class KubernetesModelExtensions
     {
-        public static IReadOnlyCollection<MetadataLabel> GetLabels(this V1ObjectMeta meta)
+        public static IReadOnlyList<MetadataLabel> GetLabels(this V1ObjectMeta meta)
         {
             if (meta.Labels == null)
             {
@@ -93,7 +93,7 @@ namespace Contrast.K8s.AgentOperator.Core.Kube
                         operation = LabelMatchOperation.DoesNotExist;
                     }
 
-                    var values = matchExpression.Values?.ToList() ?? (IReadOnlyCollection<string>)Array.Empty<string>();
+                    var values = matchExpression.Values?.ToList() ?? (IReadOnlyList<string>)Array.Empty<string>();
                     expressions.Add(new PodMatchExpression(matchExpression.Key, operation, values));
                 }
             }
