@@ -59,7 +59,7 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Matching
             var rootResources = await _state.GetByType<IResourceWithPodTemplate>(cancellationToken);
             foreach (var target in rootResources)
             {
-                Logger.Debug($"Calculating changes needed for '{target.Identity}'...");
+                Logger.Debug(() => $"Calculating changes needed for '{target.Identity}'...");
                 var bestInjector = GetBestInjector(readyAgentInjectors, target);
                 await _mediator.Publish(new InjectorMatched(target, bestInjector), cancellationToken);
             }
