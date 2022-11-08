@@ -161,9 +161,9 @@ namespace Contrast.K8s.AgentOperator.Core.State
         {
             using (await _lock.LockAsync(cancellationToken))
             {
-                return _resources.Where(x => string.Equals(x.Key.Namespace, @namespace, StringComparison.OrdinalIgnoreCase))
-                                 .Where(x => x.Key.Type.IsAssignableTo(typeof(T)))
+                return _resources.Where(x => x.Key.Type.IsAssignableTo(typeof(T)))
                                  .Where(x => x.Value.Resource != null)
+                                 .Where(x => string.Equals(x.Key.Namespace, @namespace, StringComparison.OrdinalIgnoreCase))
                                  .Select(x => new ResourceIdentityPair<T>(x.Key, (T)x.Value.Resource!))
                                  .ToList();
             }
