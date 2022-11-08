@@ -51,6 +51,8 @@ namespace Contrast.K8s.AgentOperator
                     {
                         // We handle leadership ourselves.
                         settings.OnlyWatchEventsWhenLeader = false;
+
+                        settings.WatcherHttpTimeout = 60 * 10;
                     })
                     .AddReadinessCheck<ReadinessCheck>();
             services.AddCertificateManager();
