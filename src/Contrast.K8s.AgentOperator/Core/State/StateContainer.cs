@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Contrast.K8s.AgentOperator.Core.Comparing;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Interfaces;
 using Nito.AsyncEx;
 

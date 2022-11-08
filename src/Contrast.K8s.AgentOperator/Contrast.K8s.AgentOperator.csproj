@@ -49,6 +49,8 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
         </PackageReference>
 
+        <PackageReference Include="Sigil" Version="5.0.0" />
+
         <!--https://github.com/dotnet/runtime/issues/60393-->
         <PackageReference Include="HexMate" Version="0.0.3" />
     </ItemGroup>

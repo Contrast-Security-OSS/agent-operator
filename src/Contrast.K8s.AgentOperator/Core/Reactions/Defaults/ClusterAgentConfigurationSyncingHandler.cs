@@ -3,6 +3,7 @@
 
 using System.Text;
 using System.Threading.Tasks;
+using Contrast.K8s.AgentOperator.Core.Comparing;
 using Contrast.K8s.AgentOperator.Core.State;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
 using Contrast.K8s.AgentOperator.Entities;

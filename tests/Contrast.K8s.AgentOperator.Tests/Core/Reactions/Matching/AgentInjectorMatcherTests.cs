@@ -44,7 +44,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Matching
                             {
                                 targetFake.Identity.Namespace
                             },
-                            LabelPatterns = labelsFake.Select(x => new KeyValuePair<string, string>(x.Name, x.Value)).ToList()
+                            LabelPatterns = labelsFake.Select(x => new LabelPattern(x.Name, x.Value)).ToList()
                         }
                     }
                 )
@@ -87,7 +87,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Matching
                                 targetFake.Identity.Namespace
                             },
                             // But match on all 3 labels.
-                            LabelPatterns = labelsFake.Select(x => new KeyValuePair<string, string>(x.Name, x.Value)).ToList()
+                            LabelPatterns = labelsFake.Select(x => new LabelPattern(x.Name, x.Value)).ToList()
                         }
                     }
                 )

@@ -8,6 +8,7 @@ using Autofac;
 using Autofac.Features.Variance;
 using Contrast.K8s.AgentOperator.Autofac;
 using Contrast.K8s.AgentOperator.Core;
+using Contrast.K8s.AgentOperator.Core.Comparing;
 using Contrast.K8s.AgentOperator.Core.Extensions;
 using Contrast.K8s.AgentOperator.Core.Leading;
 using Contrast.K8s.AgentOperator.Core.Reactions;
@@ -76,12 +77,17 @@ namespace Contrast.K8s.AgentOperator
             builder.RegisterType<GlobMatcher>().As<IGlobMatcher>().SingleInstance();
             builder.RegisterType<KestrelCertificateSelector>().As<IKestrelCertificateSelector>().SingleInstance();
             builder.RegisterType<LeaderElectionState>().As<ILeaderElectionState>().SingleInstance();
-            builder.RegisterType<ResourceComparer>().As<IResourceComparer>().SingleInstance();
             builder.RegisterType<MergingStateProvider>().AsSelf().SingleInstance();
 
             builder.RegisterType<ClusterIdState>().As<IClusterIdState>().SingleInstance();
             builder.RegisterType<TelemetryState>().AsSelf().SingleInstance();
             builder.Register(_ => new TelemetryState(OperatorVersion.Version)).AsSelf().SingleInstance();
+
+            builder.Register<IResourceComparer>(
+                context => context.Resolve<OperatorOptions>().UseSlowComparer
+                    ? context.Resolve<SlowResourceComparer>()
+                    : context.Resolve<FastResourceComparer>()
+            ).As<IResourceComparer>().SingleInstance();
 
             RegisterOptions(builder);
             builder.RegisterAssemblyTypes(assembly).PublicOnly().AssignableTo<BackgroundService>().As<IHostedService>();
@@ -183,7 +189,14 @@ namespace Contrast.K8s.AgentOperator
                     eventQueueMergeWindowSeconds = parsedEventQueueMergeWindowSeconds;
                 }
 
-                return new OperatorOptions(@namespace, settleDuration, eventQueueSize, fullMode, eventQueueMergeWindowSeconds);
+                var useSlowComparer = false;
+                if (Environment.GetEnvironmentVariable("CONTRAST_USE_SLOW_COMPARER") is { } useSlowComparerStr)
+                {
+                    useSlowComparer = useSlowComparerStr.Equals("1", StringComparison.OrdinalIgnoreCase)
+                                      || useSlowComparerStr.Equals("true", StringComparison.OrdinalIgnoreCase);
+                }
+
+                return new OperatorOptions(@namespace, settleDuration, eventQueueSize, fullMode, eventQueueMergeWindowSeconds, useSlowComparer);
             }).SingleInstance();
 
             builder.Register(_ =>

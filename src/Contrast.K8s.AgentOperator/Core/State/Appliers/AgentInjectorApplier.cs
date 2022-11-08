@@ -79,7 +79,7 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers
                     "*"
                 };
 
-            var labels = spec.Selector.Labels.Select(x => new KeyValuePair<string, string>(x.Name, x.Value)).ToList();
+            var labels = spec.Selector.Labels.Select(x => new LabelPattern(x.Name, x.Value)).ToList();
 
             var selector = new ResourceWithPodSpecSelector(
                 images,

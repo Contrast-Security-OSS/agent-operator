@@ -5,14 +5,9 @@ using Contrast.K8s.AgentOperator.Core.State.Resources.Interfaces;
 using KellermanSoftware.CompareNetObjects;
 using NLog;
 
-namespace Contrast.K8s.AgentOperator.Core.State
+namespace Contrast.K8s.AgentOperator.Core.Comparing
 {
-    public interface IResourceComparer
-    {
-        bool AreEqual<T>(T left, T right) where T : INamespacedResource?;
-    }
-
-    public class ResourceComparer : IResourceComparer
+    public class SlowResourceComparer : IResourceComparer
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
