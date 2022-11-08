@@ -19,6 +19,9 @@ namespace Contrast.K8s.AgentOperator.Performance.ClusterFaker
             [Option('p', "pods")]
             public int PodsPerDeploymentCount { get; set; } = 1;
 
+            [Option('s', "secrets")]
+            public int SecretsPerNamespaceCount { get; set; } = 10;
+
             public override string ToString()
             {
                 return

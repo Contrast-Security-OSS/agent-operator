@@ -9,6 +9,7 @@
     <ItemGroup>
         <PackageReference Include="CommandLineParser" Version="2.9.1" />
         <PackageReference Include="AutoFixture" Version="4.17.0" />
+        <PackageReference Include="Punchclock" Version="3.4.3" />
     </ItemGroup>
 
   <ItemGroup>

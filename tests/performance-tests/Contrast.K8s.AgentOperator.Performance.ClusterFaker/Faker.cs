@@ -5,8 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoFixture;
 using DotnetKubernetesClient;
 using k8s.Models;
+using Punchclock;
 
 namespace Contrast.K8s.AgentOperator.Performance.ClusterFaker
 {
@@ -14,6 +16,9 @@ namespace Contrast.K8s.AgentOperator.Performance.ClusterFaker
     {
         private const string NamespacePrefix = "contrast-faked-namespace";
         private const string DeploymentPrefix = "contrast-faked-deployment";
+        private const string SecretPrefix = "contrast-faked-secret";
+
+        private static readonly Fixture AutoFixture = new();
 
         private readonly IKubernetesClient _client;
 
@@ -26,62 +31,95 @@ namespace Contrast.K8s.AgentOperator.Performance.ClusterFaker
         {
             Console.WriteLine($"Executing 'Up' with options '{options}'.");
 
+            var opQueue = new OperationQueue();
+            var tasks = new List<Task>();
+
             for (var namespaceIndex = 1; namespaceIndex <= options.NamespaceCount; namespaceIndex++)
             {
-                var namespaceName = $"{NamespacePrefix}-{namespaceIndex:D3}";
-                await _client.Save(new V1Namespace
-                {
-                    Metadata = new V1ObjectMeta(name: namespaceName)
-                });
+                var localIndex = namespaceIndex;
+                var task = opQueue.Enqueue(localIndex * -1, () => UpNamespace(options, localIndex));
+                tasks.Add(task);
+            }
 
-                for (var deploymentIndex = 1; deploymentIndex <= options.DeploymentsPerNamespaceCount; deploymentIndex++)
-                {
-                    var deploymentName = $"{DeploymentPrefix}-{deploymentIndex:D3}";
-                    Console.WriteLine($"Creating deployment {namespaceName}/{deploymentName} "
-                                      + $"(namespace {namespaceIndex}/{options.NamespaceCount}, "
-                                      + $"deployment {deploymentIndex}/{options.DeploymentsPerNamespaceCount})"
-                                      + "...");
+            await Task.WhenAll(tasks);
 
-                    await _client.Save(new V1Deployment
+            return 0;
+        }
+
+        private async Task UpNamespace(Options.UpOptions options, int namespaceIndex)
+        {
+            var namespaceName = $"{NamespacePrefix}-{namespaceIndex:D3}";
+            await _client.Save(new V1Namespace
+            {
+                Metadata = new V1ObjectMeta(name: namespaceName)
+            });
+
+            for (var deploymentIndex = 1; deploymentIndex <= options.DeploymentsPerNamespaceCount; deploymentIndex++)
+            {
+                var deploymentName = $"{DeploymentPrefix}-{deploymentIndex:D3}";
+                Console.WriteLine($"Creating deployment {namespaceName}/{deploymentName} "
+                                  + $"(namespace {namespaceIndex}/{options.NamespaceCount}, "
+                                  + $"deployment {deploymentIndex}/{options.DeploymentsPerNamespaceCount})"
+                                  + "...");
+
+                await _client.Save(new V1Deployment
+                {
+                    Metadata = new V1ObjectMeta(name: deploymentName, namespaceProperty: namespaceName)
                     {
-                        Metadata = new V1ObjectMeta(name: deploymentName, namespaceProperty: namespaceName),
-                        Spec = new V1DeploymentSpec
+                        Labels = AutoFixture.Create<Dictionary<string, string>>()
+                    },
+                    Spec = new V1DeploymentSpec
+                    {
+                        Replicas = options.PodsPerDeploymentCount,
+                        Template = new V1PodTemplateSpec
                         {
-                            Replicas = options.PodsPerDeploymentCount,
-                            Template = new V1PodTemplateSpec
+                            Metadata = new V1ObjectMeta
                             {
-                                Metadata = new V1ObjectMeta
-                                {
-                                    Labels = new Dictionary<string, string>
-                                    {
-                                        { "deployment", deploymentName }
-                                    }
-                                },
-                                Spec = new V1PodSpec
-                                {
-                                    Containers = new List<V1Container>
-                                    {
-                                        new()
-                                        {
-                                            Name = $"container-{deploymentIndex:D3}",
-                                            Image = "rancher/pause:3.6"
-                                        }
-                                    }
-                                }
-                            },
-                            Selector = new V1LabelSelector
-                            {
-                                MatchLabels = new Dictionary<string, string>
+                                Labels = new Dictionary<string, string>
                                 {
                                     { "deployment", deploymentName }
                                 }
+                            },
+                            Spec = new V1PodSpec
+                            {
+                                Containers = new List<V1Container>
+                                {
+                                    new()
+                                    {
+                                        Name = $"container-{deploymentIndex:D3}",
+                                        Image = "rancher/pause:3.6"
+                                    }
+                                }
+                            }
+                        },
+                        Selector = new V1LabelSelector
+                        {
+                            MatchLabels = new Dictionary<string, string>
+                            {
+                                { "deployment", deploymentName }
                             }
                         }
-                    });
-                }
+                    }
+                });
             }
 
-            return 0;
+            for (var secretIndex = 1; secretIndex <= options.SecretsPerNamespaceCount; secretIndex++)
+            {
+                var secretName = $"{SecretPrefix}-{secretIndex:D3}";
+                Console.WriteLine($"Creating secret {namespaceName}/{secretName} "
+                                  + $"(namespace {namespaceIndex}/{options.NamespaceCount}, "
+                                  + $"secret {secretIndex}/{options.SecretsPerNamespaceCount})"
+                                  + "...");
+
+                await _client.Save(new V1Secret
+                {
+                    Metadata = new V1ObjectMeta(name: secretName, namespaceProperty: namespaceName)
+                    {
+                        Labels = AutoFixture.Create<Dictionary<string, string>>()
+                    },
+                    StringData = AutoFixture.Create<Dictionary<string, string>>()
+                });
+            }
         }
 
         public async Task<int> Down(Options.DownOptions options)
