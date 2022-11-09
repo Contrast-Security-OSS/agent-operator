@@ -14,12 +14,15 @@ using Contrast.K8s.AgentOperator.Entities.OpenShift;
 using JetBrains.Annotations;
 using k8s.Models;
 using MediatR;
+using NLog;
 
 namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting
 {
     [UsedImplicitly]
     public class PodTemplateInjectionHandler : INotificationHandler<InjectorMatched>
     {
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
         private readonly IResourceHasher _hasher;
         private readonly IStateContainer _state;
         private readonly IResourcePatcher _patcher;
@@ -43,6 +46,7 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting
 
             if (ChangesNeeded(target, desiredState))
             {
+                Logger.Info($"Workload '{target.Identity}' will be patched (Injector: '{injector?.Identity.ToString() ?? "None"}').");
                 await PatchToDesiredState(desiredState, target);
             }
         }

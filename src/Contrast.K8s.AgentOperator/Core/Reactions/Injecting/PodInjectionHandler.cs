@@ -40,11 +40,13 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting
                 var context = new PatchingContext(workloadName, workloadNamespace, injector, connection, configuration, "/contrast");
                 await _patcher.Patch(context, request.Entity, cancellationToken);
 
-                Logger.Trace($"Patching pod from '{workloadNamespace}/{workloadName}' using injector '{injectorNamespace}/{injectorName}'.");
+                Logger.Info("Patching pod "
+                            + $"from '{workloadNamespace}/{workloadName}' "
+                            + $"using injector '{injectorNamespace}/{injectorName}'.");
                 return new NeedsChangeEntityCreatingMutationResult<V1Pod>(request.Entity);
             }
 
-            Logger.Trace("Ignored pod creation, not selected by any known agent injectors.");
+            Logger.Debug("Ignored pod creation, not selected by any known agent injectors.");
             return new NoChangeEntityCreatingMutationResult<V1Pod>();
         }
     }
