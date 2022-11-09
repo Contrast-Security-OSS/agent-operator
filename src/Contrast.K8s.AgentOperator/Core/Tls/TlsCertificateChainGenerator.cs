@@ -121,7 +121,7 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
                 subjectAlternativeName,
                 signingCertificate,
                 enhancedKeyUsages,
-                X509KeyUsageFlags.KeyCertSign,
+                X509KeyUsageFlags.DigitalSignature | X509KeyUsageFlags.KeyEncipherment,
                 CreateRsaConfiguration());
 
             return intermediateCert;

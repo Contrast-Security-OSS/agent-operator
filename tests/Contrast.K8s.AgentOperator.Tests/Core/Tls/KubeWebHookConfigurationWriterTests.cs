@@ -66,6 +66,8 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Tls
                             .WhoseValue.Should().BeEquivalentTo(exportChainFake.CaPublicPem);
                 savedSecret!.Data.Should().ContainKey(storageOptionsFake.ServerCertificateName)
                             .WhoseValue.Should().BeEquivalentTo(exportChainFake.ServerCertificatePfx);
+                savedSecret!.Data.Should().ContainKey(storageOptionsFake.VersionName)
+                            .WhoseValue.Should().BeEquivalentTo(exportChainFake.Version);
             }
         }
 
