@@ -13,11 +13,14 @@ using Contrast.K8s.AgentOperator.Core.State.Resources;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
 using k8s.Models;
 using MediatR;
+using NLog;
 
 namespace Contrast.K8s.AgentOperator.Core.Reactions.Monitoring
 {
     public class PodTemplateStatusHandler : INotificationHandler<InjectorMatched>
     {
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
         private readonly IStateContainer _state;
         private readonly IResourcePatcher _patcher;
 
@@ -53,6 +56,8 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Monitoring
                     // If status is null, but we want InjectionRemoved, do nothing (since we can't safely remove conditionals we added).
                     if (!(podResource.InjectionStatus == null && desiredStatus.Reason == "InjectionRemoved"))
                     {
+                        Logger.Info($"Pod '{podIdentity.Namespace}/{podIdentity.Name}' status was updated '{podResource.InjectionStatus?.Reason ?? "None"}' -> '{desiredStatus.Reason}'.");
+
                         await _state.MarkAsDirty(podIdentity, cancellationToken);
                         await _patcher.PatchStatus<V1Pod>(
                             podIdentity.Name,
