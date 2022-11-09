@@ -73,6 +73,11 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Monitoring
                         );
                     }
                 }
+                else if (desiredStatus.Status == "False")
+                {
+                    // No status update needed, but something hasn't converged yet.
+                    Logger.Info($"Pod '{podIdentity.Namespace}/{podIdentity.Name}' status is still in '{podResource.InjectionStatus?.Reason ?? "None"}'.");
+                }
             }
         }
 
