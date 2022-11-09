@@ -26,7 +26,7 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
         {
             if (_chain == null)
             {
-                Logger.Warn($"A server certificate was requested for '{hostname}', but none was known at this time.");
+                Logger.Warn($"A server certificate was requested for '{hostname}', but none was known at this time.s");
             }
 
             //if (_chain != null

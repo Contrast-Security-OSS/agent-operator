@@ -22,7 +22,7 @@ namespace Contrast.K8s.AgentOperator.Core
             var result = HealthCheckResult.Healthy();
             if (!_certificateSelector.HasValidCertificate())
             {
-                result = HealthCheckResult.Unhealthy("No valid certificate has been loaded.");
+                result = HealthCheckResult.Unhealthy("No valid certificate has been loaded. If this warning continues to occur, a permission problem may be present.");
             }
 
             return Task.FromResult(result);
