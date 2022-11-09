@@ -6,8 +6,6 @@ spec:
   enabled: true
   version: latest
   type: dotnet-core
-  image:
-    pullSecretName: contrastdotnet-pull-secret
   selector:
     images:
       - "*"
