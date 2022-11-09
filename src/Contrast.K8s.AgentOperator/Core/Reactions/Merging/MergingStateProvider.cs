@@ -41,7 +41,6 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Merging
 
                     // Not merging, start merging...
                     _state = new MergeState(mergeUntil);
-                    _state.IncrementMerged();
 
                     return DeferredStateModified.FirstMerged;
                 }
@@ -60,7 +59,7 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Merging
                 // Merging expired.
                 var state = _state;
                 _state = null;
-                if (state.Merged > 1)
+                if (state.Merged > 0)
                 {
                     Logger.Trace($"Flushing state modified, {state.Merged} events were merged.");
                     return new DeferredStateModified(state.Merged);
