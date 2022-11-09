@@ -46,7 +46,7 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching
                 };
             }
 
-            Logger.Trace($"Selected agent injector '{patcher?.Type}'.");
+            Logger.Trace($"Selected agent injector '{patcher?.Type.ToString() ?? "Default"}'.");
 
             ApplyPatches(context, pod, patcher);
 
