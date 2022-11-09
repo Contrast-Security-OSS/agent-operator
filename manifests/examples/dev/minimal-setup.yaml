@@ -2,6 +2,7 @@ apiVersion: agents.contrastsecurity.com/v1beta1
 kind: AgentInjector
 metadata:
   name: example-injector-dotnet-core
+  namespace: default
 spec:
   enabled: true
   version: latest
@@ -21,6 +22,7 @@ apiVersion: agents.contrastsecurity.com/v1beta1
 kind: AgentInjector
 metadata:
   name: example-injector-dotnet-core-chaining
+  namespace: default
 spec:
   enabled: true
   version: latest
@@ -40,6 +42,7 @@ apiVersion: agents.contrastsecurity.com/v1beta1
 kind: AgentInjector
 metadata:
   name: example-injector-java
+  namespace: default
 spec:
   enabled: true
   version: latest
@@ -59,6 +62,7 @@ apiVersion: agents.contrastsecurity.com/v1beta1
 kind: AgentInjector
 metadata:
   name: example-injector-nodejs
+  namespace: default
 spec:
   enabled: true
   version: latest
@@ -78,6 +82,7 @@ apiVersion: agents.contrastsecurity.com/v1beta1
 kind: AgentInjector
 metadata:
   name: example-injector-php
+  namespace: default
 spec:
   enabled: true
   version: latest
@@ -97,6 +102,7 @@ apiVersion: agents.contrastsecurity.com/v1beta1
 kind: AgentConnection
 metadata:
   name: example-agent-connection
+  namespace: default
 spec:
   url: http://localhost
   apiKey:
@@ -113,6 +119,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: example-agent-connection-secret
+  namespace: default
 type: Opaque
 stringData:
   apiKey: apiKey
@@ -123,6 +130,7 @@ apiVersion: agents.contrastsecurity.com/v1beta1
 kind: AgentConfiguration
 metadata:
   name: example-agent-configuration
+  namespace: default
 spec:
   yaml: |
     enabled: true
