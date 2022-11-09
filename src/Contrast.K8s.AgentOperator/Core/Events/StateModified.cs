@@ -20,6 +20,6 @@ namespace Contrast.K8s.AgentOperator.Core.Events
 
     public record DeferredStateModified(int MergedChanges) : INotification
     {
-        public static DeferredStateModified NothingMerged { get; } = new(0);
+        public static DeferredStateModified FirstMerged { get; } = new(1);
     }
 }

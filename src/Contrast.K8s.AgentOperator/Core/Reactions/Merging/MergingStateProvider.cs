@@ -41,10 +41,9 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Merging
 
                     // Not merging, start merging...
                     _state = new MergeState(mergeUntil);
+                    _state.IncrementMerged();
 
-                    // TODO Double check why this seems to fire multiple times when under heavy load.
-                    //return DeferredStateModified.NothingMerged;
-                    return null;
+                    return DeferredStateModified.FirstMerged;
                 }
 
                 if (_state.MergeUntil > DateTimeOffset.Now)
@@ -61,7 +60,7 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Merging
                 // Merging expired.
                 var state = _state;
                 _state = null;
-                if (state.Merged > 0)
+                if (state.Merged > 1)
                 {
                     Logger.Trace($"Flushing state modified, {state.Merged} events were merged.");
                     return new DeferredStateModified(state.Merged);
