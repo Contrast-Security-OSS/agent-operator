@@ -16,5 +16,5 @@ echo ""
 echo "Accessing metrics endpoint at $tagsEndpoint..."
 curl --insecure --silent $tagsEndpoint | jq
 
-echo "Accessing metrics endpoint at $metricsEndpoint (this can take a minute to gather performace metrics)..."
+echo "Accessing metrics endpoint at $metricsEndpoint (this can take a minute to gather performance metrics)..."
 curl --insecure --silent $metricsEndpoint | jq
