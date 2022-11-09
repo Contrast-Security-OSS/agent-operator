@@ -1,13 +1,13 @@
 ﻿// Contrast Security, Inc licenses this file to you under the Apache 2.0 License.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Comparing;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Interfaces;
+using Contrast.K8s.AgentOperator.Core.State.Storage;
 using Nito.AsyncEx;
 
 namespace Contrast.K8s.AgentOperator.Core.State
@@ -55,7 +55,7 @@ namespace Contrast.K8s.AgentOperator.Core.State
     public class StateContainer : IStateContainer
     {
         private readonly AsyncLock _lock = new();
-        private readonly Dictionary<NamespacedResourceIdentity, ResourceHolder> _resources = new(NamespacedResourceIdentity.Comparer);
+        private readonly NamespacedStateStorage _resources = new();
         private readonly IResourceComparer _resourceComparer;
 
         private bool _hasSettled;
@@ -149,9 +149,9 @@ namespace Contrast.K8s.AgentOperator.Core.State
         {
             using (await _lock.LockAsync(cancellationToken))
             {
-                return _resources.Where(x => x.Key.Type.IsAssignableTo(typeof(T)))
-                                 .Where(x => x.Value.Resource != null)
-                                 .Select(x => new ResourceIdentityPair<T>(x.Key, (T)x.Value.Resource!))
+                return _resources.GetByType(typeof(T))
+                                 .Where(x => x.Holder.Resource != null)
+                                 .Select(x => new ResourceIdentityPair<T>(x.Identity, (T)x.Holder.Resource!))
                                  .ToList();
             }
         }
@@ -161,10 +161,9 @@ namespace Contrast.K8s.AgentOperator.Core.State
         {
             using (await _lock.LockAsync(cancellationToken))
             {
-                return _resources.Where(x => x.Key.Type.IsAssignableTo(typeof(T)))
-                                 .Where(x => x.Value.Resource != null)
-                                 .Where(x => string.Equals(x.Key.Namespace, @namespace, StringComparison.OrdinalIgnoreCase))
-                                 .Select(x => new ResourceIdentityPair<T>(x.Key, (T)x.Value.Resource!))
+                return _resources.GetByTypeAndNamespace(typeof(T), @namespace)
+                                 .Where(x => x.Holder.Resource != null)
+                                 .Select(x => new ResourceIdentityPair<T>(x.Identity, (T)x.Holder.Resource!))
                                  .ToList();
             }
         }
@@ -173,7 +172,7 @@ namespace Contrast.K8s.AgentOperator.Core.State
         {
             using (await _lock.LockAsync(cancellationToken))
             {
-                return _resources.Select(x => x.Key).ToList();
+                return _resources.Select(x => x.Identity).ToList();
             }
         }
 
@@ -182,8 +181,8 @@ namespace Contrast.K8s.AgentOperator.Core.State
         {
             using (await _lock.LockAsync(cancellationToken))
             {
-                return _resources.Where(x => x.Key.Type.IsAssignableTo(typeof(T)))
-                                 .Select(x => x.Key)
+                return _resources.GetByType(typeof(T))
+                                 .Select(x => x.Identity)
                                  .ToList();
             }
         }
@@ -252,8 +251,6 @@ namespace Contrast.K8s.AgentOperator.Core.State
                 return _hasSettled;
             }
         }
-
-        private record ResourceHolder(INamespacedResource? Resource, bool IsDirty = false);
     }
 
     public record ResourceIdentityPair<T>(NamespacedResourceIdentity Identity, T Resource);

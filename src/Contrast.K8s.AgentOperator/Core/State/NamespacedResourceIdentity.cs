@@ -8,13 +8,13 @@ using JetBrains.Annotations;
 
 namespace Contrast.K8s.AgentOperator.Core.State
 {
-    public abstract record NamespacedResourceIdentity([UsedImplicitly] string Name, [UsedImplicitly] string Namespace, [UsedImplicitly] Type Type)
+    public record NamespacedResourceIdentity([UsedImplicitly] string Name, [UsedImplicitly] string Namespace, [UsedImplicitly] Type Type)
     {
         public static IEqualityComparer<NamespacedResourceIdentity> Comparer { get; } = new CaseInsensitiveEqualityComparer();
 
-        public static NamespacedResourceIdentity<T> Create<T>(string name, string @namespace) where T : INamespacedResource
+        public static NamespacedResourceIdentity Create<T>(string name, string @namespace) where T : INamespacedResource
         {
-            return new NamespacedResourceIdentity<T>(name, @namespace);
+            return new NamespacedResourceIdentity(name, @namespace, typeof(T));
         }
 
         public override string ToString()
@@ -61,16 +61,6 @@ namespace Contrast.K8s.AgentOperator.Core.State
 
                 return hashCode.ToHashCode();
             }
-        }
-    }
-
-    public record NamespacedResourceIdentity<T>(string Name, string Namespace)
-        : NamespacedResourceIdentity(Name, Namespace, typeof(T))
-        where T : INamespacedResource
-    {
-        public override string ToString()
-        {
-            return base.ToString();
         }
     }
 }
