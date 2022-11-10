@@ -2,7 +2,7 @@ apiVersion: v2
 name: contrast-agent-operator
 version: 0.0.1
 appVersion: 0.0.1
-kubeVersion: '>= 1.21.0'
+kubeVersion: '>= 1.21.0-0' # This must include pre-releases due to a AWS bug. https://github.com/aws/containers-roadmap/issues/1404
 description: A K8s operator to inject agents into existing K8s workloads.
 home: https://docs.contrastsecurity.com/en/agent-operator.html
 sources:
