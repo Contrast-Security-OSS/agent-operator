@@ -22,24 +22,29 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
         private readonly ITlsCertificateChainConverter _certificateChainConverter;
         private readonly IKubeWebHookConfigurationWriter _webHookConfigurationWriter;
         private readonly IWebHookSecretParser _webHookSecretParser;
+        private readonly ITlsCertificateChainValidator _validator;
 
         public TlsCertificateMaintenanceHandler(IKestrelCertificateSelector certificateSelector,
                                                 ITlsCertificateChainGenerator certificateChainGenerator,
                                                 ITlsCertificateChainConverter certificateChainConverter,
                                                 IKubeWebHookConfigurationWriter webHookConfigurationWriter,
-                                                IWebHookSecretParser webHookSecretParser)
+                                                IWebHookSecretParser webHookSecretParser,
+                                                ITlsCertificateChainValidator validator)
         {
             _certificateSelector = certificateSelector;
             _certificateChainGenerator = certificateChainGenerator;
             _certificateChainConverter = certificateChainConverter;
             _webHookConfigurationWriter = webHookConfigurationWriter;
             _webHookSecretParser = webHookSecretParser;
+            _validator = validator;
         }
 
         public Task Handle(EntityReconciled<V1Secret> notification, CancellationToken cancellationToken)
         {
             if (_webHookSecretParser.TryGetWebHookCertificateSecret(notification.Entity, out var chain))
             {
+                // The certificate may not be valid, but that's not for us to figure out right now.
+                // At this point, we only care if the certificate was parseable.
                 if (_certificateSelector.TakeOwnershipOfCertificate(chain))
                 {
                     Logger.Info($"Secret '{notification.Entity.Namespace()}/{notification.Entity.Name()}' was changed, updated internal certificates.");
@@ -58,26 +63,30 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
             if (notification.IsLeader)
             {
                 var existingSecret = await _webHookConfigurationWriter.FetchCurrentCertificate();
-                if (existingSecret == null)
+                if (existingSecret == null
+                    || !_webHookSecretParser.TryGetWebHookCertificateSecret(existingSecret, out var chain))
                 {
                     // Missing.
                     await GenerateAndPublishCertificate();
                 }
-                else if (_webHookSecretParser.TryGetWebHookCertificateSecret(existingSecret, out var chain))
+                else
                 {
                     using (chain)
                     {
-                        // Existing and valid, ensure web hook ca bundle is okay.
-                        Logger.Info("Web hook certificate secret is valid.");
-                        var chainExport = _certificateChainConverter.Export(chain);
-                        await _webHookConfigurationWriter.UpdateClusterWebHookConfiguration(chainExport);
+                        if (_validator.IsValid(chain, out var reason))
+                        {
+                            // Existing and valid, ensure web hook ca bundle is okay.
+                            Logger.Info("Web hook certificate secret is valid.");
+                            var chainExport = _certificateChainConverter.Export(chain);
+                            await _webHookConfigurationWriter.UpdateClusterWebHookConfiguration(chainExport);
+                        }
+                        else
+                        {
+                            // Invalid.
+                            Logger.Info($"Web hook certificate secret is invalid (Reason: '{reason}').");
+                            await GenerateAndPublishCertificate();
+                        }
                     }
-                }
-                else
-                {
-                    // Invalid.
-                    Logger.Info("Web hook certificate secret is invalid.");
-                    await GenerateAndPublishCertificate();
                 }
             }
         }

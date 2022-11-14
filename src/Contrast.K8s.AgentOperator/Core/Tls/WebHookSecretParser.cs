@@ -35,12 +35,18 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
                 && secret.Data != null
                 && secret.Data.TryGetValue(_tlsStorageOptions.ServerCertificateName, out var serverCertificateBytes)
                 && secret.Data.TryGetValue(_tlsStorageOptions.CaPublicName, out var caPublicBytes)
-                && secret.Data.TryGetValue(_tlsStorageOptions.CaCertificateName, out var caCertificateBytes)
-                && secret.Data.TryGetValue(_tlsStorageOptions.VersionName, out var versionBytes))
+                && secret.Data.TryGetValue(_tlsStorageOptions.CaCertificateName, out var caCertificateBytes))
             {
+                // Version is newer, so we might be upgrading from a version without versions.
+                var version = Array.Empty<byte>();
+                if (secret.Data.TryGetValue(_tlsStorageOptions.VersionName, out var versionBytes))
+                {
+                    version = versionBytes;
+                }
+
                 try
                 {
-                    chain = _certificateChainConverter.Import(new TlsCertificateChainExport(caCertificateBytes, caPublicBytes, serverCertificateBytes, versionBytes));
+                    chain = _certificateChainConverter.Import(new TlsCertificateChainExport(caCertificateBytes, caPublicBytes, serverCertificateBytes, version));
 
                     var renewThreshold = DateTime.Now + TimeSpan.FromDays(90);
                     return chain.CaCertificate.HasPrivateKey

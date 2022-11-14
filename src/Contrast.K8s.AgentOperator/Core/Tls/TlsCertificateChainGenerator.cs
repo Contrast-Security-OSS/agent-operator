@@ -19,6 +19,8 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
 
     public class TlsCertificateChainGenerator : ITlsCertificateChainGenerator
     {
+        public static readonly byte[] GenerationVersion = { 3 };
+
         private readonly CreateCertificates _createCertificates;
         private readonly TlsCertificateOptions _options;
 
@@ -33,7 +35,7 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
             var ca = CreateRootCa(_options);
             var serverCertificate = CreateServerCertificate(ca);
 
-            return new TlsCertificateChain(ca, serverCertificate);
+            return new TlsCertificateChain(ca, serverCertificate, GenerationVersion);
         }
 
         private X509Certificate2 CreateRootCa(TlsCertificateOptions options)
@@ -135,7 +137,7 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
         };
     }
 
-    public record TlsCertificateChain(X509Certificate2 CaCertificate, X509Certificate2 ServerCertificate) : IDisposable
+    public record TlsCertificateChain(X509Certificate2 CaCertificate, X509Certificate2 ServerCertificate, byte[] Version) : IDisposable
     {
         public void Dispose()
         {

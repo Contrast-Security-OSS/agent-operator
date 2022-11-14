@@ -1,7 +1,6 @@
 ﻿// Contrast Security, Inc licenses this file to you under the Apache 2.0 License.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -18,8 +17,6 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
 
     public class TlsCertificateChainConverter : ITlsCertificateChainConverter
     {
-        private const byte GenerationVersion = 2;
-
         public TlsCertificateChainExport Export(TlsCertificateChain chain)
         {
             var caCertificatePem = chain.CaCertificate.Export(X509ContentType.Pkcs12);
@@ -29,22 +26,17 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
 
             var serverCertificatePem = chain.ServerCertificate.Export(X509ContentType.Pkcs12);
 
-            return new TlsCertificateChainExport(caCertificatePem, caPublicPem, serverCertificatePem, new[]{ GenerationVersion });
+            return new TlsCertificateChainExport(caCertificatePem, caPublicPem, serverCertificatePem, chain.Version);
         }
 
         public TlsCertificateChain Import(TlsCertificateChainExport export)
         {
             var (caCertificatePem, _, serverCertificatePem, version) = export;
 
-            if (version.Length != 1 || version[0] != GenerationVersion)
-            {
-                throw new Exception($"Incompatible generated version '{string.Join(",", version)}' detected, expected '{GenerationVersion}'.");
-            }
-
             var caCertificate = new X509Certificate2(caCertificatePem, (string?)null, X509KeyStorageFlags.Exportable);
             var serverCertificate = new X509Certificate2(serverCertificatePem, (string?)null, X509KeyStorageFlags.Exportable);
 
-            return new TlsCertificateChain(caCertificate, serverCertificate);
+            return new TlsCertificateChain(caCertificate, serverCertificate, version);
         }
 
         private static byte[] CreatePem(object o)

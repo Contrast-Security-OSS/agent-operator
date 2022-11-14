@@ -61,10 +61,18 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Tls
             var converterMock = Substitute.For<ITlsCertificateChainConverter>();
             converterMock.Export(chainFake).Returns(exportFake);
 
+            var validatorMock = Substitute.For<ITlsCertificateChainValidator>();
+            validatorMock.IsValid(Arg.Is(chainFake), out _).Returns(info =>
+            {
+                info[1] = ValidationResultReason.NoError;
+                return true;
+            });
+
             var handler = CreateGraph(
                 webHookSecretParser: parserMock,
                 webHookConfigurationWriter: writerMock,
-                certificateChainConverter: converterMock
+                certificateChainConverter: converterMock,
+                certificateChainValidator:validatorMock
             );
 
             // Act
@@ -143,14 +151,16 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Tls
                                                                     ITlsCertificateChainGenerator? certificateChainGenerator = null,
                                                                     ITlsCertificateChainConverter? certificateChainConverter = null,
                                                                     IKubeWebHookConfigurationWriter? webHookConfigurationWriter = null,
-                                                                    IWebHookSecretParser? webHookSecretParser = null)
+                                                                    IWebHookSecretParser? webHookSecretParser = null,
+                                                                    ITlsCertificateChainValidator? certificateChainValidator = null)
         {
             return new TlsCertificateMaintenanceHandler(
                 certificateSelector ?? Substitute.For<IKestrelCertificateSelector>(),
                 certificateChainGenerator ?? Substitute.For<ITlsCertificateChainGenerator>(),
                 certificateChainConverter ?? Substitute.For<ITlsCertificateChainConverter>(),
                 webHookConfigurationWriter ?? Substitute.For<IKubeWebHookConfigurationWriter>(),
-                webHookSecretParser ?? Substitute.For<IWebHookSecretParser>()
+                webHookSecretParser ?? Substitute.For<IWebHookSecretParser>(),
+                certificateChainValidator ?? Substitute.For<ITlsCertificateChainValidator>()
             );
         }
 
