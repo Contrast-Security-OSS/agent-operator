@@ -30,13 +30,17 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents
                 && GetFirstOrDefaultEnvVar(container.Env, "CONTRAST_EXISTING_JAVA_TOOL_OPTIONS") is null)
             {
                 var contrastAgentArgument = GetContrastAgentArgument(context);
+
                 //Parse and patch the existing JAVA_TOOL_OPTIONS
                 container.Env.AddOrUpdate(new V1EnvVar("CONTRAST_EXISTING_JAVA_TOOL_OPTIONS", currentJavaToolOptions));
+
                 try
                 {
                     var options = JavaArgumentParser.ParseArguments(currentJavaToolOptions).ToList();
+
                     //Patch contrast-agent.jar to the correct path
-                    var contrastJavaAgentIndex = options.FindIndex(x => x.StartsWith("-javaagent", StringComparison.OrdinalIgnoreCase) && x.Contains("contrast-agent.jar", StringComparison.OrdinalIgnoreCase));
+                    var contrastJavaAgentIndex = options.FindIndex(x => x.StartsWith("-javaagent", StringComparison.OrdinalIgnoreCase)
+                                                                        && x.Contains("contrast-agent.jar", StringComparison.OrdinalIgnoreCase));
                     if (contrastJavaAgentIndex >= 0)
                     {
                         options[contrastJavaAgentIndex] = contrastAgentArgument;
@@ -45,11 +49,12 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents
                     {
                         options.Insert(0, contrastAgentArgument);
                     }
+
                     container.Env.AddOrUpdate(new V1EnvVar("JAVA_TOOL_OPTIONS", string.Join(' ', options)));
                 }
                 catch (Exception e)
                 {
-                    Logger.Warn(e, $"Failed to parse existing JAVA_TOOL_OPTIONS, unable to patch!");
+                    Logger.Warn(e, "Failed to parse existing JAVA_TOOL_OPTIONS, unable to patch!");
                 }
             }
         }
@@ -59,9 +64,8 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents
             return collection.FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase));
         }
 
-        private string GetContrastAgentArgument(PatchingContext context) => $"-javaagent:{context.ContrastMountPath}/contrast-agent.jar";
+        private static string GetContrastAgentArgument(PatchingContext context) => $"-javaagent:{context.ContrastMountPath}/contrast-agent.jar";
 
         public string GetMountPath() => "/opt/contrast";
-
     }
 }
