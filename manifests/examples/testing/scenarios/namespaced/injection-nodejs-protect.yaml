@@ -4,7 +4,7 @@ metadata:
   name: injection-nodejs-protect
 spec:
   enabled: true
-  type: nodejs
+  type: nodejs-protect
   selector:
     labels:
       - name: app

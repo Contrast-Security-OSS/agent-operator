@@ -10,7 +10,7 @@ using Xunit.Abstractions;
 
 namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection.Agents
 {
-    public class NodeJsProtectInjectionTests
+    public class NodeJsProtectInjectionTests : IClassFixture<TestingContext>
     {
         private const string ScenarioName = "injection-nodejs-protect";
 
