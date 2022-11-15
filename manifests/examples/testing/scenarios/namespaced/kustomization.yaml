@@ -13,7 +13,7 @@ resources:
   - ./injection-dummy.yaml
   - ./injection-java.yaml
   - ./injection-javatooloptions.yaml
-  - ./injection-nodejs.yaml
+  - ./injection-nodejs-v4.yaml
   - ./injection-nodejs-protect.yaml
   - ./injection-php.yaml
   - ./missing-deps.yaml
