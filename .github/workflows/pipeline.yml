@@ -39,10 +39,12 @@ jobs:
   build-image:
     runs-on: ubuntu-latest
     needs: generate-version
+    permissions:
+      packages: write
     outputs:
       digest: ${{ steps.build.outputs.digest }}
     env:
-      IMAGE_NAME: contrastdotnet.azurecr.io/agent-operator/agent-operator
+      IMAGE_NAME: ghcr.io/contrast-security-oss/agent-operator/operator
       BUILD_VERSION: ${{ needs.generate-version.outputs.version }}
       IS_PUBLIC_BUILD: ${{ needs.generate-version.outputs.is-public-build }}
     steps:
@@ -56,9 +58,9 @@ jobs:
           version: latest
       - uses: docker/login-action@v2
         with:
-          registry: contrastdotnet.azurecr.io
-          username: ${{ secrets.AZURE_CLIENT_ID }}
-          password: ${{ secrets.AZURE_CLIENT_SECRET }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Docker Meta
         id: meta
         uses: docker/metadata-action@v4
@@ -175,16 +177,16 @@ jobs:
           - 1.21 # EOL: 2022-06-28
       fail-fast: false
     env:
-      IMAGE: contrastdotnet.azurecr.io/agent-operator/agent-operator@${{ needs.build-image.outputs.digest }}
+      IMAGE: ghcr.io/contrast-security-oss/agent-operator/operator@${{ needs.build-image.outputs.digest }}
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: true
       - uses: docker/login-action@v2
         with:
-          registry: contrastdotnet.azurecr.io
-          username: ${{ secrets.AZURE_CLIENT_ID }}
-          password: ${{ secrets.AZURE_CLIENT_SECRET }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - uses: nolar/setup-k3d-k3s@v1
         name: Deploy K3d
         with:
@@ -317,18 +319,20 @@ jobs:
       - build-image
       - test-image
       - test-manifests
+    permissions:
+      packages: write
     env:
       BUILD_VERSION: ${{ needs.generate-version.outputs.version }}
-      IMAGE_NAME: contrastdotnet.azurecr.io/agent-operator/agent-operator
+      IMAGE_NAME: ghcr.io/contrast-security-oss/agent-operator/operator
     if: ${{ github.event_name != 'pull_request' && github.actor != 'dependabot[bot]' }}
     steps:
       - uses: actions/checkout@v3
-      - name: Login (Azure)
+      - name: Login (GitHub)
         uses: docker/login-action@v2
         with:
-          registry: contrastdotnet.azurecr.io
-          username: ${{ secrets.AZURE_CLIENT_ID }}
-          password: ${{ secrets.AZURE_CLIENT_SECRET }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Docker Meta
         id: meta
         uses: docker/metadata-action@v4
@@ -342,7 +346,7 @@ jobs:
       - name: Tag for Release
         uses: akhilerm/tag-push-action@v2.0.0
         with:
-          src: contrastdotnet.azurecr.io/agent-operator/agent-operator@${{ needs.build-image.outputs.digest }}
+          src: ghcr.io/contrast-security-oss/agent-operator/operator@${{ needs.build-image.outputs.digest }}
           dst: |
             ${{ steps.meta.outputs.tags }}
   #
@@ -360,17 +364,18 @@ jobs:
       - release-internal
     permissions:
       contents: write
+      packages: write
     env:
       BUILD_VERSION: ${{ needs.generate-version.outputs.version }}
     if: ${{ needs.generate-version.outputs.version != '0.0.1' }}
     steps:
       - uses: actions/checkout@v3
-      - name: Login (Azure)
+      - name: Login (GitHub)
         uses: docker/login-action@v2
         with:
-          registry: contrastdotnet.azurecr.io
-          username: ${{ secrets.AZURE_CLIENT_ID }}
-          password: ${{ secrets.AZURE_CLIENT_SECRET }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Login (Dockerhub)
         uses: docker/login-action@v2
         with:
@@ -386,17 +391,10 @@ jobs:
         id: dockerhub-meta
         uses: docker/metadata-action@v4
         with:
-          images: docker.io/contrast/agent-operator
-          tags: |
-            type=semver,pattern={{version}},value=${{ env.BUILD_VERSION }}
-            type=semver,pattern={{major}}.{{minor}},value=${{ env.BUILD_VERSION }}
-            type=semver,pattern={{major}},value=${{ env.BUILD_VERSION }}
-            type=raw,latest
-      - name: Docker Meta
-        id: quay-meta
-        uses: docker/metadata-action@v4
-        with:
-          images: quay.io/contrast/agent-operator
+          images: |
+            docker.io/contrast/agent-operator
+            quay.io/contrast/agent-operator
+            ghcr.io/contrast-security-oss/agent-operator/operator
           tags: |
             type=semver,pattern={{version}},value=${{ env.BUILD_VERSION }}
             type=semver,pattern={{major}}.{{minor}},value=${{ env.BUILD_VERSION }}
@@ -405,7 +403,7 @@ jobs:
       - name: Tag for Release
         uses: akhilerm/tag-push-action@v2.0.0
         with:
-          src: contrastdotnet.azurecr.io/agent-operator/agent-operator@${{ needs.build-image.outputs.digest }}
+          src: ghcr.io/contrast-security-oss/agent-operator/operator@${{ needs.build-image.outputs.digest }}
           dst: |
             ${{ steps.dockerhub-meta.outputs.tags }}
             ${{ steps.quay-meta.outputs.tags }}
