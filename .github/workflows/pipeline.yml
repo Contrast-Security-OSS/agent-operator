@@ -90,7 +90,7 @@ jobs:
       BUILD_VERSION: ${{ needs.generate-version.outputs.version }}
     steps:
       - uses: actions/checkout@v3
-      - uses: imranismail/setup-kustomize@v1
+      - uses: imranismail/setup-kustomize@v2
       - name: Generate Manifests (Prod)
         run: |
           set -xe
@@ -128,7 +128,7 @@ jobs:
       BUILD_VERSION: ${{ needs.generate-version.outputs.version }}
     steps:
       - uses: actions/checkout@v3
-      - uses: imranismail/setup-kustomize@v1
+      - uses: imranismail/setup-kustomize@v2
       - uses: azure/setup-helm@v3
         with:
           version: v3.10.1
