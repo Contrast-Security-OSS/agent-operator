@@ -344,7 +344,7 @@ jobs:
             type=semver,pattern={{major}},value=${{ env.BUILD_VERSION }}
             type=raw,latest
       - name: Tag for Release
-        uses: akhilerm/tag-push-action@v2.0.0
+        uses: akhilerm/tag-push-action@v2.1.0
         with:
           src: ghcr.io/contrast-security-oss/agent-operator/operator@${{ needs.build-image.outputs.digest }}
           dst: |
@@ -401,7 +401,7 @@ jobs:
             type=semver,pattern={{major}},value=${{ env.BUILD_VERSION }}
             type=raw,latest
       - name: Tag for Release
-        uses: akhilerm/tag-push-action@v2.0.0
+        uses: akhilerm/tag-push-action@v2.1.0
         with:
           src: ghcr.io/contrast-security-oss/agent-operator/operator@${{ needs.build-image.outputs.digest }}
           dst: |
