@@ -57,6 +57,7 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching
         {
             pod.SetAnnotation(InjectionConstants.IsInjectedAttributeName, true.ToString());
             pod.SetAnnotation(InjectionConstants.InjectedOnAttributeName, DateTimeOffset.UtcNow.ToString("O"));
+            pod.SetAnnotation(InjectionConstants.InjectedByAttributeName, $"Contrast.K8s.AgentOperator/{OperatorVersion.Version}");
             pod.SetAnnotation(InjectionConstants.InjectorTypeAttributeName, context.Injector.Type.ToString());
 
             pod.Spec.Volumes ??= new List<V1Volume>();

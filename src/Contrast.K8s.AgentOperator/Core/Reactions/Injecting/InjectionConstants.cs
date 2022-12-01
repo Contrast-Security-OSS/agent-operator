@@ -10,6 +10,7 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting
         // Pod annotations via the mutation webhook.
         public const string IsInjectedAttributeName = "agents.contrastsecurity.com/is-injected";
         public const string InjectedOnAttributeName = "agents.contrastsecurity.com/injected-on";
+        public const string InjectedByAttributeName = "agents.contrastsecurity.com/injected-by";
         public const string InjectorTypeAttributeName = "agents.contrastsecurity.com/injector-type";
 
         // Pod annotations via the workload (our direct patching).
