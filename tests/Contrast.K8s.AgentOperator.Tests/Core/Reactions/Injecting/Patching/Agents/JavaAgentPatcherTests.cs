@@ -53,7 +53,9 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting.Patching.Age
             // Assert
             result.Should().BeEquivalentTo(new List<V1EnvVar>
             {
-                new("JAVA_TOOL_OPTIONS", $"-javaagent:{contextFake.AgentMountPath}/contrast-agent.jar")
+                new("JAVA_TOOL_OPTIONS", $"-javaagent:{contextFake.AgentMountPath}/contrast-agent.jar"),
+                new("CONTRAST__AGENT__CONTRAST_WORKING_DIR", contextFake.WritableMountPath),
+                new("CONTRAST__AGENT__LOGGER__PATH", $"{contextFake.WritableMountPath}/contrast_agent.log"),
             });
         }
 

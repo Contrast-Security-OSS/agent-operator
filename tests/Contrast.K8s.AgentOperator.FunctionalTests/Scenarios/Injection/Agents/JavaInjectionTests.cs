@@ -37,6 +37,10 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection.Agents
 
                 container.Env.Should().Contain(x => x.Name == "JAVA_TOOL_OPTIONS")
                          .Which.Value.Should().Be("-javaagent:/opt/contrast/contrast-agent.jar");
+                container.Env.Should().Contain(x => x.Name == "CONTRAST__AGENT__CONTRAST_WORKING_DIR")
+                         .Which.Value.Should().Be("/contrast-data");
+                container.Env.Should().Contain(x => x.Name == "CONTRAST__AGENT__LOGGER__PATH")
+                         .Which.Value.Should().Be("/contrast-data/contrast_agent.log");
             }
         }
 
