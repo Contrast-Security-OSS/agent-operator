@@ -72,8 +72,8 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching
             };
             pod.Spec.Volumes.AddOrUpdate(writableVolume.Name, writableVolume);
 
-            const string initAgentMountPath = "/contrast-agent";
-            const string initWritableMountPath = "/contrast-writable";
+            const string initAgentMountPath = "/contrast-init/agent";
+            const string initWritableMountPath = "/contrast-init/data";
             var initContainer = new V1Container("contrast-init")
             {
                 Image = context.Injector.Image.GetFullyQualifiedContainerImageName(),
