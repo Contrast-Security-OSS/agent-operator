@@ -15,7 +15,7 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents
         {
             // https://nodejs.org/api/cli.html#node_optionsoptions
             yield return new V1EnvVar("NODE_OPTIONS", $"--require {context.AgentMountPath}/node_modules/@contrast/agent");
-            yield return new V1EnvVar("CONTRAST__AGENT__LOGGER__PATH", $"{context.WritableMountPath}/contrast_agent.log");
+            yield return new V1EnvVar("CONTRAST__AGENT__LOGGER__PATH", $"{context.WritableMountPath}/logs/contrast_agent.log");
         }
     }
 }

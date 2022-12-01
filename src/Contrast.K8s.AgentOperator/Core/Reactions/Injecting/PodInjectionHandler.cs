@@ -43,8 +43,8 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting
                     injector,
                     connection,
                     configuration,
-                    "/contrast",
-                    "/contrast-data"
+                    "/contrast/agent",
+                    "/contrast/data"
                     );
                 await _patcher.Patch(context, request.Entity, cancellationToken);
 

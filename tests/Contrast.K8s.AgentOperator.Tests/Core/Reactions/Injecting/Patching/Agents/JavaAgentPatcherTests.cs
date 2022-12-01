@@ -55,7 +55,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting.Patching.Age
             {
                 new("JAVA_TOOL_OPTIONS", $"-javaagent:{contextFake.AgentMountPath}/contrast-agent.jar"),
                 new("CONTRAST__AGENT__CONTRAST_WORKING_DIR", contextFake.WritableMountPath),
-                new("CONTRAST__AGENT__LOGGER__PATH", $"{contextFake.WritableMountPath}/contrast_agent.log"),
+                new("CONTRAST__AGENT__LOGGER__PATH", $"{contextFake.WritableMountPath}/logs/contrast_agent.log"),
             });
         }
 

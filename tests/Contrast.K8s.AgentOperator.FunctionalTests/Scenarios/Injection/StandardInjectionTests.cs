@@ -56,9 +56,9 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection
             using (new AssertionScope())
             {
                 var container = result.Spec.Containers.Single();
-                container.Env.Should().Contain(x => x.Name == "CONTRAST_MOUNT_PATH").Which.Value.Should().Be("/contrast");
-                container.Env.Should().Contain(x => x.Name == "CONTRAST_MOUNT_AGENT_PATH").Which.Value.Should().Be("/contrast");
-                container.Env.Should().Contain(x => x.Name == "CONTRAST_MOUNT_WRITABLE_PATH").Which.Value.Should().Be("/contrast-data");
+                container.Env.Should().Contain(x => x.Name == "CONTRAST_MOUNT_PATH").Which.Value.Should().Be("/contrast/agent");
+                container.Env.Should().Contain(x => x.Name == "CONTRAST_MOUNT_AGENT_PATH").Which.Value.Should().Be("/contrast/agent");
+                container.Env.Should().Contain(x => x.Name == "CONTRAST_MOUNT_WRITABLE_PATH").Which.Value.Should().Be("/contrast/data");
                 container.Env.Should().Contain(x => x.Name == "CONTRAST__API__URL").Which.Value.Should().Be("http://localhost");
 
                 // Of course, this won't be here if telemetry is disabled.
@@ -97,11 +97,11 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection
                 var container = result.Spec.Containers.Single();
 
                 var agentMount = container.VolumeMounts.Should().ContainSingle(x => x.Name == "contrast-agent").Subject;
-                agentMount.MountPath.Should().Be("/contrast");
+                agentMount.MountPath.Should().Be("/contrast/agent");
                 agentMount.ReadOnlyProperty.Should().BeTrue();
 
                 var writableMount = container.VolumeMounts.Should().ContainSingle(x => x.Name == "contrast-writable").Subject;
-                writableMount.MountPath.Should().Be("/contrast-data");
+                writableMount.MountPath.Should().Be("/contrast/data");
                 writableMount.ReadOnlyProperty.Should().NotBeTrue();
             }
         }

@@ -38,17 +38,17 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection.Agents
                 container.Env.Should().Contain(x => x.Name == "CORECLR_PROFILER")
                          .Which.Value.Should().Be("{8B2CE134-0948-48CA-A4B2-80DDAD9F5791}");
                 container.Env.Should().Contain(x => x.Name == "CORECLR_PROFILER_PATH")
-                         .Which.Value.Should().Be("/contrast/runtimes/linux-x64/native/ContrastProfiler.so");
+                         .Which.Value.Should().Be("/contrast/agent/runtimes/linux-x64/native/ContrastProfiler.so");
                 container.Env.Should().Contain(x => x.Name == "CORECLR_ENABLE_PROFILING")
                          .Which.Value.Should().Be("1");
                 container.Env.Should().Contain(x => x.Name == "CONTRAST_SOURCE")
                          .Which.Value.Should().Be("kubernetes-operator");
                 container.Env.Should().Contain(x => x.Name == "CONTRAST_CORECLR_INSTALL_DIRECTORY")
-                         .Which.Value.Should().Be("/contrast");
+                         .Which.Value.Should().Be("/contrast/agent");
                 container.Env.Should().Contain(x => x.Name == "CONTRAST_CORECLR_DATA_DIRECTORY")
-                         .Which.Value.Should().Be("/contrast-data");
+                         .Which.Value.Should().Be("/contrast/data");
                 container.Env.Should().Contain(x => x.Name == "CONTRAST_CORECLR_LOGS_DIRECTORY")
-                         .Which.Value.Should().Be("/contrast-data/logs");
+                         .Which.Value.Should().Be("/contrast/data/logs");
                 container.Env.Should().Contain(x => x.Name == "CONTRAST__AGENT__DOTNET__ENABLE_FILE_WATCHING")
                          .Which.Value.Should().Be("false");
             }
