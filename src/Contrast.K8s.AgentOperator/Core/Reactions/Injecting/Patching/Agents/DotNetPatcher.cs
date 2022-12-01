@@ -36,6 +36,8 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents
 
             yield return new V1EnvVar("CONTRAST_SOURCE", "kubernetes-operator");
             yield return new V1EnvVar("CONTRAST_CORECLR_INSTALL_DIRECTORY", context.AgentMountPath);
+            yield return new V1EnvVar("CONTRAST_CORECLR_DATA_DIRECTORY", context.WritableMountPath);
+            yield return new V1EnvVar("CONTRAST_CORECLR_LOGS_DIRECTORY", $"{context.WritableMountPath}/logs");
             yield return new V1EnvVar("CONTRAST__AGENT__DOTNET__ENABLE_FILE_WATCHING", "false");
         }
 

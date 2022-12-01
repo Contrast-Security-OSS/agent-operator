@@ -30,6 +30,8 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting.Patching.Age
                 "CORECLR_ENABLE_PROFILING",
                 "CONTRAST_SOURCE",
                 "CONTRAST_CORECLR_INSTALL_DIRECTORY",
+                "CONTRAST_CORECLR_DATA_DIRECTORY",
+                "CONTRAST_CORECLR_LOGS_DIRECTORY",
                 "CONTRAST__AGENT__DOTNET__ENABLE_FILE_WATCHING"
             };
 
@@ -51,7 +53,9 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting.Patching.Age
                 "LD_PRELOAD",
                 "CONTRAST_SOURCE",
                 "CONTRAST_CORECLR_INSTALL_DIRECTORY",
-                "CONTRAST__AGENT__DOTNET__ENABLE_FILE_WATCHING"
+                "CONTRAST_CORECLR_DATA_DIRECTORY",
+                "CONTRAST_CORECLR_LOGS_DIRECTORY",
+                "CONTRAST__AGENT__DOTNET__ENABLE_FILE_WATCHING",
             };
 
             // Act
