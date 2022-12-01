@@ -37,6 +37,8 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection.Agents
 
                 container.Env.Should().Contain(x => x.Name == "PHP_INI_SCAN_DIR")
                          .Which.Value.Should().Be(":/usr/local/lib/contrast/php/ini/");
+                container.Env.Should().Contain(x => x.Name == "CONTRAST__AGENT__LOGGER__PATH")
+                         .Which.Value.Should().Be("/contrast-data/contrast_agent.log");
             }
         }
 

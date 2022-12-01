@@ -36,6 +36,8 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection.Agents
                 var container = result.Spec.Containers.Should().ContainSingle().Subject;
                 container.Env.Should().Contain(x => x.Name == "NODE_OPTIONS")
                          .Which.Value.Should().Be("--require /contrast/node_modules/@contrast/protect-agent");
+                container.Env.Should().Contain(x => x.Name == "CONTRAST__AGENT__LOGGER__PATH")
+                         .Which.Value.Should().Be("/contrast-data/contrast_agent.log");
             }
         }
 
