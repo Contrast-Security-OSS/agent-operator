@@ -137,12 +137,12 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection
                 var container = result.Spec.InitContainers.Single(x => x.Name == "contrast-init");
                 container.ImagePullPolicy.Should().Be("Always");
 
-                container.VolumeMounts.Should().Contain(x => x.Name == "contrast-agent").Which.MountPath.Should().Be("/contrast-agent");
-                container.VolumeMounts.Should().Contain(x => x.Name == "contrast-writable").Which.MountPath.Should().Be("/contrast-writable");
+                container.VolumeMounts.Should().Contain(x => x.Name == "contrast-agent").Which.MountPath.Should().Be("/contrast-init/agent");
+                container.VolumeMounts.Should().Contain(x => x.Name == "contrast-writable").Which.MountPath.Should().Be("/contrast-init/data");
 
-                container.Env.Should().Contain(x => x.Name == "CONTRAST_MOUNT_PATH").Which.Value.Should().Be("/contrast-agent");
-                container.Env.Should().Contain(x => x.Name == "CONTRAST_MOUNT_AGENT_PATH").Which.Value.Should().Be("/contrast-agent");
-                container.Env.Should().Contain(x => x.Name == "CONTRAST_MOUNT_WRITABLE_PATH").Which.Value.Should().Be("/contrast-writable");
+                container.Env.Should().Contain(x => x.Name == "CONTRAST_MOUNT_PATH").Which.Value.Should().Be("/contrast-init/agent");
+                container.Env.Should().Contain(x => x.Name == "CONTRAST_MOUNT_AGENT_PATH").Which.Value.Should().Be("/contrast-init/agent");
+                container.Env.Should().Contain(x => x.Name == "CONTRAST_MOUNT_WRITABLE_PATH").Which.Value.Should().Be("/contrast-init/data");
             }
         }
 
