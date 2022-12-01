@@ -64,8 +64,8 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents
             return collection.FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase));
         }
 
-        private static string GetContrastAgentArgument(PatchingContext context) => $"-javaagent:{context.ContrastMountPath}/contrast-agent.jar";
+        private static string GetContrastAgentArgument(PatchingContext context) => $"-javaagent:{context.AgentMountPath}/contrast-agent.jar";
 
-        public string GetMountPath() => "/opt/contrast";
+        public string GetOverrideAgentMountPath() => "/opt/contrast";
     }
 }

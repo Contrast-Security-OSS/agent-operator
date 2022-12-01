@@ -38,11 +38,11 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching
             var patchers = _patchersFactory.Invoke();
             var patcher = patchers.FirstOrDefault(x => x.Type == context.Injector.Type);
 
-            if (patcher?.GetMountPath() is { } mountPathOverride)
+            if (patcher?.GetOverrideAgentMountPath() is { } agentMountPathOverride)
             {
                 context = context with
                 {
-                    ContrastMountPath = mountPathOverride
+                    AgentMountPath = agentMountPathOverride
                 };
             }
 
@@ -59,25 +59,35 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching
             pod.SetAnnotation(InjectionConstants.InjectedOnAttributeName, DateTimeOffset.UtcNow.ToString("O"));
             pod.SetAnnotation(InjectionConstants.InjectorTypeAttributeName, context.Injector.Type.ToString());
 
-            var volume = new V1Volume("contrast")
+            pod.Spec.Volumes ??= new List<V1Volume>();
+            var agentVolume = new V1Volume("contrast-agent")
             {
                 EmptyDir = new V1EmptyDirVolumeSource()
             };
-            pod.Spec.Volumes ??= new List<V1Volume>();
-            pod.Spec.Volumes.AddOrUpdate(volume.Name, volume);
+            pod.Spec.Volumes.AddOrUpdate(agentVolume.Name, agentVolume);
 
-            const string initTargetMountPath = "/contrast-init";
+            var writableVolume = new V1Volume("contrast-writable")
+            {
+                EmptyDir = new V1EmptyDirVolumeSource()
+            };
+            pod.Spec.Volumes.AddOrUpdate(writableVolume.Name, writableVolume);
+
+            const string initAgentMountPath = "/contrast-agent";
+            const string initWritableMountPath = "/contrast-writable";
             var initContainer = new V1Container("contrast-init")
             {
                 Image = context.Injector.Image.GetFullyQualifiedContainerImageName(),
                 VolumeMounts = new List<V1VolumeMount>
                 {
-                    new(initTargetMountPath, volume.Name)
+                    new(initAgentMountPath, agentVolume.Name),
+                    new(initWritableMountPath, writableVolume.Name),
                 },
                 ImagePullPolicy = context.Injector.ImagePullPolicy,
                 Env = new List<V1EnvVar>
                 {
-                    new("CONTRAST_MOUNT_PATH", initTargetMountPath)
+                    new("CONTRAST_MOUNT_PATH", initAgentMountPath), // TODO Remove this, this is used by the images.
+                    new("CONTRAST_MOUNT_AGENT_PATH", initAgentMountPath),
+                    new("CONTRAST_MOUNT_WRITABLE_PATH", initWritableMountPath),
                 }
             };
             pod.Spec.InitContainers ??= new List<V1Container>();
@@ -92,9 +102,13 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching
 
             foreach (var container in GetMatchingContainers(context, pod))
             {
-                var volumeMount = new V1VolumeMount(context.ContrastMountPath, volume.Name, readOnlyProperty: true);
                 container.VolumeMounts ??= new List<V1VolumeMount>();
-                container.VolumeMounts.AddOrUpdate(volumeMount.Name, volumeMount);
+
+                var agentVolumeMount = new V1VolumeMount(context.AgentMountPath, agentVolume.Name, readOnlyProperty: true);
+                container.VolumeMounts.AddOrUpdate(agentVolumeMount.Name, agentVolumeMount);
+
+                var writableVolumeMount = new V1VolumeMount(context.WritableMountPath, writableVolume.Name, readOnlyProperty: false);
+                container.VolumeMounts.AddOrUpdate(writableVolumeMount.Name, writableVolumeMount);
 
                 var genericPatches = GenerateEnvVars(context);
                 var agentPatches = agentPatcher?.GenerateEnvVars(context) ?? Array.Empty<V1EnvVar>();
@@ -129,9 +143,11 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching
 
         private IEnumerable<V1EnvVar> GenerateEnvVars(PatchingContext context)
         {
-            var (workloadName, workloadNamespace, _, connection, configuration, contrastMountPath) = context;
+            var (workloadName, workloadNamespace, _, connection, configuration, agentMountPath, writableMountPath) = context;
 
-            yield return new V1EnvVar("CONTRAST_MOUNT_PATH", contrastMountPath);
+            yield return new V1EnvVar("CONTRAST_MOUNT_PATH", agentMountPath); // TODO Remove this.
+            yield return new V1EnvVar("CONTRAST_MOUNT_AGENT_PATH", agentMountPath);
+            yield return new V1EnvVar("CONTRAST_MOUNT_WRITABLE_PATH", writableMountPath);
 
             yield return new V1EnvVar("CONTRAST__API__URL", connection.TeamServerUri);
             yield return new V1EnvVar(

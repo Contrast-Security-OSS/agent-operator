@@ -35,7 +35,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting.Patching.Age
             var patcher = new JavaAgentPatcher();
 
             // Act
-            var result = patcher.GetMountPath();
+            var result = patcher.GetOverrideAgentMountPath();
 
             // Assert
             result.Should().Be("/opt/contrast");
@@ -53,7 +53,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting.Patching.Age
             // Assert
             result.Should().BeEquivalentTo(new List<V1EnvVar>
             {
-                new("JAVA_TOOL_OPTIONS", $"-javaagent:{contextFake.ContrastMountPath}/contrast-agent.jar")
+                new("JAVA_TOOL_OPTIONS", $"-javaagent:{contextFake.AgentMountPath}/contrast-agent.jar")
             });
         }
 
@@ -90,7 +90,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting.Patching.Age
             patcher.PatchContainer(container, context);
 
             // Assert
-            var expectedToolOptions = $"-javaagent:{context.ContrastMountPath}/contrast-agent.jar -javaagent:/somepath/some-tool.jar -Dcontrast.dir=/tmp";
+            var expectedToolOptions = $"-javaagent:{context.AgentMountPath}/contrast-agent.jar -javaagent:/somepath/some-tool.jar -Dcontrast.dir=/tmp";
             using (new AssertionScope())
             {
                 container.Env.Should()
@@ -113,7 +113,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting.Patching.Age
             patcher.PatchContainer(container, context);
 
             // Assert
-            var expectedToolOptions = $"-javaagent:{context.ContrastMountPath}/contrast-agent.jar -Dcontrast.dir=/tmp";
+            var expectedToolOptions = $"-javaagent:{context.AgentMountPath}/contrast-agent.jar -Dcontrast.dir=/tmp";
             using (new AssertionScope())
             {
                 container.Env.Should()
@@ -136,7 +136,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting.Patching.Age
             patcher.PatchContainer(container, context);
 
             // Assert
-            var expectedToolOptions = $"-javaagent:{context.ContrastMountPath}/contrast-agent.jar -Dcontrast.dir=/tmp";
+            var expectedToolOptions = $"-javaagent:{context.AgentMountPath}/contrast-agent.jar -Dcontrast.dir=/tmp";
             using (new AssertionScope())
             {
                 container.Env.Should()

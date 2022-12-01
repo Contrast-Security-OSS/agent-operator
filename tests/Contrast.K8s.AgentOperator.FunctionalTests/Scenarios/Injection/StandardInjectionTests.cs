@@ -57,6 +57,8 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection
             {
                 var container = result.Spec.Containers.Single();
                 container.Env.Should().Contain(x => x.Name == "CONTRAST_MOUNT_PATH").Which.Value.Should().Be("/contrast");
+                container.Env.Should().Contain(x => x.Name == "CONTRAST_MOUNT_AGENT_PATH").Which.Value.Should().Be("/contrast");
+                container.Env.Should().Contain(x => x.Name == "CONTRAST_MOUNT_WRITABLE_PATH").Which.Value.Should().Be("/contrast-data");
                 container.Env.Should().Contain(x => x.Name == "CONTRAST__API__URL").Which.Value.Should().Be("http://localhost");
 
                 // Of course, this won't be here if telemetry is disabled.
@@ -82,7 +84,7 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection
         }
 
         [Fact]
-        public async Task When_injected_then_pod_should_have_volume_mount()
+        public async Task When_injected_then_pod_should_have_volume_mounts()
         {
             var client = await _context.GetClient();
 
@@ -93,9 +95,14 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection
             using (new AssertionScope())
             {
                 var container = result.Spec.Containers.Single();
-                var mount = container.VolumeMounts.Should().ContainSingle(x => x.Name == "contrast").Subject;
-                mount.MountPath.Should().Be("/contrast");
-                mount.ReadOnlyProperty.Should().BeTrue();
+
+                var agentMount = container.VolumeMounts.Should().ContainSingle(x => x.Name == "contrast-agent").Subject;
+                agentMount.MountPath.Should().Be("/contrast");
+                agentMount.ReadOnlyProperty.Should().BeTrue();
+
+                var writableMount = container.VolumeMounts.Should().ContainSingle(x => x.Name == "contrast-writable").Subject;
+                writableMount.MountPath.Should().Be("/contrast-data");
+                writableMount.ReadOnlyProperty.Should().NotBeTrue();
             }
         }
 
@@ -130,13 +137,12 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection
                 var container = result.Spec.InitContainers.Single(x => x.Name == "contrast-init");
                 container.ImagePullPolicy.Should().Be("Always");
 
-                var mount = container.VolumeMounts.Should().ContainSingle().Subject;
-                mount.Name.Should().Be("contrast");
-                mount.MountPath.Should().Be("/contrast-init");
+                container.VolumeMounts.Should().Contain(x => x.Name == "contrast-agent").Which.MountPath.Should().Be("/contrast-agent");
+                container.VolumeMounts.Should().Contain(x => x.Name == "contrast-writable").Which.MountPath.Should().Be("/contrast-writable");
 
-                var env = container.Env.Should().ContainSingle().Subject;
-                env.Name.Should().Be("CONTRAST_MOUNT_PATH");
-                env.Value.Should().Be("/contrast-init");
+                container.Env.Should().Contain(x => x.Name == "CONTRAST_MOUNT_PATH").Which.Value.Should().Be("/contrast-agent");
+                container.Env.Should().Contain(x => x.Name == "CONTRAST_MOUNT_AGENT_PATH").Which.Value.Should().Be("/contrast-agent");
+                container.Env.Should().Contain(x => x.Name == "CONTRAST_MOUNT_WRITABLE_PATH").Which.Value.Should().Be("/contrast-writable");
             }
         }
 
@@ -151,7 +157,10 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection
             // Assert
             using (new AssertionScope())
             {
-                result.Spec.Volumes.Should().ContainSingle(x => x.Name == "contrast")
+                result.Spec.Volumes.Should().ContainSingle(x => x.Name == "contrast-agent")
+                      .Which.EmptyDir.Should().NotBeNull();
+
+                result.Spec.Volumes.Should().ContainSingle(x => x.Name == "contrast-writable")
                       .Which.EmptyDir.Should().NotBeNull();
             }
         }

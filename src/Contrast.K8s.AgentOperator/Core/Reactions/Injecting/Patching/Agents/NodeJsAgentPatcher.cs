@@ -14,7 +14,7 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents
         public IEnumerable<V1EnvVar> GenerateEnvVars(PatchingContext context)
         {
             // https://nodejs.org/api/cli.html#node_optionsoptions
-            yield return new V1EnvVar("NODE_OPTIONS", $"--require {context.ContrastMountPath}/node_modules/@contrast/agent");
+            yield return new V1EnvVar("NODE_OPTIONS", $"--require {context.AgentMountPath}/node_modules/@contrast/agent");
         }
     }
 }

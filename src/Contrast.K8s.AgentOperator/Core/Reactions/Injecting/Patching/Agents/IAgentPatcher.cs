@@ -17,6 +17,6 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents
         {
         }
 
-        public string? GetMountPath() => null;
+        public string? GetOverrideAgentMountPath() => null;
     }
 }

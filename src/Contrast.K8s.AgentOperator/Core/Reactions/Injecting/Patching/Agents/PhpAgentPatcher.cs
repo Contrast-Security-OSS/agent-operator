@@ -13,9 +13,9 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents
 
         public IEnumerable<V1EnvVar> GenerateEnvVars(PatchingContext context)
         {
-            yield return new V1EnvVar("PHP_INI_SCAN_DIR", $":{context.ContrastMountPath}/ini/");
+            yield return new V1EnvVar("PHP_INI_SCAN_DIR", $":{context.AgentMountPath}/ini/");
         }
 
-        public string GetMountPath() => "/usr/local/lib/contrast/php";
+        public string GetOverrideAgentMountPath() => "/usr/local/lib/contrast/php";
     }
 }

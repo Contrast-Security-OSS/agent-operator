@@ -50,7 +50,7 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection.Agents
 
             // Assert
             result.Spec.Containers.Should().ContainSingle()
-                  .Which.VolumeMounts.Should().ContainSingle(x => x.Name == "contrast")
+                  .Which.VolumeMounts.Should().ContainSingle(x => x.Name == "contrast-agent")
                   .Which.MountPath.Should().Be("/usr/local/lib/contrast/php");
         }
 

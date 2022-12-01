@@ -10,5 +10,6 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching
                                   AgentInjectorResource Injector,
                                   AgentConnectionResource Connection,
                                   AgentConfigurationResource? Configuration,
-                                  string ContrastMountPath);
+                                  string AgentMountPath,
+                                  string WritableMountPath);
 }
