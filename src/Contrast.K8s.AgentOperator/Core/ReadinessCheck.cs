@@ -4,10 +4,12 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Tls;
+using JetBrains.Annotations;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Contrast.K8s.AgentOperator.Core
 {
+    [UsedImplicitly]
     public class ReadinessCheck : IHealthCheck
     {
         private readonly IKestrelCertificateSelector _certificateSelector;

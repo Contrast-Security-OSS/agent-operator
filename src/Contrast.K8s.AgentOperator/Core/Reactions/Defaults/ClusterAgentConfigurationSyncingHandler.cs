@@ -40,7 +40,7 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults
             var builder = new StringBuilder();
             foreach (var yamlKey in desiredResource.YamlKeys)
             {
-                // Hard code the new line to Linux.
+                // Hard code the new line for Linux.
                 builder.Append(yamlKey.Key).Append(": ").Append(yamlKey.Value).Append("\n");
             }
 

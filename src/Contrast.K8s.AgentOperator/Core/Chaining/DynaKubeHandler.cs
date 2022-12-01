@@ -30,8 +30,8 @@ namespace Contrast.K8s.AgentOperator.Core.Chaining
                 var oneAgentSpec = notification.Entity.Spec.OneAgent;
                 if (oneAgentSpec?.ClassicFullStack != null)
                 {
-                    Logger.Warn(
-                        $"Dynatrace Operator is present and in classicFullStack mode. Please set the environment variable 'CONTRAST_ENABLE_EARLY_CHAINING=true' on the operator and restart the affected pods.");
+                    Logger.Warn("Dynatrace Operator is present and in classicFullStack mode. "
+                                + "Please set the environment variable 'CONTRAST_ENABLE_EARLY_CHAINING=true' on the operator and restart the affected pods.");
                 }
             }
 
