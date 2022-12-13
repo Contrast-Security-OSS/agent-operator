@@ -20,6 +20,7 @@ Make sure the operator supports your cluster version.
 
 | Kubernetes Version | OpenShift Version | Operator Version | End-of-Support |
 |--------------------|-------------------|------------------|----------------|
+| v1.26              |                   | v0.14.0+         | 2024-02-24     |
 | v1.25              |                   | v0.8.0+          | 2023-10-27     |
 | v1.24              |                   | v0.4.0+          | 2023-09-29     |
 | v1.23              | v4.10             | v0.1.0+          | 2023-02-28     |
