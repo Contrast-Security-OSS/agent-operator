@@ -1,7 +1,7 @@
 # Contrast Security, Inc licenses this file to you under the Apache 2.0 License.
 # See the LICENSE file in the project root for more information.
 
-FROM mcr.microsoft.com/dotnet/aspnet:6.0.10 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:6.0.12 AS base
 
 # To aid in debugging.
 RUN set -xe \
@@ -11,7 +11,7 @@ RUN set -xe \
 
 WORKDIR /app
 
-FROM mcr.microsoft.com/dotnet/sdk:6.0.403 AS build
+FROM mcr.microsoft.com/dotnet/sdk:6.0.404 AS build
 COPY src/Contrast.K8s.AgentOperator/Contrast.K8s.AgentOperator.csproj /source/src/Contrast.K8s.AgentOperator/
 COPY tests/Contrast.K8s.AgentOperator.Tests/Contrast.K8s.AgentOperator.Tests.csproj /source/tests/Contrast.K8s.AgentOperator.Tests/
 COPY tests/Contrast.K8s.AgentOperator.FunctionalTests/Contrast.K8s.AgentOperator.FunctionalTests.csproj /source/tests/Contrast.K8s.AgentOperator.FunctionalTests/
