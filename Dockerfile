@@ -11,7 +11,7 @@ RUN set -xe \
 
 WORKDIR /app
 
-FROM mcr.microsoft.com/dotnet/sdk:6.0.404 AS build
+FROM mcr.microsoft.com/dotnet/sdk:6.0.405 AS build
 COPY src/Contrast.K8s.AgentOperator/Contrast.K8s.AgentOperator.csproj /source/src/Contrast.K8s.AgentOperator/
 COPY tests/Contrast.K8s.AgentOperator.Tests/Contrast.K8s.AgentOperator.Tests.csproj /source/tests/Contrast.K8s.AgentOperator.Tests/
 COPY tests/Contrast.K8s.AgentOperator.FunctionalTests/Contrast.K8s.AgentOperator.FunctionalTests.csproj /source/tests/Contrast.K8s.AgentOperator.FunctionalTests/
