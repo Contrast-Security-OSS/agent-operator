@@ -72,11 +72,14 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Matching
                 }
             }
 
-            Logger.Info(() =>
+            if (unusedInjectors.Any())
             {
-                var unusedInjectorsStr = string.Join(", ", unusedInjectors.Select(x => x.Identity.ToString()));
-                return $"A total of {unusedInjectors.Count} injectors are valid, but do not match any known entities. (Unused injectors: [{unusedInjectorsStr}])";
-            });
+                Logger.Info(() =>
+                {
+                    var unusedInjectorsStr = string.Join(", ", unusedInjectors.Select(x => x.Identity.ToString()));
+                    return $"A total of {unusedInjectors.Count} injectors are valid, but do not match any known entities. (Unused injectors: [{unusedInjectorsStr}])";
+                });
+            }
         }
 
         private ResourceIdentityPair<AgentInjectorResource>? GetBestInjector(IEnumerable<ResourceIdentityPair<AgentInjectorResource>> readyAgentInjectors,
