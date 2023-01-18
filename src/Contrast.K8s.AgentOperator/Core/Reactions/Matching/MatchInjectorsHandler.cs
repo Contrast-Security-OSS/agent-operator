@@ -55,14 +55,28 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Matching
         private async ValueTask Handle(CancellationToken cancellationToken = default)
         {
             var readyAgentInjectors = await GetReadyAgentInjectors(cancellationToken);
+            var unusedInjectors = new HashSet<ResourceIdentityPair<AgentInjectorResource>>(
+                readyAgentInjectors,
+                ObjectReferenceComparer<ResourceIdentityPair<AgentInjectorResource>>.Default
+            );
 
             var rootResources = await _state.GetByType<IResourceWithPodTemplate>(cancellationToken);
             foreach (var target in rootResources)
             {
-                Logger.Debug(() => $"Calculating changes needed for '{target.Identity}'...");
+                Logger.Trace(() => $"Calculating changes needed for '{target.Identity}'...");
                 var bestInjector = GetBestInjector(readyAgentInjectors, target);
                 await _mediator.Publish(new InjectorMatched(target, bestInjector), cancellationToken);
+                if (bestInjector != null)
+                {
+                    unusedInjectors.Remove(bestInjector);
+                }
             }
+
+            Logger.Info(() =>
+            {
+                var unusedInjectorsStr = string.Join(", ", unusedInjectors.Select(x => x.Identity.ToString()));
+                return $"A total of {unusedInjectors.Count} injectors are valid, but do not match any known entities. (Unused injectors: [{unusedInjectorsStr}])";
+            });
         }
 
         private ResourceIdentityPair<AgentInjectorResource>? GetBestInjector(IEnumerable<ResourceIdentityPair<AgentInjectorResource>> readyAgentInjectors,
@@ -99,7 +113,7 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Matching
                 }
                 else if (result is NotReadyResult<AgentInjectorResource> notReadyResult)
                 {
-                    Logger.Info($"Ignoring the not ready '{identity}'. (Errors: [{notReadyResult.FormatFailureReasons()}])");
+                    Logger.Info($"Ignoring the not ready '{identity}'. This may be a transitive error. (Errors: [{notReadyResult.FormatFailureReasons()}])");
                 }
                 else
                 {
