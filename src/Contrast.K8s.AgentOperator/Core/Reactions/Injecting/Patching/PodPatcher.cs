@@ -55,11 +55,13 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching
 
         private void ApplyPatches(PatchingContext context, V1Pod pod, IAgentPatcher? agentPatcher)
         {
+            // Pod annotations.
             pod.SetAnnotation(InjectionConstants.IsInjectedAttributeName, true.ToString());
             pod.SetAnnotation(InjectionConstants.InjectedOnAttributeName, DateTimeOffset.UtcNow.ToString("O"));
             pod.SetAnnotation(InjectionConstants.InjectedByAttributeName, $"Contrast.K8s.AgentOperator/{OperatorVersion.Version}");
             pod.SetAnnotation(InjectionConstants.InjectorTypeAttributeName, context.Injector.Type.ToString());
 
+            // Volumes.
             pod.Spec.Volumes ??= new List<V1Volume>();
             var agentVolume = new V1Volume("contrast-agent")
             {
@@ -73,27 +75,31 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching
             };
             pod.Spec.Volumes.AddOrUpdate(writableVolume.Name, writableVolume);
 
-            const string initAgentMountPath = "/contrast-init/agent";
-            const string initWritableMountPath = "/contrast-init/data";
-            var initContainer = new V1Container("contrast-init")
+            // Init Container.
             {
-                Image = context.Injector.Image.GetFullyQualifiedContainerImageName(),
-                VolumeMounts = new List<V1VolumeMount>
+                const string initAgentMountPath = "/contrast-init/agent";
+                const string initWritableMountPath = "/contrast-init/data";
+                var initContainer = new V1Container("contrast-init")
                 {
-                    new(initAgentMountPath, agentVolume.Name),
-                    new(initWritableMountPath, writableVolume.Name),
-                },
-                ImagePullPolicy = context.Injector.ImagePullPolicy,
-                Env = new List<V1EnvVar>
-                {
-                    new("CONTRAST_MOUNT_PATH", initAgentMountPath), // TODO Remove this, this is used by the images.
-                    new("CONTRAST_MOUNT_AGENT_PATH", initAgentMountPath),
-                    new("CONTRAST_MOUNT_WRITABLE_PATH", initWritableMountPath),
-                }
-            };
-            pod.Spec.InitContainers ??= new List<V1Container>();
-            pod.Spec.InitContainers.AddOrUpdate(initContainer.Name, initContainer);
+                    Image = context.Injector.Image.GetFullyQualifiedContainerImageName(),
+                    VolumeMounts = new List<V1VolumeMount>
+                    {
+                        new(initAgentMountPath, agentVolume.Name),
+                        new(initWritableMountPath, writableVolume.Name),
+                    },
+                    ImagePullPolicy = context.Injector.ImagePullPolicy,
+                    Env = new List<V1EnvVar>
+                    {
+                        new("CONTRAST_MOUNT_PATH", initAgentMountPath), // TODO Remove this, this is used by the images.
+                        new("CONTRAST_MOUNT_AGENT_PATH", initAgentMountPath),
+                        new("CONTRAST_MOUNT_WRITABLE_PATH", initWritableMountPath),
+                    }
+                };
+                pod.Spec.InitContainers ??= new List<V1Container>();
+                pod.Spec.InitContainers.AddOrUpdate(initContainer.Name, initContainer);
+            }
 
+            // Pull secrets.
             if (context.Injector.ImagePullSecret is { } pullSecret)
             {
                 pod.Spec.ImagePullSecrets ??= new List<V1LocalObjectReference>();
@@ -101,6 +107,7 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching
                     new V1LocalObjectReference(pullSecret.Name));
             }
 
+            // Normal Containers.
             foreach (var container in GetMatchingContainers(context, pod))
             {
                 container.VolumeMounts ??= new List<V1VolumeMount>();
