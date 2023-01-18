@@ -10,7 +10,10 @@ namespace Contrast.K8s.AgentOperator.Core.Events
     public record EntityCreating<T>(T Entity) : IRequest<EntityCreatingMutationResult<T>> where T : IKubernetesObject<V1ObjectMeta>;
 
     public abstract record EntityCreatingMutationResult<T>
-        where T : IKubernetesObject<V1ObjectMeta>;
+        where T : IKubernetesObject<V1ObjectMeta>
+    {
+        public static NoChangeEntityCreatingMutationResult<T> NoChange { get; } = new();
+    }
 
     public record NoChangeEntityCreatingMutationResult<T> : EntityCreatingMutationResult<T>
         where T : IKubernetesObject<V1ObjectMeta>;

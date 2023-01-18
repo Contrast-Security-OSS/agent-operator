@@ -45,7 +45,7 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting
                     configuration,
                     "/contrast/agent",
                     "/contrast/data"
-                    );
+                );
                 await _patcher.Patch(context, request.Entity, cancellationToken);
 
                 Logger.Info("Patching pod "
@@ -54,8 +54,8 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting
                 return new NeedsChangeEntityCreatingMutationResult<V1Pod>(request.Entity);
             }
 
-            Logger.Debug("Ignored pod creation, not selected by any known agent injectors.");
-            return new NoChangeEntityCreatingMutationResult<V1Pod>();
+            Logger.Debug("Ignored pod creation, the pod was not selected by any known agent injectors.");
+            return EntityCreatingMutationResult<V1Pod>.NoChange;
         }
     }
 }
