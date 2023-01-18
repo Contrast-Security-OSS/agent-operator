@@ -112,11 +112,10 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults
         {
             Logger.Info($"Out-dated {EntityName} '{targetNamespace}/{targetName}' entity detected, preparing to create/patch.");
 
-            await _state.MarkAsDirty<TTargetResource>(targetName, targetNamespace, cancellationToken);
-
             var stopwatch = Stopwatch.StartNew();
             try
             {
+                // Create, but don't save the entity yet.
                 var entity = await CreateTargetEntity(clusterResource, desiredResource, targetName, targetNamespace);
                 if (entity == null)
                 {
@@ -131,6 +130,9 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults
                 }
 
                 await _kubernetesClient.Save(entity);
+
+                // Only mark this entity as dirty after saving, in-case the object was never created.
+                await _state.MarkAsDirty<TTargetResource>(targetName, targetNamespace, cancellationToken);
                 Logger.Info($"Updated {EntityName} '{targetNamespace}/{targetName}' after {stopwatch.ElapsedMilliseconds}ms.");
             }
             catch (HttpOperationException e)
