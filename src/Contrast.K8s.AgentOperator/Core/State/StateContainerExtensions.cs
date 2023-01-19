@@ -23,11 +23,11 @@ namespace Contrast.K8s.AgentOperator.Core.State
             var injector = await state.GetById<AgentInjectorResource>(name, @namespace, cancellationToken);
             if (injector == null)
             {
-                context.AddFailureReason($"Injector '{@namespace}/{name}' appears to have disappeared.");
+                context.AddFailureReason("Injector appears to have disappeared.");
             }
             else if (!injector.Enabled)
             {
-                context.AddFailureReason($"Injector '{@namespace}/{name}' is disabled and will be ignored.");
+                context.AddFailureReason("Injector is disabled and will be ignored.");
             }
             else
             {
@@ -39,15 +39,32 @@ namespace Contrast.K8s.AgentOperator.Core.State
                                                   cancellationToken
                                               ) != null;
 
+                bool configurationIsValid;
+                if (injector.ConfigurationReference is { IsNamespaceDefault: false } configurationRef)
+                {
+                    var configurationResource = await state.GetById<AgentConfigurationResource>(configurationRef.Name, configurationRef.Namespace, cancellationToken);
+                    configurationIsValid = configurationResource != null;
+                    if (!configurationIsValid)
+                    {
+                        context.AddFailureReason($"AgentConfiguration '{configurationRef.Namespace}/{configurationRef.Name}' could not be found.");
+                    }
+                }
+                else
+                {
+                    // This field is optional (defaults to the namespace default, which can be missing).
+                    // However, if set, it must exist.
+                    configurationIsValid = true;
+                }
+
                 var pullSecretFound = injector.ImagePullSecret == null
                                       || await state.HasSecretKey(injector.ImagePullSecret, cancellationToken);
                 if (!pullSecretFound
                     && injector.ImagePullSecret is { } secret)
                 {
-                    context.AddFailureReason($"Pull secret was set, but Secret '{secret.Namespace}/{secret.Name}' with key '{secret.Key}' could not be found.");
+                    context.AddFailureReason($"Pull Secret '{secret.Namespace}/{secret.Name}' with key '{secret.Key}' could not be found.");
                 }
 
-                if (connectionResourceFound && pullSecretFound)
+                if (connectionResourceFound && configurationIsValid && pullSecretFound)
                 {
                     return new IsReadyResult<AgentInjectorResource>(injector);
                 }
