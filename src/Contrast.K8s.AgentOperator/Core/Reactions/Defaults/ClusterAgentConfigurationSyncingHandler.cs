@@ -46,6 +46,14 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults
 
             var yaml = builder.ToString();
 
+            var initContainer = desiredResource.InitContainerOverrides is { } overrides
+                ? new V1Beta1AgentConfiguration.InitContainerOverridesSpec
+                {
+                    Resources = overrides.Resources,
+                    SecurityContext = overrides.SecurityContext
+                }
+                : null;
+
             return ValueTask.FromResult(new V1Beta1AgentConfiguration
             {
                 Metadata = new V1ObjectMeta(name: targetName, namespaceProperty: targetNamespace),
@@ -53,7 +61,8 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults
                 {
                     Yaml = yaml,
                     SuppressDefaultApplicationName = desiredResource.SuppressDefaultApplicationName,
-                    SuppressDefaultServerName = desiredResource.SuppressDefaultServerName
+                    SuppressDefaultServerName = desiredResource.SuppressDefaultServerName,
+                    InitContainer = initContainer
                 }
             })!;
         }

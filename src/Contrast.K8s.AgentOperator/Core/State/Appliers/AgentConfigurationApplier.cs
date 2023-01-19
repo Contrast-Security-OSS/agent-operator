@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
+using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
 using Contrast.K8s.AgentOperator.Entities;
 using JetBrains.Annotations;
 using k8s.Models;
@@ -48,10 +49,15 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers
                 }
             }
 
+            var overrides = entity.Spec.InitContainer != null
+                ? new InitContainerOverrides(entity.Spec.InitContainer?.SecurityContext, entity.Spec.InitContainer?.Resources)
+                : null;
+
             var resource = new AgentConfigurationResource(
                 yamlValues,
                 entity.Spec.SuppressDefaultServerName,
-                entity.Spec.SuppressDefaultApplicationName
+                entity.Spec.SuppressDefaultApplicationName,
+                overrides
             );
             return ValueTask.FromResult(resource);
         }

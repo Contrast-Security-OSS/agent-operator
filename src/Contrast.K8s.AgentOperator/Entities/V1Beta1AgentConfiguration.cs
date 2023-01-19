@@ -38,6 +38,29 @@ namespace Contrast.K8s.AgentOperator.Entities
             /// Defaults to false.
             /// </summary>
             public bool? SuppressDefaultApplicationName { get; set; }
+
+            /// <summary>
+            /// Optional spec to apply to the Contrast InitContainer.
+            /// If not specified, reasonable defaults are used.
+            /// </summary>
+            public InitContainerOverridesSpec? InitContainer { get; set; }
+        }
+
+        public class InitContainerOverridesSpec
+        {
+            /// <summary>
+            /// SecurityContext defines the security options the container should be run with.
+            /// If set, the fields of SecurityContext override the equivalent fields of
+            /// PodSecurityContext. More info:
+            /// https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+            /// </summary>
+            public V1SecurityContext? SecurityContext { get; set; }
+
+            /// <summary>
+            /// Compute Resources required by this container. More info:
+            /// https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+            /// </summary>
+            public V1ResourceRequirements? Resources { get; set; }
         }
     }
 }
