@@ -22,3 +22,4 @@ resources:
   - ./type-daemonset.yaml
   - ./type-deployment.yaml
   - ./type-statefulset.yaml
+  - ./unmatched.yaml
