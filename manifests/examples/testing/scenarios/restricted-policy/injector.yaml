@@ -5,7 +5,6 @@ metadata:
 spec:
   enabled: true
   type: dotnet-core
-  version: 99.0.0
   image:
     pullPolicy: Never
   selector:

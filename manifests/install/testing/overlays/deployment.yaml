@@ -12,3 +12,5 @@ spec:
           env:
             - name: CONTRAST_AGENT_TELEMETRY_OPTOUT
               value: "true"
+            - name: CONTRAST_RUN_INIT_CONTAINER_AS_NON_ROOT
+              value: "true"
