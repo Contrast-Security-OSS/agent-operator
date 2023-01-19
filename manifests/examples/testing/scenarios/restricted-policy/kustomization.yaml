@@ -1,0 +1,8 @@
+namespace: testing-restricted
+resources:
+  - ./shared/testing-agent-configuration.yaml
+  - ./shared/testing-agent-connection-secret.yaml
+  - ./shared/testing-agent-connection.yaml
+  - ./injection-restricted.yaml
+  - ./injector.yaml
+  - ./namespace.yaml

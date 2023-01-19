@@ -1,0 +1,15 @@
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: AgentConnection
+metadata:
+  name: testing-agent-connection
+spec:
+  url: http://localhost
+  apiKey:
+    secretName: testing-agent-connection-secret
+    secretKey: apiKey
+  serviceKey:
+    secretName: testing-agent-connection-secret
+    secretKey: serviceKey
+  userName:
+    secretName: testing-agent-connection-secret
+    secretKey: userName

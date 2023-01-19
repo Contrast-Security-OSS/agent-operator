@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: injection-restricted
+  labels:
+    app: injection-restricted
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: injection-restricted
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: injection-restricted
+    spec:
+      containers:
+        - image: mcr.microsoft.com/dotnet/samples:aspnetapp
+          name: dotnet
+          resources:
+            limits:
+              cpu: 100m
+              memory: 100Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsUser: 1001
+            runAsGroup: 1001
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault

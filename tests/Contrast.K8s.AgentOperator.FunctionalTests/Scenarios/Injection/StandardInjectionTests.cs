@@ -164,5 +164,54 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection
                       .Which.EmptyDir.Should().NotBeNull();
             }
         }
+
+        [Fact]
+        public async Task When_init_container_is_created_then_default_security_context_should_be_applied()
+        {
+            var client = await _context.GetClient();
+
+            // Act
+            var result = await client.GetInjectedPodByPrefix(ScenarioName);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                var container = result.Spec.InitContainers.Single(x => x.Name == "contrast-init");
+                var context = container.SecurityContext;
+
+                context.Should().NotBeNull();
+                context.Capabilities.Add.Should().BeNullOrEmpty();
+                context.Capabilities.Drop.Should().ContainSingle().Which.Should().Be("ALL");
+                context.Privileged.Should().BeFalse();
+                context.ReadOnlyRootFilesystem.Should().BeTrue();
+                context.AllowPrivilegeEscalation.Should().BeFalse();
+                context.SeccompProfile?.Type.Should().Be("RuntimeDefault");
+
+                // This should be false in our tests, since we CONTRAST_RUN_INIT_CONTAINER_AS_NON_ROOT.
+                context.RunAsNonRoot.Should().BeTrue();
+            }
+        }
+
+        [Fact]
+        public async Task When_init_container_is_created_then_default_resource_limits_should_be_applied()
+        {
+            var client = await _context.GetClient();
+
+            // Act
+            var result = await client.GetInjectedPodByPrefix(ScenarioName);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                var container = result.Spec.InitContainers.Single(x => x.Name == "contrast-init");
+                var resources = container.Resources;
+
+                resources.Should().NotBeNull();
+                resources.Limits.Should().ContainKey("cpu").WhoseValue.Value.Should().Be("100m");
+                resources.Limits.Should().ContainKey("memory").WhoseValue.Value.Should().Be("64Mi");
+                resources.Requests.Should().ContainKey("cpu").WhoseValue.Value.Should().Be("100m");
+                resources.Requests.Should().ContainKey("memory").WhoseValue.Value.Should().Be("64Mi");
+            }
+        }
     }
 }

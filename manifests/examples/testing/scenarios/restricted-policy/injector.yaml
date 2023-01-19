@@ -1,0 +1,18 @@
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: AgentInjector
+metadata:
+  name: injection-restricted
+spec:
+  enabled: true
+  type: dotnet-core
+  version: 99.0.0
+  image:
+    pullPolicy: Never
+  selector:
+    labels:
+      - name: app
+        value: injection-restricted
+  connection:
+    name: testing-agent-connection
+  configuration:
+    name: testing-agent-configuration
