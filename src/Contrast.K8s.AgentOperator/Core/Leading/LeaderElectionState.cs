@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Events;
+using k8s.Autorest;
 using KubeOps.Operator.Leadership;
 using MediatR;
 using NLog;
@@ -45,6 +46,10 @@ namespace Contrast.K8s.AgentOperator.Core.Leading
                 try
                 {
                     await _mediator.Publish(new LeaderStateChanged(IsLeader()));
+                }
+                catch (HttpOperationException e)
+                {
+                    Logger.Warn(e, $"An error occurred. Response body: '{e.Response.Content}'.");
                 }
                 catch (Exception e)
                 {
