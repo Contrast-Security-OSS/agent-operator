@@ -198,7 +198,24 @@ namespace Contrast.K8s.AgentOperator
                                       || useSlowComparerStr.Equals("true", StringComparison.OrdinalIgnoreCase);
                 }
 
-                return new OperatorOptions(@namespace, settleDuration, eventQueueSize, fullMode, eventQueueMergeWindowSeconds, useSlowComparer);
+                // This flag will eventually default to true, and then will be removed.
+                // Users may override this on a per AgentConfiguration bases via the InitContainer override field.
+                var runInitContainersAsNonRoot = false;
+                if (Environment.GetEnvironmentVariable("CONTRAST_RUN_INIT_CONTAINER_AS_NON_ROOT") is { } runInitContainersAsNonRootStr)
+                {
+                    runInitContainersAsNonRoot = runInitContainersAsNonRootStr.Equals("1", StringComparison.OrdinalIgnoreCase)
+                                                 || runInitContainersAsNonRootStr.Equals("true", StringComparison.OrdinalIgnoreCase);
+                }
+
+                return new OperatorOptions(
+                    @namespace,
+                    settleDuration,
+                    eventQueueSize,
+                    fullMode,
+                    eventQueueMergeWindowSeconds,
+                    useSlowComparer,
+                    runInitContainersAsNonRoot
+                );
             }).SingleInstance();
 
             builder.Register(_ =>

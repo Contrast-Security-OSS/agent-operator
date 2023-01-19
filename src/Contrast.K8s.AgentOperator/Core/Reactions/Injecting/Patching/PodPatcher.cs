@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents;
 using Contrast.K8s.AgentOperator.Core.Telemetry.Cluster;
+using Contrast.K8s.AgentOperator.Options;
 using k8s.Models;
 using NLog;
 
@@ -25,12 +26,14 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching
         private readonly Func<IEnumerable<IAgentPatcher>> _patchersFactory;
         private readonly IGlobMatcher _globMatcher;
         private readonly IClusterIdState _clusterIdState;
+        private readonly OperatorOptions _operatorOptions;
 
-        public PodPatcher(Func<IEnumerable<IAgentPatcher>> patchersFactory, IGlobMatcher globMatcher, IClusterIdState clusterIdState)
+        public PodPatcher(Func<IEnumerable<IAgentPatcher>> patchersFactory, IGlobMatcher globMatcher, IClusterIdState clusterIdState, OperatorOptions operatorOptions)
         {
             _patchersFactory = patchersFactory;
             _globMatcher = globMatcher;
             _clusterIdState = clusterIdState;
+            _operatorOptions = operatorOptions;
         }
 
         public ValueTask Patch(PatchingContext context, V1Pod pod, CancellationToken cancellationToken = default)
@@ -77,24 +80,7 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching
 
             // Init Container.
             {
-                const string initAgentMountPath = "/contrast-init/agent";
-                const string initWritableMountPath = "/contrast-init/data";
-                var initContainer = new V1Container("contrast-init")
-                {
-                    Image = context.Injector.Image.GetFullyQualifiedContainerImageName(),
-                    VolumeMounts = new List<V1VolumeMount>
-                    {
-                        new(initAgentMountPath, agentVolume.Name),
-                        new(initWritableMountPath, writableVolume.Name),
-                    },
-                    ImagePullPolicy = context.Injector.ImagePullPolicy,
-                    Env = new List<V1EnvVar>
-                    {
-                        new("CONTRAST_MOUNT_PATH", initAgentMountPath), // TODO Remove this, this is used by the images.
-                        new("CONTRAST_MOUNT_AGENT_PATH", initAgentMountPath),
-                        new("CONTRAST_MOUNT_WRITABLE_PATH", initWritableMountPath),
-                    }
-                };
+                var initContainer = CreateInitContainer(context, agentVolume, writableVolume);
                 pod.Spec.InitContainers ??= new List<V1Container>();
                 pod.Spec.InitContainers.AddOrUpdate(initContainer.Name, initContainer);
             }
@@ -103,8 +89,10 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching
             if (context.Injector.ImagePullSecret is { } pullSecret)
             {
                 pod.Spec.ImagePullSecrets ??= new List<V1LocalObjectReference>();
-                pod.Spec.ImagePullSecrets.AddOrUpdate(x => string.Equals(x.Name, pullSecret.Name, StringComparison.Ordinal),
-                    new V1LocalObjectReference(pullSecret.Name));
+                pod.Spec.ImagePullSecrets.AddOrUpdate(
+                    x => string.Equals(x.Name, pullSecret.Name, StringComparison.Ordinal),
+                    new V1LocalObjectReference(pullSecret.Name)
+                );
             }
 
             // Normal Containers.
@@ -136,6 +124,82 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching
             }
         }
 
+        private V1Container CreateInitContainer(PatchingContext context, V1Volume agentVolume, V1Volume writableVolume)
+        {
+            const string initAgentMountPath = "/contrast-init/agent";
+            const string initWritableMountPath = "/contrast-init/data";
+
+            var securityContextTainted = context.Configuration?.InitContainerOverrides?.SecurityContext != null;
+            var securityContent = context.Configuration?.InitContainerOverrides?.SecurityContext
+                                  ?? new V1SecurityContext();
+
+            // https://kubernetes.io/docs/concepts/security/pod-security-standards/
+            // We cannot safely enable this as this will break existing operator deployments or injections with older agents.
+            // In the future we will default to this being enabled, but for now (at least during the beta) this needs to default to false.
+            // (we need the container image to denote the user, not us, or we might break OpenShift)
+            securityContent.RunAsNonRoot ??= _operatorOptions.RunInitContainersAsNonRoot;
+            securityContent.AllowPrivilegeEscalation ??= false;
+            securityContent.Privileged ??= false;
+            securityContent.ReadOnlyRootFilesystem ??= true;
+            securityContent.Capabilities ??= new V1Capabilities(
+                add: Array.Empty<string>(),
+                drop: new List<string>
+                {
+                    "ALL" // K8s docs sometimes say 'all' is valid, but the security policy in v1.25 requires 'ALL'.
+                }
+            );
+            securityContent.SeccompProfile ??= new V1SeccompProfile();
+            securityContent.SeccompProfile.Type ??= "RuntimeDefault";
+
+            var resourcesTainted = context.Configuration?.InitContainerOverrides?.Resources != null;
+            var resources = context.Configuration?.InitContainerOverrides?.Resources
+                            ?? new V1ResourceRequirements();
+
+            // https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-requests-and-limits-of-pod-and-container
+            const string cpuLimit = "100m";
+            const string memoryLimit = "64Mi";
+
+            resources.Requests ??= new Dictionary<string, ResourceQuantity>(StringComparer.Ordinal);
+            resources.Requests.TryAdd("cpu", new ResourceQuantity(cpuLimit));
+            resources.Requests.TryAdd("memory", new ResourceQuantity(memoryLimit));
+
+            resources.Limits ??= new Dictionary<string, ResourceQuantity>(StringComparer.Ordinal);
+            resources.Limits.TryAdd("cpu", new ResourceQuantity(cpuLimit));
+            resources.Limits.TryAdd("memory", new ResourceQuantity(memoryLimit));
+
+            var initContainer = new V1Container("contrast-init")
+            {
+                Image = context.Injector.Image.GetFullyQualifiedContainerImageName(),
+                VolumeMounts = new List<V1VolumeMount>
+                {
+                    new(initAgentMountPath, agentVolume.Name),
+                    new(initWritableMountPath, writableVolume.Name),
+                },
+                ImagePullPolicy = context.Injector.ImagePullPolicy,
+                Env = new List<V1EnvVar>
+                {
+                    // This isn't used in modern agent images, but is still used in older images.
+                    new("CONTRAST_MOUNT_PATH", initAgentMountPath),
+                    new("CONTRAST_MOUNT_AGENT_PATH", initAgentMountPath),
+                    new("CONTRAST_MOUNT_WRITABLE_PATH", initWritableMountPath),
+                },
+                Resources = resources,
+                SecurityContext = securityContent
+            };
+
+            // These next two are for our CS team to aid in debugging, but also for our functional tests.
+            if (securityContextTainted)
+            {
+                initContainer.Env.Add(new V1EnvVar("CONTRAST_DEBUGGING_SECURITY_CONTEXT_TAINTED", true.ToString()));
+            }
+            if (resourcesTainted)
+            {
+                initContainer.Env.Add(new V1EnvVar("CONTRAST_DEBUGGING_RESOURCES_TAINTED", true.ToString()));
+            }
+
+            return initContainer;
+        }
+
         private IEnumerable<V1Container> GetMatchingContainers(PatchingContext context, V1Pod pod)
         {
             var imagesPatterns = context.Injector.Selector.ImagesPatterns;
@@ -153,7 +217,8 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching
         {
             var (workloadName, workloadNamespace, _, connection, configuration, agentMountPath, writableMountPath) = context;
 
-            yield return new V1EnvVar("CONTRAST_MOUNT_PATH", agentMountPath); // TODO Remove this.
+            // This isn't used in modern agent images, but is still used in older images.
+            yield return new V1EnvVar("CONTRAST_MOUNT_PATH", agentMountPath);
             yield return new V1EnvVar("CONTRAST_MOUNT_AGENT_PATH", agentMountPath);
             yield return new V1EnvVar("CONTRAST_MOUNT_WRITABLE_PATH", writableMountPath);
 
