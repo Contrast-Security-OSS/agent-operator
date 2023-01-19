@@ -14,6 +14,21 @@
         "DOTNET_GCHeapHardLimit": "0x18000000" // Mimic a container with a 512Mi limit. Must be in hex.
       },
       "applicationUrl": "https://localhost:5001"
+    },
+    "Contrast.K8s.AgentOperator (Testing Namespace)": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "POD_NAMESPACE": "testing-agent-operator",
+        "CONTRAST_WEBHOOK_HOSTS": "contrast-agent-operator,contrast-agent-operator.testing-agent-operator.svc,contrast-agent-operator.testing-agent-operator.svc.cluster.local",
+        "CONTRAST_DEFAULT_REGISTRY": "contrast",
+        "CONTRAST_SETTLE_DURATION": "2",
+        "CONTRAST_DEVELOPMENT": "true",
+        "CONTRAST_LOG_LEVEL": "Info",
+        "CONTRAST_EVENT_QUEUE_SIZE": "1000",
+        "DOTNET_GCHeapHardLimit": "0x18000000" // Mimic a container with a 512Mi limit. Must be in hex.
+      },
+      "applicationUrl": "https://localhost:5001"
     }
   }
 }
