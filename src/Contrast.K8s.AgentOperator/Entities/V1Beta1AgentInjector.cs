@@ -90,13 +90,13 @@ namespace Contrast.K8s.AgentOperator.Entities
         {
             /// <summary>
             /// Container images to inject the agent into. Glob patterns are supported.
-            /// Selects all containers in Pod.
+            /// If empty (the default), selects all containers in Pod.
             /// </summary>
             public IReadOnlyCollection<string> Images { get; set; } = Array.Empty<string>();
 
             /// <summary>
             /// Deployment/StatefulSet/DaemonSet/DeploymentConfig labels whose pods are eligible for agent injection.
-            /// Selects all workloads in namespace.
+            /// If empty (the default), selects all workloads in namespace.
             /// </summary>
             public IReadOnlyCollection<LabelSelectorSpec> Labels { get; set; } = Array.Empty<LabelSelectorSpec>();
         }
@@ -112,6 +112,7 @@ namespace Contrast.K8s.AgentOperator.Entities
 
             /// <summary>
             /// The value of the label to match. Glob patterns are supported.
+            /// Required.
             /// </summary>
             [Required]
             public string Value { get; set; } = null!;
