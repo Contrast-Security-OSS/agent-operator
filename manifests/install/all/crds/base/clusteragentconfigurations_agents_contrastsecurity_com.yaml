@@ -125,39 +125,6 @@ spec:
                                     type: string
                                 type: object
                             type: object
-                          resources:
-                            description: |-
-                              Compute Resources required by this container. More info:
-                              https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
-                            nullable: true
-                            properties:
-                              limits:
-                                additionalProperties:
-                                  properties:
-                                    format:
-                                      enum:
-                                      - DecimalExponent
-                                      - BinarySI
-                                      - DecimalSI
-                                      type: string
-                                    value:
-                                      type: string
-                                  type: object
-                                type: object
-                              requests:
-                                additionalProperties:
-                                  properties:
-                                    format:
-                                      enum:
-                                      - DecimalExponent
-                                      - BinarySI
-                                      - DecimalSI
-                                      type: string
-                                    value:
-                                      type: string
-                                  type: object
-                                type: object
-                            type: object
                         type: object
                     type: object
                   metadata:

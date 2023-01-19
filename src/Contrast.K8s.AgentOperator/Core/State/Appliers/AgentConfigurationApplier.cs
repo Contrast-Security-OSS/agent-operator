@@ -50,7 +50,7 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers
             }
 
             var overrides = entity.Spec.InitContainer != null
-                ? new InitContainerOverrides(entity.Spec.InitContainer?.SecurityContext, entity.Spec.InitContainer?.Resources)
+                ? new InitContainerOverrides(entity.Spec.InitContainer?.SecurityContext)
                 : null;
 
             var resource = new AgentConfigurationResource(

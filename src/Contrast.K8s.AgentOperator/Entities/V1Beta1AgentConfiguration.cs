@@ -55,12 +55,6 @@ namespace Contrast.K8s.AgentOperator.Entities
             /// https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
             /// </summary>
             public V1SecurityContext? SecurityContext { get; set; }
-
-            /// <summary>
-            /// Compute Resources required by this container. More info:
-            /// https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
-            /// </summary>
-            public V1ResourceRequirements? Resources { get; set; }
         }
     }
 }

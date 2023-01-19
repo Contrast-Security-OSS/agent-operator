@@ -49,7 +49,6 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults
             var initContainer = desiredResource.InitContainerOverrides is { } overrides
                 ? new V1Beta1AgentConfiguration.InitContainerOverridesSpec
                 {
-                    Resources = overrides.Resources,
                     SecurityContext = overrides.SecurityContext
                 }
                 : null;
