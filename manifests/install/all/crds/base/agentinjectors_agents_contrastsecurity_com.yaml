@@ -73,14 +73,14 @@ spec:
                   images:
                     description: |-
                       Container images to inject the agent into. Glob patterns are supported.
-                      Selects all containers in Pod.
+                      If empty (the default), selects all containers in Pod.
                     items:
                       type: string
                     type: array
                   labels:
                     description: |-
                       Deployment/StatefulSet/DaemonSet/DeploymentConfig labels whose pods are eligible for agent injection.
-                      Selects all workloads in namespace.
+                      If empty (the default), selects all workloads in namespace.
                     items:
                       properties:
                         name:
@@ -89,7 +89,9 @@ spec:
                             Required.
                           type: string
                         value:
-                          description: The value of the label to match. Glob patterns are supported.
+                          description: |-
+                            The value of the label to match. Glob patterns are supported.
+                            Required.
                           type: string
                       required:
                       - name

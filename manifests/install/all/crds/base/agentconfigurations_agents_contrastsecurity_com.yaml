@@ -38,6 +38,118 @@ spec:
                   Defaults to false.
                 nullable: true
                 type: boolean
+              initContainer:
+                description: |-
+                  Optional spec to apply to the Contrast InitContainer.
+                  If not specified, reasonable defaults are used.
+                nullable: true
+                properties:
+                  securityContext:
+                    description: |-
+                      SecurityContext defines the security options the container should be run with.
+                      If set, the fields of SecurityContext override the equivalent fields of
+                      PodSecurityContext. More info:
+                      https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+                    nullable: true
+                    properties:
+                      allowPrivilegeEscalation:
+                        nullable: true
+                        type: boolean
+                      capabilities:
+                        properties:
+                          add:
+                            items:
+                              type: string
+                            type: array
+                          drop:
+                            items:
+                              type: string
+                            type: array
+                        type: object
+                      privileged:
+                        nullable: true
+                        type: boolean
+                      procMount:
+                        type: string
+                      readOnlyRootFilesystem:
+                        nullable: true
+                        type: boolean
+                      runAsGroup:
+                        format: int64
+                        nullable: true
+                        type: integer
+                      runAsNonRoot:
+                        nullable: true
+                        type: boolean
+                      runAsUser:
+                        format: int64
+                        nullable: true
+                        type: integer
+                      seLinuxOptions:
+                        properties:
+                          level:
+                            type: string
+                          role:
+                            type: string
+                          type:
+                            type: string
+                          user:
+                            type: string
+                        type: object
+                      seccompProfile:
+                        properties:
+                          localhostProfile:
+                            type: string
+                          type:
+                            type: string
+                        type: object
+                      windowsOptions:
+                        properties:
+                          gmsaCredentialSpec:
+                            type: string
+                          gmsaCredentialSpecName:
+                            type: string
+                          hostProcess:
+                            nullable: true
+                            type: boolean
+                          runAsUserName:
+                            type: string
+                        type: object
+                    type: object
+                  resources:
+                    description: |-
+                      Compute Resources required by this container. More info:
+                      https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+                    nullable: true
+                    properties:
+                      limits:
+                        additionalProperties:
+                          properties:
+                            format:
+                              enum:
+                              - DecimalExponent
+                              - BinarySI
+                              - DecimalSI
+                              type: string
+                            value:
+                              type: string
+                          type: object
+                        type: object
+                      requests:
+                        additionalProperties:
+                          properties:
+                            format:
+                              enum:
+                              - DecimalExponent
+                              - BinarySI
+                              - DecimalSI
+                              type: string
+                            value:
+                              type: string
+                          type: object
+                        type: object
+                    type: object
+                type: object
             type: object
         type: object
     served: true
