@@ -191,6 +191,8 @@ namespace Contrast.K8s.AgentOperator
                     eventQueueMergeWindowSeconds = parsedEventQueueMergeWindowSeconds;
                 }
 
+                // This flag will eventually be removed after some field testing of the fast comparer.
+                // Any usage of this flag in the field should be documented.
                 var useSlowComparer = false;
                 if (Environment.GetEnvironmentVariable("CONTRAST_USE_SLOW_COMPARER") is { } useSlowComparerStr)
                 {
@@ -207,6 +209,15 @@ namespace Contrast.K8s.AgentOperator
                                                  || runInitContainersAsNonRootStr.Equals("true", StringComparison.OrdinalIgnoreCase);
                 }
 
+                // This is needed for OpenShift < 4.11 (Assumed per the change long, unable to test at the time of writing).
+                // See: https://github.com/openshift/cluster-kube-apiserver-operator/issues/1325
+                var suppressSeccompProfile = false;
+                if (Environment.GetEnvironmentVariable("CONTRAST_SUPPRESS_SECCOMP_PROFILE") is { } suppressSeccompProfileStr)
+                {
+                    suppressSeccompProfile = suppressSeccompProfileStr.Equals("1", StringComparison.OrdinalIgnoreCase)
+                                             || suppressSeccompProfileStr.Equals("true", StringComparison.OrdinalIgnoreCase);
+                }
+
                 return new OperatorOptions(
                     @namespace,
                     settleDuration,
@@ -214,7 +225,8 @@ namespace Contrast.K8s.AgentOperator
                     fullMode,
                     eventQueueMergeWindowSeconds,
                     useSlowComparer,
-                    runInitContainersAsNonRoot
+                    runInitContainersAsNonRoot,
+                    suppressSeccompProfile
                 );
             }).SingleInstance();
 

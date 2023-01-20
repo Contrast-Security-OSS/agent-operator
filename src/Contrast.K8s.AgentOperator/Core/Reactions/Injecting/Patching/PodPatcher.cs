@@ -137,6 +137,7 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching
             // We cannot safely enable this as this will break existing operator deployments or injections with older agents.
             // In the future we will default to this being enabled, but for now (at least during the beta) this needs to default to false.
             // (we need the container image to denote the user, not us, or we might break OpenShift)
+            // It appears OpenShift is okay with this being true, if the container image sets a user. This differs from upstream K8s.
             securityContent.RunAsNonRoot ??= _operatorOptions.RunInitContainersAsNonRoot;
             securityContent.AllowPrivilegeEscalation ??= false;
             securityContent.Privileged ??= false;
@@ -148,8 +149,16 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching
                     "ALL" // K8s docs sometimes say 'all' is valid, but the security policy in v1.25 requires 'ALL'.
                 }
             );
-            securityContent.SeccompProfile ??= new V1SeccompProfile();
-            securityContent.SeccompProfile.Type ??= "RuntimeDefault";
+
+            // OpenShift's default restrictive policy disallows setting the SeccompProfile.Type to anything other than null.
+            // This differs from upstream K8s and friends.
+            // See: https://github.com/openshift/cluster-kube-apiserver-operator/issues/1325
+            // This is needed for K8s's restrictive policy 1.23+.
+            if (!_operatorOptions.SuppressSeccompProfile)
+            {
+                securityContent.SeccompProfile ??= new V1SeccompProfile();
+                securityContent.SeccompProfile.Type ??= "RuntimeDefault";
+            }
 
             // https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-requests-and-limits-of-pod-and-container
             const string cpuLimit = "100m";
