@@ -80,7 +80,10 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching
 
             // Init Container.
             {
-                var initContainer = CreateInitContainer(context, agentVolume, writableVolume);
+                var podSecurityContext = (V1PodSecurityContext?) pod.Spec.SecurityContext;
+                var containerSecurityContext = pod.Spec.Containers.FirstOrDefault()?.SecurityContext;
+
+                var initContainer = CreateInitContainer(context, agentVolume, writableVolume, podSecurityContext, containerSecurityContext);
                 pod.Spec.InitContainers ??= new List<V1Container>();
                 pod.Spec.InitContainers.AddOrUpdate(initContainer.Name, initContainer);
             }
@@ -124,7 +127,11 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching
             }
         }
 
-        private V1Container CreateInitContainer(PatchingContext context, V1Volume agentVolume, V1Volume writableVolume)
+        private V1Container CreateInitContainer(PatchingContext context,
+                                                V1Volume agentVolume,
+                                                V1Volume writableVolume,
+                                                V1PodSecurityContext? podSecurityContext,
+                                                V1SecurityContext? containerSecurityContext)
         {
             const string initAgentMountPath = "/contrast-init/agent";
             const string initWritableMountPath = "/contrast-init/data";
@@ -142,13 +149,6 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching
             securityContent.AllowPrivilegeEscalation ??= false;
             securityContent.Privileged ??= false;
             securityContent.ReadOnlyRootFilesystem ??= true;
-            securityContent.Capabilities ??= new V1Capabilities(
-                add: Array.Empty<string>(),
-                drop: new List<string>
-                {
-                    "ALL" // K8s docs sometimes say 'all' is valid, but the security policy in v1.25 requires 'ALL'.
-                }
-            );
 
             // OpenShift's default restrictive policy disallows setting the SeccompProfile.Type to anything other than null.
             // This differs from upstream K8s and friends.
@@ -159,6 +159,26 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching
                 securityContent.SeccompProfile ??= new V1SeccompProfile();
                 securityContent.SeccompProfile.Type ??= "RuntimeDefault";
             }
+
+            // There's a race condition around operator mutating webhooks and the build-in mutating webhook that applies security policies.
+            // If a mutating webhook adds a sidecar/init container, security policies are not re-applied.
+            // This is continuously brought up as an issue since at least 2019... since reinvocationPolicy was added to upstream.
+            if ((containerSecurityContext?.RunAsUser ?? podSecurityContext?.RunAsUser) is {} runAsUser)
+            {
+                // Run as the same user as the prime container.
+                securityContent.RunAsUser ??= runAsUser;
+            }
+
+            if ((containerSecurityContext?.RunAsGroup ?? podSecurityContext?.RunAsGroup) is {} runAsGroup)
+            {
+                // Run as the same group as the prime container.
+                securityContent.RunAsGroup ??= runAsGroup;
+            }
+
+            // OpenShift default policy as of 4.10 requires explicit drops, even if "ALL" is specified.
+            // So merge any drops added by policy (or user).
+            securityContent.Capabilities ??= new V1Capabilities();
+            securityContent.Capabilities.Drop ??= MergeDropCapabilities(containerSecurityContext);
 
             // https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-requests-and-limits-of-pod-and-container
             const string cpuLimit = "100m";
@@ -201,6 +221,24 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching
             }
 
             return initContainer;
+        }
+
+        private static IList<string> MergeDropCapabilities(V1SecurityContext? containerSecurityContext)
+        {
+            const string defaultDrop = "ALL"; // K8s docs sometimes say 'all' is valid, but the security policy in v1.25 requires 'ALL'.
+
+            if (containerSecurityContext?.Capabilities?.Drop is { Count: > 0 } existingCapabilitiesDrop)
+            {
+                return new HashSet<string>(existingCapabilitiesDrop, StringComparer.OrdinalIgnoreCase)
+                {
+                    defaultDrop
+                }.ToList();
+            }
+
+            return new List<string>
+            {
+                defaultDrop
+            };
         }
 
         private IEnumerable<V1Container> GetMatchingContainers(PatchingContext context, V1Pod pod)
