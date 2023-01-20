@@ -8,6 +8,7 @@ resources:
   - ./custom-version.yaml
   - ./enabled-flag.yaml
   - ./glob-selecting.yaml
+  - ./init-container-overrides.yaml
   - ./injection-dotnet.yaml
   - ./injection-dotnetchaining.yaml
   - ./injection-dummy.yaml

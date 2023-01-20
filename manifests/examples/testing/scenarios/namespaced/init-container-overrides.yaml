@@ -1,0 +1,47 @@
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: AgentInjector
+metadata:
+  name: init-container-overrides
+spec:
+  enabled: true
+  type: dummy
+  selector:
+    labels:
+      - name: app
+        value: init-container-overrides
+  connection:
+    name: testing-agent-connection
+  configuration:
+    name: init-container-overrides-configuration
+---
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: AgentConfiguration
+metadata:
+  name: init-container-overrides-configuration
+spec:
+  initContainer:
+    securityContext:
+      runAsUser: 499
+      runAsNonRoot: false
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: init-container-overrides
+  labels:
+    app: init-container-overrides
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: init-container-overrides
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: init-container-overrides
+    spec:
+      containers:
+        - image: k8s.gcr.io/pause:3.3
+          name: pause
