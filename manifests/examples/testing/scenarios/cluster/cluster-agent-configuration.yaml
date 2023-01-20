@@ -10,5 +10,9 @@ spec:
         enabled: false
         foo:
           bar: "foobar"
+      initContainer:
+        securityContext:
+          runAsUser: 499
+          runAsNonRoot: false
   namespaces:
     - test*

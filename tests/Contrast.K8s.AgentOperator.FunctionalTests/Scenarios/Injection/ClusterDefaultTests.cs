@@ -82,5 +82,25 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection
                 container.Env.Should().Contain(x => x.Name == "CONTRAST__FOO__BAR").Which.Value.Should().Be("foobar");
             }
         }
+
+        [Fact]
+        public async Task When_init_container_overrides_exist_then_the_overrides_should_be_merged_and_applied()
+        {
+            var client = await _context.GetClient();
+
+            // Act
+            var result = await client.GetInjectedPodByPrefix(ScenarioName);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                var container = result.Spec.InitContainers.Single(x => x.Name == "contrast-init");
+                var context = container.SecurityContext;
+
+                context.Should().NotBeNull();
+                context.RunAsUser.Should().Be(499);
+                context.RunAsNonRoot.Should().BeFalse();
+            }
+        }
     }
 }
