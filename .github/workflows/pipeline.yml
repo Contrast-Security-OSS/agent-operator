@@ -236,6 +236,7 @@ jobs:
           max_attempts: 5
           command: |
             set -xe
+            kubectl --namespace testing-agent-operator get events --sort-by=.metadata.creationTimestamp
             kubectl --namespace testing-agent-operator get deployment contrast-agent-operator -o yaml
             kubectl --namespace testing-agent-operator logs deployment/contrast-agent-operator
           shell: bash
