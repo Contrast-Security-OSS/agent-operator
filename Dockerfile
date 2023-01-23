@@ -9,9 +9,10 @@ RUN set -xe \
     && apt-get install -y --no-install-recommends curl jq \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
-
 FROM mcr.microsoft.com/dotnet/sdk:6.0.405 AS build
+WORKDIR /source
+
+# Restore
 COPY src/Contrast.K8s.AgentOperator/Contrast.K8s.AgentOperator.csproj /source/src/Contrast.K8s.AgentOperator/
 COPY tests/Contrast.K8s.AgentOperator.Tests/Contrast.K8s.AgentOperator.Tests.csproj /source/tests/Contrast.K8s.AgentOperator.Tests/
 COPY tests/Contrast.K8s.AgentOperator.FunctionalTests/Contrast.K8s.AgentOperator.FunctionalTests.csproj /source/tests/Contrast.K8s.AgentOperator.FunctionalTests/
@@ -22,24 +23,24 @@ COPY vendor/dotnet-operator-sdk/config/Common.targets /source/vendor/dotnet-oper
 
 COPY vendor/dotnet-kubernetes-client/src/DotnetKubernetesClient/DotnetKubernetesClient.csproj /source/vendor/dotnet-kubernetes-client/src/DotnetKubernetesClient/
 
-WORKDIR /source
 RUN dotnet restore
 
+# Build
 COPY . /source/
 ARG BUILD_VERSION=0.0.1 \
     IS_PUBLIC_BUILD=False
 
 RUN set -xe \
-    && dotnet test -c Release -p:Version=${BUILD_VERSION} --filter Type=Unit \
+    && dotnet test -c Release -p:Version=${BUILD_VERSION} -p:IsPublicBuild=${IS_PUBLIC_BUILD} --filter Type=Unit \
     && dotnet publish -c Release -o /app -p:Version=${BUILD_VERSION} -p:IsPublicBuild=${IS_PUBLIC_BUILD}
 
 FROM base AS final
+WORKDIR /app
 
 RUN set -xe \
-    && addgroup operator-group \
-    && useradd -G operator-group operator-user
+    && addgroup --gid 1000 operator-group \
+    && useradd -G operator-group --uid 1000 operator-user
 
-WORKDIR /app
 COPY src/get-info.sh /get-info.sh
 COPY --from=build /app .
 
@@ -47,10 +48,7 @@ RUN set -xe \
     && chown operator-user:operator-group -R . \
     && chmod +x /get-info.sh
 
-USER operator-user
-
-ARG BUILD_VERSION=0.0.1 \
-    IS_PUBLIC_BUILD=False
+USER 1000
 
 ENV ASPNETCORE_URLS=https://+:5001 \
     ASPNETCORE_ENVIRONMENT=Production \
