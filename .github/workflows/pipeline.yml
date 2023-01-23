@@ -33,8 +33,8 @@ jobs:
               $isPublicBuild = $false
           }
           Write-Host "Detected version: '$version'."
-          Write-Host "::set-output name=version::$version"
-          Write-Host "::set-output name=is-public-build::$isPublicBuild"
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "is-public-build=$isPublicBuild" >> $env:GITHUB_OUTPUT
         shell: pwsh
   build-image:
     runs-on: ubuntu-latest
