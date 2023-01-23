@@ -12,7 +12,7 @@ spec:
           dotnet:
             test: false
   namespaces:
-    - default
+    - dev
 ---
 apiVersion: agents.contrastsecurity.com/v1beta1
 kind: ClusterAgentConnection

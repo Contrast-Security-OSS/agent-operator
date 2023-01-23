@@ -7,3 +7,4 @@ resources:
   - sample-apps/php.yaml
   - cluster-defaults.yaml
   - minimal-setup.yaml
+  - namespace.yaml

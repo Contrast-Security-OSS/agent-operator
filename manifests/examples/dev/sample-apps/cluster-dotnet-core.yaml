@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: cluster-dotnet-core
-  namespace: default
+  namespace: dev
   labels:
     app: cluster-dotnet-core
 spec:

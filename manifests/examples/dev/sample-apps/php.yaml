@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: php-app
-  namespace: default
+  namespace: dev
   labels:
     app: php-app
 spec:

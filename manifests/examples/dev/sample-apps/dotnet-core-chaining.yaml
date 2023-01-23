@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: dotnet-core-chaining-app
-  namespace: default
+  namespace: dev
   labels:
     app: dotnet-core-chaining-app
 spec:
