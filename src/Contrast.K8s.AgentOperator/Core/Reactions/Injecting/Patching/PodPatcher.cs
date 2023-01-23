@@ -160,7 +160,7 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching
                 securityContent.SeccompProfile.Type ??= "RuntimeDefault";
             }
 
-            // There's a race condition around operator mutating webhooks and the build-in mutating webhook that applies security policies.
+            // In OpenShift, there's a race condition around operator mutating webhooks and the build-in mutating webhook that applies security policies.
             // If a mutating webhook adds a sidecar/init container, security policies are not re-applied.
             // This is continuously brought up as an issue since at least 2019... since reinvocationPolicy was added to upstream.
             if ((containerSecurityContext?.RunAsUser ?? podSecurityContext?.RunAsUser) is {} runAsUser)
@@ -214,7 +214,7 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching
                 SecurityContext = securityContent
             };
 
-            // These next two are for our CS team to aid in debugging, but also for our functional tests.
+            // This is for our CS team to aid in debugging, but also for our functional tests.
             if (securityContextTainted)
             {
                 initContainer.Env.Add(new V1EnvVar("CONTRAST_DEBUGGING_SECURITY_CONTEXT_TAINTED", true.ToString()));

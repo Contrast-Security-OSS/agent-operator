@@ -209,7 +209,7 @@ namespace Contrast.K8s.AgentOperator
                                                  || runInitContainersAsNonRootStr.Equals("true", StringComparison.OrdinalIgnoreCase);
                 }
 
-                // This is needed for OpenShift < 4.11 (Assumed per the change long, unable to test at the time of writing).
+                // This is needed for OpenShift < 4.11 (Assumed per the change log, unable to test at the time of writing).
                 // See: https://github.com/openshift/cluster-kube-apiserver-operator/issues/1325
                 var suppressSeccompProfile = false;
                 if (Environment.GetEnvironmentVariable("CONTRAST_SUPPRESS_SECCOMP_PROFILE") is { } suppressSeccompProfileStr)

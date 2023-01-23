@@ -191,7 +191,7 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection
                 context.RunAsUser.Should().BeNull();
                 context.RunAsGroup.Should().BeNull();
 
-                // This should be false in our tests, since we CONTRAST_RUN_INIT_CONTAINER_AS_NON_ROOT.
+                // This should be true in our tests, since we CONTRAST_RUN_INIT_CONTAINER_AS_NON_ROOT.
                 context.RunAsNonRoot.Should().BeTrue();
             }
         }
