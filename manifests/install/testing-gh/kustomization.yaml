@@ -1,0 +1,12 @@
+namespace: contrast-agent-operator
+
+bases:
+  - ../all
+
+images:
+  - name: contrast/agent-operator
+    newName: ghcr.io/contrast-security-oss/agent-operator/operator
+    digest: sha256:d251c8bfa6105df4bdc32a4a0f4b551f8827acfdfc0c53f8fcf0d1c2501eae59
+
+patchesStrategicMerge:
+  - overlays/deployment.yaml

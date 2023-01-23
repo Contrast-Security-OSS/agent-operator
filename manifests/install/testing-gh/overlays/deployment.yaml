@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: contrast-agent-operator
+  namespace: contrast-agent-operator
+spec:
+  template:
+    spec:
+      containers:
+        - name: contrast-agent-operator
+          env:
+            - name: CONTRAST_AGENT_TELEMETRY_OPTOUT
+              value: "true"
+            - name: CONTRAST_RUN_INIT_CONTAINER_AS_NON_ROOT
+              value: "true"
+            - name: CONTRAST_SUPPRESS_SECCOMP_PROFILE
+              value: "true"
