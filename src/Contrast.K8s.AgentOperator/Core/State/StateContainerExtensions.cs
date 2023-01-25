@@ -35,6 +35,7 @@ namespace Contrast.K8s.AgentOperator.Core.State
                                               && await state.GetReadyAgentConnectionById(
                                                   connectionRef.Name,
                                                   connectionRef.Namespace,
+                                                  connectionRef.IsNamespaceDefault,
                                                   context,
                                                   cancellationToken
                                               ) != null;
@@ -76,6 +77,7 @@ namespace Contrast.K8s.AgentOperator.Core.State
         private static async ValueTask<AgentConnectionResource?> GetReadyAgentConnectionById(this IStateContainer state,
                                                                                              string name,
                                                                                              string @namespace,
+                                                                                             bool isNamespaceDefault,
                                                                                              ReadyContext readyContext,
                                                                                              CancellationToken cancellationToken = default)
         {
@@ -112,7 +114,9 @@ namespace Contrast.K8s.AgentOperator.Core.State
             }
             else
             {
-                readyContext.AddFailureReason($"AgentConnection '{@namespace}/{name}' could not be found.");
+                readyContext.AddFailureReason(isNamespaceDefault
+                    ? "AgentConnection  was not specified, and no cluster default was found."
+                    : $"AgentConnection '{@namespace}/{name}' could not be found.");
             }
 
             return null;

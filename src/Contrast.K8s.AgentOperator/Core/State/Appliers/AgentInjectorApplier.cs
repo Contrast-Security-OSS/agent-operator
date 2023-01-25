@@ -48,13 +48,15 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers
             );
             var selector = GetSelector(spec, @namespace);
 
-            var connectionName = spec.Connection?.Name ?? _clusterDefaults.GetDefaultAgentConnectionName(@namespace);
-            var connectionReference = new AgentInjectorConnectionReference(@namespace, connectionName);
+            var namespaceDefaultConnectionName = _clusterDefaults.GetDefaultAgentConnectionName(@namespace);
+            var connectionName = spec.Connection?.Name ?? namespaceDefaultConnectionName;
+            var isConnectionNamespaceDefault = connectionName == namespaceDefaultConnectionName;
+            var connectionReference = new AgentInjectorConnectionReference(@namespace, connectionName, isConnectionNamespaceDefault);
 
             var namespaceDefaultConfigurationName = _clusterDefaults.GetDefaultAgentConfigurationName(@namespace);
             var configurationName = spec.Configuration?.Name ?? namespaceDefaultConfigurationName;
-            var isNamespaceDefault = namespaceDefaultConfigurationName == configurationName;
-            var configurationReference = new AgentConfigurationReference(@namespace, configurationName, isNamespaceDefault);
+            var isConfigurationNamespaceDefault = namespaceDefaultConfigurationName == configurationName;
+            var configurationReference = new AgentConfigurationReference(@namespace, configurationName, isConfigurationNamespaceDefault);
 
             var pullSecretName = spec.Image.PullSecretName != null ? new SecretReference(@namespace, spec.Image.PullSecretName, ".dockerconfigjson") : null;
             var pullPolicy = spec.Image.PullPolicy ?? "Always";
