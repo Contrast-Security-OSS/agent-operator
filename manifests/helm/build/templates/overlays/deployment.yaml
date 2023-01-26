@@ -9,8 +9,6 @@ spec:
       containers:
         - name: contrast-agent-operator
           env:
-            - name: CONTRAST_WEBHOOK_SERVICENAME
-              value: '{{ .Release.Namespace }}'
             - name: CONTRAST_DEFAULT_REGISTRY
               value: '{{ required "operator.defaultRegistry is required." .Values.operator.defaultRegistry }}'
             - name: CONTRAST_SETTLE_DURATION
