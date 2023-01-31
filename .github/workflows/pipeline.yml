@@ -70,7 +70,7 @@ jobs:
             type=raw,value=trunk-artifact,enable=${{ github.ref == 'refs/heads/master' }}
             type=raw,value=pr-artifact,enable=${{ github.event_name == 'pull_request' }}
             type=raw,value=release-artifact,enable=${{ needs.generate-version.outputs.version != '0.0.1' }}
-      - uses: docker/build-push-action@v3
+      - uses: docker/build-push-action@v4
         id: build
         with:
           file: Dockerfile
