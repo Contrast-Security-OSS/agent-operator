@@ -65,9 +65,9 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults
             var @namespace = baseResource.Identity.Namespace;
             var template = baseResource.Resource.Template;
 
-            var usernameHash = await GetDataHashByRef(template.UserName.Name, @namespace, template.UserName.Key);
-            var apiKeyHash = await GetDataHashByRef(template.ApiKey.Name, @namespace, template.ApiKey.Key);
-            var serviceKeyHash = await GetDataHashByRef(template.ServiceKey.Name, @namespace, template.ServiceKey.Key);
+            var usernameHash = await GetCachedSecretDataHashByRef(template.UserName.Name, @namespace, template.UserName.Key);
+            var apiKeyHash = await GetCachedSecretDataHashByRef(template.ApiKey.Name, @namespace, template.ApiKey.Key);
+            var serviceKeyHash = await GetCachedSecretDataHashByRef(template.ServiceKey.Name, @namespace, template.ServiceKey.Key);
 
             if (usernameHash == null
                 || apiKeyHash == null
@@ -93,9 +93,9 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults
             var @namespace = baseResource.Identity.Namespace;
             var template = baseResource.Resource.Template;
 
-            var usernameData = await GetLiveDataByRef(template.UserName.Name, @namespace, template.UserName.Key);
-            var apiKeyData = await GetLiveDataByRef(template.ApiKey.Name, @namespace, template.ApiKey.Key);
-            var serviceKeyData = await GetLiveDataByRef(template.ServiceKey.Name, @namespace, template.ServiceKey.Key);
+            var usernameData = await GetLiveSecretDataByRef(template.UserName.Name, @namespace, template.UserName.Key);
+            var apiKeyData = await GetLiveSecretDataByRef(template.ApiKey.Name, @namespace, template.ApiKey.Key);
+            var serviceKeyData = await GetLiveSecretDataByRef(template.ServiceKey.Name, @namespace, template.ServiceKey.Key);
 
             if (usernameData == null
                 || apiKeyData == null
@@ -124,23 +124,44 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults
             return _clusterDefaults.GetDefaultAgentConnectionSecretName(targetNamespace);
         }
 
-        private async ValueTask<string?> GetDataHashByRef(string name, string @namespace, string key)
+        private async ValueTask<string?> GetCachedSecretDataHashByRef(string name, string @namespace, string key)
         {
-            return (await _state.GetById<SecretResource>(name, @namespace))
-                   ?.KeyPairs
-                   .FirstOrDefault(x => string.Equals(x.Key, key, StringComparison.OrdinalIgnoreCase))
-                   ?.DataHash;
+            var cachedSecret = await _state.GetById<SecretResource>(name, @namespace);
+            if (cachedSecret?.KeyPairs != null)
+            {
+                if (cachedSecret.KeyPairs.FirstOrDefault(x => string.Equals(x.Key, key, StringComparison.Ordinal)) is { DataHash: { } value })
+                {
+                    return value;
+                }
+
+                Logger.Warn(
+                    $"Secret '{@namespace}/{key}' exists, but the key '{key}' did not exist. Available keys are [{string.Join(", ", cachedSecret.KeyPairs.Select(x => x.Key))}].");
+            }
+            else
+            {
+                Logger.Info($"Secret {@namespace}/{key}' does not exist, is not accessible, or contains no data. This error condition may be transitive.");
+            }
+
+            return null;
         }
 
-        private async ValueTask<byte[]?> GetLiveDataByRef(string name, string @namespace, string key)
+        private async ValueTask<byte[]?> GetLiveSecretDataByRef(string name, string @namespace, string key)
         {
             var liveSecret = await _kubernetesClient.Get<V1Secret>(name, @namespace);
-            if (liveSecret?.Data != null
-                && liveSecret.Data.TryGetValue(key, out var value)
-                && value != null)
-
+            if (liveSecret?.Data != null)
             {
-                return value;
+                if (liveSecret.Data.TryGetValue(key, out var value)
+                    && value != null)
+                {
+                    return value;
+                }
+
+                Logger.Warn(
+                    $"Secret '{@namespace}/{key}' exists, but the key '{key}' no longer exists. Available keys are [{string.Join(", ", liveSecret.Data.Keys)}].");
+            }
+            else
+            {
+                Logger.Warn($"Secret {@namespace}/{key}' no longer exists, is accessible, or contains data.");
             }
 
             return null;
