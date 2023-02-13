@@ -1,6 +1,7 @@
 ﻿// Contrast Security, Inc licenses this file to you under the Apache 2.0 License.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
@@ -46,7 +47,7 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults
 
         public async ValueTask<IReadOnlyCollection<string>> GetAllNamespaces(CancellationToken cancellationToken = default)
         {
-            var namespaces = new HashSet<string>();
+            var namespaces = new HashSet<string>(StringComparer.Ordinal);
             var keys = await _state.GetKeysByType<INamespacedResource>(cancellationToken);
             foreach (var id in keys)
             {
@@ -59,7 +60,7 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults
 
         public async ValueTask<IReadOnlyCollection<string>> GetValidNamespacesForDefaults(CancellationToken cancellationToken = default)
         {
-            var namespaces = new HashSet<string>();
+            var namespaces = new HashSet<string>(StringComparer.Ordinal);
             var keys = await _state.GetKeysByType<AgentInjectorResource>(cancellationToken);
             foreach (var id in keys)
             {
