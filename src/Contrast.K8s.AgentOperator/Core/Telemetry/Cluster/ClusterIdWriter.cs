@@ -23,6 +23,8 @@ namespace Contrast.K8s.AgentOperator.Core.Telemetry.Cluster
 
     public class ClusterIdWriter : IClusterIdWriter
     {
+        private const string PayloadKey = "payload";
+
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
         private readonly IKubernetesClient _client;
@@ -59,7 +61,7 @@ namespace Contrast.K8s.AgentOperator.Core.Telemetry.Cluster
             try
             {
                 if (clusterIdSecret?.Data is { } data
-                    && data.TryGetValue("payload", out var bytes))
+                    && data.TryGetValue(PayloadKey, out var bytes))
                 {
                     var json = Encoding.UTF8.GetString(bytes);
                     var clusterId = KubernetesJson.Deserialize<ClusterId>(json);
@@ -97,7 +99,7 @@ namespace Contrast.K8s.AgentOperator.Core.Telemetry.Cluster
                 ),
                 Data = new Dictionary<string, byte[]>
                 {
-                    { "payload", bytes }
+                    { PayloadKey, bytes }
                 }
             });
         }

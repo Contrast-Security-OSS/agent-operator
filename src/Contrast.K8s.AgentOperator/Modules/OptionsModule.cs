@@ -162,8 +162,17 @@ namespace Contrast.K8s.AgentOperator.Modules
 
             builder.Register(context =>
             {
+                var logger = context.Resolve<IOptionsLogger>();
                 var @namespace = context.Resolve<OperatorOptions>().Namespace;
-                return new TelemetryOptions("contrast-cluster-id", @namespace);
+
+                var installSource = "unknown";
+                if (GetEnvironmentVariableAsString("CONTRAST_INSTALL_SOURCE", out var installSourceStr))
+                {
+                    logger.LogOptionValue("install-source", installSource, installSourceStr);
+                    installSource = installSourceStr;
+                }
+
+                return new TelemetryOptions("contrast-cluster-id", @namespace, installSource);
             }).SingleInstance();
 
             builder.Register(context =>
