@@ -131,6 +131,8 @@ namespace Contrast.K8s.AgentOperator.Modules
                         customHosts.Add(normalizedHost);
                     }
 
+                    customHosts.Add("localhost");
+
                     // Sort since this is a HashSet...
                     logger.LogOptionValue("webhook-hosts", string.Join(", ", dnsNames.OrderBy(x => x)), string.Join(", ", customHosts.OrderBy(x => x)));
                     dnsNames = customHosts;
