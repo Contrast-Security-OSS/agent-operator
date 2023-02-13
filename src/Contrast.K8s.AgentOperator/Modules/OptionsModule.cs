@@ -100,7 +100,7 @@ namespace Contrast.K8s.AgentOperator.Modules
 
             builder.Register(_ =>
             {
-                var dnsNames = new List<string>
+                var dnsNames = new HashSet<string>(StringComparer.Ordinal)
                 {
                     "localhost"
                 };
@@ -108,7 +108,12 @@ namespace Contrast.K8s.AgentOperator.Modules
                 // ingress-nginx-controller-admission,ingress-nginx-controller-admission.$(POD_NAMESPACE).svc
                 if (Environment.GetEnvironmentVariable("CONTRAST_WEBHOOK_HOSTS") is { } webHookHosts)
                 {
-                    dnsNames.AddRange(webHookHosts.Split(",", StringSplitOptions.RemoveEmptyEntries));
+                    var hosts = webHookHosts.Split(",", StringSplitOptions.RemoveEmptyEntries);
+                    foreach (var host in hosts)
+                    {
+                        var normalizedHost = host.ToLowerInvariant();
+                        dnsNames.Add(normalizedHost);
+                    }
                 }
 
                 return new TlsCertificateOptions("contrast-web-hook", dnsNames, TimeSpan.FromDays(365 * 100));
