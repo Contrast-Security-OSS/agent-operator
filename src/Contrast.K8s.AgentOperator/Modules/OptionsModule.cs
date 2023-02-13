@@ -146,16 +146,17 @@ namespace Contrast.K8s.AgentOperator.Modules
 
             builder.Register(_ =>
             {
-                if (Environment.GetEnvironmentVariable("CONTRAST_ENABLE_EARLY_CHAINING") is { } earlyChaining)
+                var enableEarlyChanging = false;
+                if (Environment.GetEnvironmentVariable("CONTRAST_ENABLE_EARLY_CHAINING") is { } enableEarlyChangingStr)
                 {
-                    if (earlyChaining.Equals("1", StringComparison.OrdinalIgnoreCase)
-                        || earlyChaining.Equals("true", StringComparison.OrdinalIgnoreCase))
+                    if (enableEarlyChangingStr.Equals("1", StringComparison.OrdinalIgnoreCase)
+                        || enableEarlyChangingStr.Equals("true", StringComparison.OrdinalIgnoreCase))
                     {
-                        return new InjectorOptions(true);
+                        enableEarlyChanging = true;
                     }
                 }
 
-                return new InjectorOptions();
+                return new InjectorOptions(enableEarlyChanging);
             }).SingleInstance();
         }
     }

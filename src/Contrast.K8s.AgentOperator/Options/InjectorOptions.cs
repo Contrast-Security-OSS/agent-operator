@@ -3,5 +3,5 @@
 
 namespace Contrast.K8s.AgentOperator.Options
 {
-    public record InjectorOptions(bool EnableEarlyChaining = false);
+    public record InjectorOptions(bool EnableEarlyChaining);
 }
