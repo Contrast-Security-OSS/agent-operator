@@ -58,15 +58,6 @@ namespace Contrast.K8s.AgentOperator.Modules
                     eventQueueMergeWindowSeconds = parsedEventQueueMergeWindowSeconds;
                 }
 
-                // This flag will eventually be removed after some field testing of the fast comparer.
-                // Any usage of this flag in the field should be documented.
-                var useSlowComparer = false;
-                if (Environment.GetEnvironmentVariable("CONTRAST_USE_SLOW_COMPARER") is { } useSlowComparerStr)
-                {
-                    useSlowComparer = useSlowComparerStr.Equals("1", StringComparison.OrdinalIgnoreCase)
-                                      || useSlowComparerStr.Equals("true", StringComparison.OrdinalIgnoreCase);
-                }
-
                 // This flag will eventually default to true, and then will be removed.
                 // Users may override this on a per AgentConfiguration bases via the InitContainer override field.
                 var runInitContainersAsNonRoot = false;
@@ -91,7 +82,6 @@ namespace Contrast.K8s.AgentOperator.Modules
                     eventQueueSize,
                     fullMode,
                     eventQueueMergeWindowSeconds,
-                    useSlowComparer,
                     runInitContainersAsNonRoot,
                     suppressSeccompProfile
                 );

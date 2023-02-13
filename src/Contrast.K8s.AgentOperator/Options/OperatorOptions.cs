@@ -10,7 +10,6 @@ namespace Contrast.K8s.AgentOperator.Options
                                   int EventQueueSize,
                                   BoundedChannelFullMode EventQueueFullMode,
                                   int EventQueueMergeWindowSeconds,
-                                  bool UseSlowComparer,
                                   bool RunInitContainersAsNonRoot,
                                   bool SuppressSeccompProfile,
                                   string FieldManagerName = "agents.contrastsecurity.com");

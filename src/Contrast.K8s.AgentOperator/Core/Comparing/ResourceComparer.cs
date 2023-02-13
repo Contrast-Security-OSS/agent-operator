@@ -9,4 +9,19 @@ namespace Contrast.K8s.AgentOperator.Core.Comparing
     {
         bool AreEqual<T>(T left, T right) where T : INamespacedResource?;
     }
+
+    public class ResourceComparer : IResourceComparer
+    {
+        private readonly FastComparer _comparer;
+
+        public ResourceComparer(FastComparer comparer)
+        {
+            _comparer = comparer;
+        }
+
+        public bool AreEqual<T>(T left, T right) where T : INamespacedResource?
+        {
+            return _comparer.AreEqual(left, right);
+        }
+    }
 }

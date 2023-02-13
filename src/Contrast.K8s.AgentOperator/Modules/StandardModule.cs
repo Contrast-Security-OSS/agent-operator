@@ -14,7 +14,6 @@ using Contrast.K8s.AgentOperator.Core.Telemetry.Client;
 using Contrast.K8s.AgentOperator.Core.Telemetry.Cluster;
 using Contrast.K8s.AgentOperator.Core.Telemetry.Counters;
 using Contrast.K8s.AgentOperator.Core.Tls;
-using Contrast.K8s.AgentOperator.Options;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Hosting;
 
@@ -36,11 +35,8 @@ namespace Contrast.K8s.AgentOperator.Modules
             builder.RegisterType<TelemetryState>().AsSelf().SingleInstance();
             builder.Register(_ => new TelemetryState(OperatorVersion.Version)).AsSelf().SingleInstance();
 
-            builder.Register<IResourceComparer>(
-                context => context.Resolve<OperatorOptions>().UseSlowComparer
-                    ? context.Resolve<SlowResourceComparer>()
-                    : context.Resolve<FastResourceComparer>()
-            ).As<IResourceComparer>().SingleInstance();
+            // ResourceComparer needs to cache.
+            builder.RegisterType<ResourceComparer>().As<IResourceComparer>().SingleInstance();
 
             builder.RegisterAssemblyTypes(ThisAssembly).PublicOnly().AssignableTo<BackgroundService>().As<IHostedService>();
             builder.RegisterAssemblyTypes(ThisAssembly).PublicOnly().AssignableTo<IAgentPatcher>().As<IAgentPatcher>();
