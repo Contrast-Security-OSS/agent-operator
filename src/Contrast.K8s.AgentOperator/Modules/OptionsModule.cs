@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading.Channels;
 using Autofac;
 using Contrast.K8s.AgentOperator.Options;
@@ -110,22 +111,29 @@ namespace Contrast.K8s.AgentOperator.Modules
             {
                 var logger = context.Resolve<IOptionsLogger>();
 
-                var dnsNames = new HashSet<string>(StringComparer.Ordinal)
+                IReadOnlyCollection<string> dnsNames = new HashSet<string>(StringComparer.Ordinal)
                 {
-                    "localhost"
+                    "localhost",
+                    "contrast-agent-operator",
+                    "contrast-agent-operator.testing-agent-operator.svc",
+                    "contrast-agent-operator.testing-agent-operator.svc.cluster.local"
                 };
 
                 // ingress-nginx-controller-admission,ingress-nginx-controller-admission.$(POD_NAMESPACE).svc
                 if (GetEnvironmentVariableAsString("CONTRAST_WEBHOOK_HOSTS", out var webHookHosts))
                 {
-                    var hosts = webHookHosts.Split(",", StringSplitOptions.RemoveEmptyEntries);
-                    foreach (var host in hosts)
+                    var customHosts = new HashSet<string>(StringComparer.Ordinal);
+
+                    var parsedHosts = webHookHosts.Split(new[] { ',', ';', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    foreach (var parsedHost in parsedHosts)
                     {
-                        var normalizedHost = host.ToLowerInvariant().Trim();
-                        dnsNames.Add(normalizedHost);
+                        var normalizedHost = parsedHost.ToLowerInvariant().Trim();
+                        customHosts.Add(normalizedHost);
                     }
 
-                    logger.LogOptionValue("webhook-hosts", "localhost", string.Join(", ", hosts));
+                    // Sort since this is a HashSet...
+                    logger.LogOptionValue("webhook-hosts", string.Join(", ", dnsNames.OrderBy(x => x)), string.Join(", ", customHosts.OrderBy(x => x)));
+                    dnsNames = customHosts;
                 }
 
                 return new TlsCertificateOptions("contrast-web-hook", dnsNames, TimeSpan.FromDays(365 * 100));
