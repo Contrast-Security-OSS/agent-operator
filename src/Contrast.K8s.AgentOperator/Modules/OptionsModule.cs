@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Channels;
 using Autofac;
 using Contrast.K8s.AgentOperator.Options;
@@ -15,27 +16,30 @@ namespace Contrast.K8s.AgentOperator.Modules
     {
         protected override void Load(ContainerBuilder builder)
         {
-            builder.Register(_ =>
+            builder.Register(context =>
             {
-                var @namespace = "default";
-                if (Environment.GetEnvironmentVariable("POD_NAMESPACE") is { } podNamespace)
+                var logger = context.Resolve<IOptionsLogger>();
+
+                var @namespace = "contrast-agent-operator";
+                if (GetEnvironmentVariableAsString("POD_NAMESPACE", out var namespaceStr))
                 {
-                    @namespace = podNamespace.Trim();
+                    logger.LogOptionValue("pod-namespace", @namespace, namespaceStr);
+                    @namespace = namespaceStr;
                 }
 
                 var settleDuration = 10;
-                if (Environment.GetEnvironmentVariable("CONTRAST_SETTLE_DURATION") is { } settleDurationStr
-                    && int.TryParse(settleDurationStr, out var parsedSettleDuration)
+                if (GetEnvironmentVariableAsInt("CONTRAST_SETTLE_DURATION", out var parsedSettleDuration)
                     && parsedSettleDuration > -1)
                 {
+                    logger.LogOptionValue("settle-duration", settleDuration, parsedSettleDuration);
                     settleDuration = parsedSettleDuration;
                 }
 
                 var eventQueueSize = 10 * 1024;
-                if (Environment.GetEnvironmentVariable("CONTRAST_EVENT_QUEUE_SIZE") is { } eventQueueSizeStr
-                    && int.TryParse(eventQueueSizeStr, out var parsedEventQueueSize)
+                if (GetEnvironmentVariableAsInt("CONTRAST_EVENT_QUEUE_SIZE", out var parsedEventQueueSize)
                     && parsedEventQueueSize > -1)
                 {
+                    logger.LogOptionValue("event-queue-size", eventQueueSize, parsedEventQueueSize);
                     eventQueueSize = parsedEventQueueSize;
                 }
 
@@ -45,35 +49,36 @@ namespace Contrast.K8s.AgentOperator.Modules
                 // DropOldest:
                 //   Removes and ignores the oldest item in the channel in order to make room for the item being written.
                 var fullMode = BoundedChannelFullMode.Wait;
-                if (Environment.GetEnvironmentVariable("CONTRAST_EVENT_QUEUE_FULL_MODE") is { } fullModeStr
+                if (GetEnvironmentVariableAsString("CONTRAST_EVENT_QUEUE_FULL_MODE", out var fullModeStr)
                     && Enum.TryParse<BoundedChannelFullMode>(fullModeStr, out var parsedFullMode))
                 {
+                    logger.LogOptionValue("event-queue-full-mode", fullMode.ToString(), parsedFullMode.ToString());
                     fullMode = parsedFullMode;
                 }
 
                 var eventQueueMergeWindowSeconds = 10;
-                if (Environment.GetEnvironmentVariable("CONTRAST_EVENT_QUEUE_MERGE_WINDOW_SECONDS") is { } eventQueueMergeWindowSecondsStr
-                    && int.TryParse(eventQueueMergeWindowSecondsStr, out var parsedEventQueueMergeWindowSeconds))
+                if (GetEnvironmentVariableAsInt("CONTRAST_EVENT_QUEUE_MERGE_WINDOW_SECONDS", out var parsedEventQueueMergeWindowSeconds))
                 {
+                    logger.LogOptionValue("event-queue-merge-window", eventQueueMergeWindowSeconds, parsedEventQueueMergeWindowSeconds);
                     eventQueueMergeWindowSeconds = parsedEventQueueMergeWindowSeconds;
                 }
 
                 // This flag will eventually default to true, and then will be removed.
                 // Users may override this on a per AgentConfiguration bases via the InitContainer override field.
                 var runInitContainersAsNonRoot = false;
-                if (Environment.GetEnvironmentVariable("CONTRAST_RUN_INIT_CONTAINER_AS_NON_ROOT") is { } runInitContainersAsNonRootStr)
+                if (GetEnvironmentVariableAsBoolean("CONTRAST_RUN_INIT_CONTAINER_AS_NON_ROOT", out var parsedRunInitContainersAsNonRoot))
                 {
-                    runInitContainersAsNonRoot = runInitContainersAsNonRootStr.Equals("1", StringComparison.OrdinalIgnoreCase)
-                                                 || runInitContainersAsNonRootStr.Equals("true", StringComparison.OrdinalIgnoreCase);
+                    logger.LogOptionValue("run-init-container-as-non-root", runInitContainersAsNonRoot, parsedRunInitContainersAsNonRoot);
+                    runInitContainersAsNonRoot = parsedRunInitContainersAsNonRoot;
                 }
 
                 // This is needed for OpenShift < 4.11 (Assumed per the change log, unable to test at the time of writing).
                 // See: https://github.com/openshift/cluster-kube-apiserver-operator/issues/1325
                 var suppressSeccompProfile = false;
-                if (Environment.GetEnvironmentVariable("CONTRAST_SUPPRESS_SECCOMP_PROFILE") is { } suppressSeccompProfileStr)
+                if (GetEnvironmentVariableAsBoolean("CONTRAST_SUPPRESS_SECCOMP_PROFILE", out var parsedSeccompProfile))
                 {
-                    suppressSeccompProfile = suppressSeccompProfileStr.Equals("1", StringComparison.OrdinalIgnoreCase)
-                                             || suppressSeccompProfileStr.Equals("true", StringComparison.OrdinalIgnoreCase);
+                    logger.LogOptionValue("suppress-seccomp-profile", suppressSeccompProfile, parsedSeccompProfile);
+                    suppressSeccompProfile = parsedSeccompProfile;
                 }
 
                 return new OperatorOptions(
@@ -87,82 +92,140 @@ namespace Contrast.K8s.AgentOperator.Modules
                 );
             }).SingleInstance();
 
-            builder.Register(_ =>
+            builder.Register(context =>
             {
-                if (Environment.GetEnvironmentVariable("CONTRAST_DEFAULT_REGISTRY")
-                    is { } defaultRegistry)
+                var logger = context.Resolve<IOptionsLogger>();
+
+                var defaultRegistry = "contrast";
+                if (GetEnvironmentVariableAsString("CONTRAST_DEFAULT_REGISTRY", out var parsedDefaultRegistry))
                 {
-                    return new ImageRepositoryOptions(defaultRegistry);
+                    logger.LogOptionValue("default-registry", defaultRegistry, parsedDefaultRegistry);
+                    defaultRegistry = parsedDefaultRegistry;
                 }
 
-                throw new NotImplementedException("No default registry was set.");
+                return new ImageRepositoryOptions(defaultRegistry);
             }).SingleInstance();
 
-            builder.Register(_ =>
+            builder.Register(context =>
             {
+                var logger = context.Resolve<IOptionsLogger>();
+
                 var dnsNames = new HashSet<string>(StringComparer.Ordinal)
                 {
                     "localhost"
                 };
 
                 // ingress-nginx-controller-admission,ingress-nginx-controller-admission.$(POD_NAMESPACE).svc
-                if (Environment.GetEnvironmentVariable("CONTRAST_WEBHOOK_HOSTS") is { } webHookHosts)
+                if (GetEnvironmentVariableAsString("CONTRAST_WEBHOOK_HOSTS", out var webHookHosts))
                 {
                     var hosts = webHookHosts.Split(",", StringSplitOptions.RemoveEmptyEntries);
                     foreach (var host in hosts)
                     {
-                        var normalizedHost = host.ToLowerInvariant();
+                        var normalizedHost = host.ToLowerInvariant().Trim();
                         dnsNames.Add(normalizedHost);
                     }
+
+                    logger.LogOptionValue("webhook-hosts", "localhost", string.Join(", ", hosts));
                 }
 
                 return new TlsCertificateOptions("contrast-web-hook", dnsNames, TimeSpan.FromDays(365 * 100));
             }).SingleInstance();
 
-            builder.Register(x =>
+            builder.Register(context =>
             {
-                var webHookSecret = "contrast-web-hook-secret";
-                if (Environment.GetEnvironmentVariable("CONTRAST_WEBHOOK_SECRET") is { } customWebHookSecret)
-                {
-                    webHookSecret = customWebHookSecret.Trim();
-                }
+                var logger = context.Resolve<IOptionsLogger>();
+                var @namespace = context.Resolve<OperatorOptions>().Namespace;
 
-                var @namespace = x.Resolve<OperatorOptions>().Namespace;
+                var webHookSecret = "contrast-web-hook-secret";
+                if (GetEnvironmentVariableAsString("CONTRAST_WEBHOOK_SECRET", out var customWebHookSecret))
+                {
+                    logger.LogOptionValue("webhook-secret-name", webHookSecret, customWebHookSecret);
+                    webHookSecret = customWebHookSecret;
+                }
 
                 return new TlsStorageOptions(webHookSecret, @namespace);
             }).SingleInstance();
 
-            builder.Register(_ =>
+            builder.Register(context =>
             {
+                var logger = context.Resolve<IOptionsLogger>();
+
                 var webHookConfigurationName = "contrast-web-hook-configuration";
-                if (Environment.GetEnvironmentVariable("CONTRAST_WEBHOOK_CONFIGURATION") is { } customWebHookSecret)
+                if (GetEnvironmentVariableAsString("CONTRAST_WEBHOOK_CONFIGURATION", out var customWebhookConfiguration))
                 {
-                    webHookConfigurationName = customWebHookSecret.Trim();
+                    logger.LogOptionValue("webhook-configuration-name", webHookConfigurationName, customWebhookConfiguration);
+                    webHookConfigurationName = customWebhookConfiguration;
                 }
 
                 return new MutatingWebHookOptions(webHookConfigurationName);
             }).SingleInstance();
 
-            builder.Register(x =>
+            builder.Register(context =>
             {
-                var @namespace = x.Resolve<OperatorOptions>().Namespace;
+                var @namespace = context.Resolve<OperatorOptions>().Namespace;
                 return new TelemetryOptions("contrast-cluster-id", @namespace);
             }).SingleInstance();
 
-            builder.Register(_ =>
+            builder.Register(context =>
             {
+                var logger = context.Resolve<IOptionsLogger>();
+
                 var enableEarlyChanging = false;
-                if (Environment.GetEnvironmentVariable("CONTRAST_ENABLE_EARLY_CHAINING") is { } enableEarlyChangingStr)
+                if (GetEnvironmentVariableAsBoolean("CONTRAST_ENABLE_EARLY_CHAINING", out var parsedResult))
                 {
-                    if (enableEarlyChangingStr.Equals("1", StringComparison.OrdinalIgnoreCase)
-                        || enableEarlyChangingStr.Equals("true", StringComparison.OrdinalIgnoreCase))
-                    {
-                        enableEarlyChanging = true;
-                    }
+                    logger.LogOptionValue("webhook-configuration-name", enableEarlyChanging, parsedResult);
+                    enableEarlyChanging = parsedResult;
                 }
 
                 return new InjectorOptions(enableEarlyChanging);
             }).SingleInstance();
+        }
+
+        private static bool GetEnvironmentVariableAsString(string variable, [NotNullWhen(true)] out string? parsedResult)
+        {
+            if (Environment.GetEnvironmentVariable(variable) is { } valueStr)
+            {
+                var normalizedValueStr = valueStr.Trim();
+                parsedResult = normalizedValueStr;
+                return true;
+            }
+
+            parsedResult = default;
+            return false;
+        }
+
+        private static bool GetEnvironmentVariableAsInt(string variable, out int parsedResult)
+        {
+            if (Environment.GetEnvironmentVariable(variable) is { } valueStr)
+            {
+                // Just to match how we handle values in agents.
+                var normalizedValueStr = valueStr.Trim()
+                                                 .Replace("_", "")
+                                                 .Replace(",", "");
+
+                if (int.TryParse(normalizedValueStr, out parsedResult))
+                {
+                    return true;
+                }
+            }
+
+            parsedResult = default;
+            return false;
+        }
+
+        private static bool GetEnvironmentVariableAsBoolean(string variable, out bool parsedResult)
+        {
+            if (Environment.GetEnvironmentVariable(variable) is { } valueStr)
+            {
+                var normalizedValueStr = valueStr.Trim();
+                parsedResult = normalizedValueStr.Equals("1", StringComparison.OrdinalIgnoreCase)
+                               || normalizedValueStr.Equals("true", StringComparison.OrdinalIgnoreCase);
+
+                return true;
+            }
+
+            parsedResult = default;
+            return false;
         }
     }
 }

@@ -21,7 +21,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting.Patching.Age
         [Fact]
         public void GenerateEnvVars_should_return_profiling_vars()
         {
-            var patcher = new DotNetAgentPatcher(new InjectorOptions());
+            var patcher = new DotNetAgentPatcher(new InjectorOptions(false));
             var context = AutoFixture.Create<PatchingContext>();
             var expectedEnvVars = new List<string>
             {
@@ -68,7 +68,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting.Patching.Age
         [Fact]
         public void PatchContainer_should_add_ld_preload_if_already_set()
         {
-            var patcher = new DotNetAgentPatcher(new InjectorOptions());
+            var patcher = new DotNetAgentPatcher(new InjectorOptions(false));
             var context = AutoFixture.Create<PatchingContext>();
             var existingPreload = AutoFixture.Create<string>();
             var container = AutoFixture.Build<V1Container>()
@@ -91,7 +91,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting.Patching.Age
         [Fact]
         public void PatchContainer_should_not_do_anything_if_chaining_disabled()
         {
-            var patcher = new DotNetAgentPatcher(new InjectorOptions());
+            var patcher = new DotNetAgentPatcher(new InjectorOptions(false));
             var context = AutoFixture.Create<PatchingContext>();
             var container = AutoFixture.Build<V1Container>().With(x => x.Env,
                 new List<V1EnvVar> { new("CONTRAST__AGENT__DOTNET__ENABLE_CHAINING", "false") }).Create();
