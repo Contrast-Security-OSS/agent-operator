@@ -115,8 +115,8 @@ namespace Contrast.K8s.AgentOperator.Modules
                 {
                     "localhost",
                     "contrast-agent-operator",
-                    "contrast-agent-operator.testing-agent-operator.svc",
-                    "contrast-agent-operator.testing-agent-operator.svc.cluster.local"
+                    "contrast-agent-operator.contrast-agent-operator.svc",
+                    "contrast-agent-operator.contrast-agent-operator.svc.cluster.local"
                 };
 
                 // ingress-nginx-controller-admission,ingress-nginx-controller-admission.$(POD_NAMESPACE).svc
