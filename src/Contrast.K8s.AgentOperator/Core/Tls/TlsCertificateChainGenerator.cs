@@ -36,7 +36,7 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
             var ca = CreateRootCa(_options);
             var serverCertificate = CreateServerCertificate(ca);
 
-            return new TlsCertificateChain(ca, serverCertificate, GenerateSansHash(_options.SanDnsNames), GenerationVersion);
+            return new TlsCertificateChain(ca, serverCertificate, TlsHelper.GenerateSansHash(_options.SanDnsNames), GenerationVersion);
         }
 
         private X509Certificate2 CreateRootCa(TlsCertificateOptions options)
@@ -136,19 +136,5 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
             HashAlgorithmName = HashAlgorithmName.SHA256,
             KeySize = 2048
         };
-
-        private static byte[] GenerateSansHash(IEnumerable<string> sans)
-        {
-            // This string needs to be stable.
-            var sansStr = string.Join(";", sans.DistinctBy(x => x, StringComparer.Ordinal).OrderBy(x => x));
-            return Sha256(sansStr);
-        }
-
-        private static byte[] Sha256(string text)
-        {
-            using var sha256 = SHA256.Create();
-            var bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(text));
-            return bytes;
-        }
     }
 }

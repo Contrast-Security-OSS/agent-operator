@@ -19,12 +19,12 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Tls
         [Fact]
         public void When_chain_expiration_is_valid_then_IsValid_should_return_true()
         {
-            using var chainFake = FakeCertificates(TimeSpan.FromDays(180));
-
-            var validator = new TlsCertificateChainValidator();
+            var optionsFake = CreateOptions(TimeSpan.FromDays(180));
+            using var chainFake = FakeCertificates(optionsFake);
+            var validator = CreateValidator(optionsFake);
 
             // Act
-            var result  = validator.IsValid(chainFake, out _);
+            var result = validator.IsValid(chainFake, out _);
 
             // Assert
             result.Should().BeTrue();
@@ -33,9 +33,9 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Tls
         [Fact]
         public void When_chain_expiration_is_expired_then_IsValid_should_return_expired()
         {
-            using var chainFake = FakeCertificates(TimeSpan.FromDays(45));
-
-            var validator = new TlsCertificateChainValidator();
+            var optionsFake = CreateOptions(TimeSpan.FromDays(45));
+            using var chainFake = FakeCertificates(optionsFake);
+            var validator = CreateValidator(optionsFake);
 
             // Act
             var result = validator.IsValid(chainFake, out var reason);
@@ -51,12 +51,13 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Tls
         [Fact]
         public void When_chain_version_differs_then_IsValid_should_return_old_version()
         {
-            using var chainFake = FakeCertificates(TimeSpan.FromDays(180)) with
+            var optionsFake = CreateOptions(TimeSpan.FromDays(180));
+            using var chainFake = FakeCertificates(optionsFake) with
             {
                 Version = AutoFixture.Create<byte[]>()
             };
 
-            var validator = new TlsCertificateChainValidator();
+            var validator = CreateValidator(optionsFake);
 
             // Act
             var result = validator.IsValid(chainFake, out var reason);
@@ -69,11 +70,46 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Tls
             }
         }
 
-        private static TlsCertificateChain FakeCertificates(TimeSpan expiresAfter)
+        [Fact]
+        public void When_chain_sans_differs_then_IsValid_should_return_incorrect_sans()
+        {
+            var optionsFake = CreateOptions(TimeSpan.FromDays(180));
+            using var chainFake = FakeCertificates(optionsFake) with
+            {
+                SanDnsNamesHash = AutoFixture.Create<byte[]>()
+            };
+
+            var validator = CreateValidator(optionsFake);
+
+            // Act
+            var result = validator.IsValid(chainFake, out var reason);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                result.Should().BeFalse();
+                reason.Should().Be(ValidationResultReason.SansIncorrect);
+            }
+        }
+
+        private static TlsCertificateOptions CreateOptions(TimeSpan expiresAfter)
+        {
+            return AutoFixture.Create<TlsCertificateOptions>() with
+            {
+                ExpiresAfter = expiresAfter
+            };
+        }
+
+        private static TlsCertificateChainValidator CreateValidator(TlsCertificateOptions options)
+        {
+            return new TlsCertificateChainValidator(options);
+        }
+
+        private static TlsCertificateChain FakeCertificates(TlsCertificateOptions options)
         {
             var generator = new TlsCertificateChainGenerator(
                 new CreateCertificates(new CertificateUtility()),
-                AutoFixture.Create<TlsCertificateOptions>() with { ExpiresAfter = expiresAfter }
+                options
             );
             return generator.CreateTlsCertificateChain();
         }

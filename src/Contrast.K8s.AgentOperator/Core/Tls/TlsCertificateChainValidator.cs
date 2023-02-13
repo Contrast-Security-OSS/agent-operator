@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using Contrast.K8s.AgentOperator.Options;
 
 namespace Contrast.K8s.AgentOperator.Core.Tls
 {
@@ -13,6 +14,13 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
 
     public class TlsCertificateChainValidator : ITlsCertificateChainValidator
     {
+        private readonly byte[] _sansHash;
+
+        public TlsCertificateChainValidator(TlsCertificateOptions options)
+        {
+            _sansHash = TlsHelper.GenerateSansHash(options.SanDnsNames);
+        }
+
         public bool IsValid(TlsCertificateChain chain, out ValidationResultReason reason)
         {
             var renewThreshold = DateTime.Now + TimeSpan.FromDays(90);
@@ -31,6 +39,10 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
             {
                 reason = ValidationResultReason.OldVersion;
             }
+            else if (!_sansHash.SequenceEqual(chain.SanDnsNamesHash))
+            {
+                reason = ValidationResultReason.SansIncorrect;
+            }
             else
             {
                 reason = ValidationResultReason.NoError;
@@ -45,6 +57,7 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
         NoError = 0,
         MissingPrivateKey,
         Expired,
-        OldVersion
+        OldVersion,
+        SansIncorrect
     }
 }

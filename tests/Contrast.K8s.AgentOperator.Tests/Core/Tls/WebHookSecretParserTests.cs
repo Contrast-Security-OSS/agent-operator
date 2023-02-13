@@ -67,36 +67,6 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Tls
             }
         }
 
-        [Fact]
-        public void When_secret_is_valid_but_expired_then_TryGetWebHookCertificateSecret_should_return_false()
-        {
-            var optionsFake = AutoFixture.Create<TlsStorageOptions>();
-            var exportFake = AutoFixture.Create<TlsCertificateChainExport>();
-            using var chainFake = FakeCertificates(TimeSpan.FromDays(14));
-            var secretFake = new V1Secret
-            {
-                Metadata = new V1ObjectMeta(name: optionsFake.SecretName, namespaceProperty: optionsFake.SecretNamespace),
-                Data = new Dictionary<string, byte[]>
-                {
-                    { optionsFake.ServerCertificateName, exportFake.ServerCertificatePfx },
-                    { optionsFake.CaPublicName, exportFake.CaPublicPem },
-                    { optionsFake.CaCertificateName, exportFake.CaCertificatePfx },
-                    { optionsFake.VersionName, exportFake.Version },
-                }
-            };
-
-            var converterMock = Substitute.For<ITlsCertificateChainConverter>();
-            converterMock.Import(Arg.Is(exportFake)).Returns(chainFake);
-
-            var parser = CreateGraph(optionsFake, converterMock);
-
-            // Act
-            var result = parser.TryGetWebHookCertificateSecret(secretFake, out _);
-
-            // Assert
-            result.Should().BeFalse();
-        }
-
         private static IWebHookSecretParser CreateGraph(TlsStorageOptions? tlsStorageOptions = null,
                                                         ITlsCertificateChainConverter? certificateChainConverter = null)
         {

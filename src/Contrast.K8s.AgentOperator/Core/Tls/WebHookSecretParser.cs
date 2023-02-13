@@ -35,8 +35,7 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
                 && secret.Data != null
                 && secret.Data.TryGetValue(_tlsStorageOptions.ServerCertificateName, out var serverCertificateBytes)
                 && secret.Data.TryGetValue(_tlsStorageOptions.CaPublicName, out var caPublicBytes)
-                && secret.Data.TryGetValue(_tlsStorageOptions.CaCertificateName, out var caCertificateBytes)
-                && secret.Data.TryGetValue(_tlsStorageOptions.SanDnsNamesHashName, out var sansDnsNamesHashBytes))
+                && secret.Data.TryGetValue(_tlsStorageOptions.CaCertificateName, out var caCertificateBytes))
             {
                 // Version is newer, so we might be upgrading from a version without versions.
                 var version = Array.Empty<byte>();
@@ -45,22 +44,25 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
                     version = versionBytes;
                 }
 
+                // Also newer.
+                var dnsSansHash = Array.Empty<byte>();
+                if (secret.Data.TryGetValue(_tlsStorageOptions.SanDnsNamesHashName, out var dnsSansHashBytes))
+                {
+                    dnsSansHash = dnsSansHashBytes;
+                }
+
                 try
                 {
                     var export = new TlsCertificateChainExport(
                         caCertificateBytes,
                         caPublicBytes,
                         serverCertificateBytes,
-                        sansDnsNamesHashBytes,
+                        dnsSansHash,
                         version
                     );
                     chain = _certificateChainConverter.Import(export);
 
-                    var renewThreshold = DateTime.Now + TimeSpan.FromDays(90);
-                    return chain.CaCertificate.HasPrivateKey
-                           && chain.ServerCertificate.HasPrivateKey
-                           && chain.CaCertificate.NotAfter > renewThreshold
-                           && chain.ServerCertificate.NotAfter > renewThreshold;
+                    return true;
                 }
                 catch (Exception e)
                 {
