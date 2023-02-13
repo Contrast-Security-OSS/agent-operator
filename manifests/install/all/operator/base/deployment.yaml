@@ -57,7 +57,7 @@ spec:
             runAsNonRoot: true
             capabilities:
               drop:
-              - all
+              - ALL
           ports:
             - containerPort: 5001
               name: https
