@@ -26,17 +26,15 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
 
             var serverCertificatePem = chain.ServerCertificate.Export(X509ContentType.Pkcs12);
 
-            return new TlsCertificateChainExport(caCertificatePem, caPublicPem, serverCertificatePem, chain.Version);
+            return new TlsCertificateChainExport(caCertificatePem, caPublicPem, serverCertificatePem, chain.SanDnsNamesHash, chain.Version);
         }
 
         public TlsCertificateChain Import(TlsCertificateChainExport export)
         {
-            var (caCertificatePem, _, serverCertificatePem, version) = export;
+            var caCertificate = new X509Certificate2(export.CaCertificatePfx, (string?)null, X509KeyStorageFlags.Exportable);
+            var serverCertificate = new X509Certificate2(export.ServerCertificatePfx, (string?)null, X509KeyStorageFlags.Exportable);
 
-            var caCertificate = new X509Certificate2(caCertificatePem, (string?)null, X509KeyStorageFlags.Exportable);
-            var serverCertificate = new X509Certificate2(serverCertificatePem, (string?)null, X509KeyStorageFlags.Exportable);
-
-            return new TlsCertificateChain(caCertificate, serverCertificate, version);
+            return new TlsCertificateChain(caCertificate, serverCertificate, export.SansHash, export.Version);
         }
 
         private static byte[] CreatePem(object o)
@@ -50,5 +48,5 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
         }
     }
 
-    public record TlsCertificateChainExport(byte[] CaCertificatePfx, byte[] CaPublicPem, byte[] ServerCertificatePfx, byte[] Version);
+    public record TlsCertificateChainExport(byte[] CaCertificatePfx, byte[] CaPublicPem, byte[] ServerCertificatePfx, byte[] SansHash, byte[] Version);
 }

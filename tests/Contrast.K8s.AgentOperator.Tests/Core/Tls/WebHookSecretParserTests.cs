@@ -47,6 +47,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Tls
                     { optionsFake.CaPublicName, exportFake.CaPublicPem },
                     { optionsFake.CaCertificateName, exportFake.CaCertificatePfx },
                     { optionsFake.VersionName, exportFake.Version },
+                    { optionsFake.SanDnsNamesHashName, exportFake.SansHash },
                 }
             };
 

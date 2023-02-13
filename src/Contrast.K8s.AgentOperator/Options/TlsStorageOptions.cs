@@ -8,5 +8,6 @@ namespace Contrast.K8s.AgentOperator.Options
                                     string ServerCertificateName = "server_certificate",
                                     string CaCertificateName = "ca_certificate",
                                     string CaPublicName = "ca_pem",
-                                    string VersionName = "compatibility_version");
+                                    string VersionName = "compatibility_version",
+                                    string SanDnsNamesHashName = "sans_dns_names_hash");
 }

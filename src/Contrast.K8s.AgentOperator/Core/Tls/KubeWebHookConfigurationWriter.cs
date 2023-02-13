@@ -52,8 +52,6 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
 
         private async ValueTask PublishCertificateSecret(TlsCertificateChainExport chainExport)
         {
-            var (caCertificatePfx, caPublicPem, serverCertificatePfx, version) = chainExport;
-
             Logger.Info($"Ensuring certificates in '{_tlsStorageOptions.SecretNamespace}/{_tlsStorageOptions.SecretName}' are correct.");
             var secret = new V1Secret
             {
@@ -65,10 +63,11 @@ namespace Contrast.K8s.AgentOperator.Core.Tls
                 },
                 Data = new Dictionary<string, byte[]>
                 {
-                    { _tlsStorageOptions.CaCertificateName, caCertificatePfx },
-                    { _tlsStorageOptions.CaPublicName, caPublicPem },
-                    { _tlsStorageOptions.ServerCertificateName, serverCertificatePfx },
-                    { _tlsStorageOptions.VersionName, version }
+                    { _tlsStorageOptions.CaCertificateName, chainExport.CaCertificatePfx },
+                    { _tlsStorageOptions.CaPublicName, chainExport.CaPublicPem },
+                    { _tlsStorageOptions.ServerCertificateName, chainExport.ServerCertificatePfx },
+                    { _tlsStorageOptions.VersionName, chainExport.Version },
+                    { _tlsStorageOptions.SanDnsNamesHashName, chainExport.SansHash }
                 }
             };
 
