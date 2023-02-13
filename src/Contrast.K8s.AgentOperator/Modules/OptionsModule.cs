@@ -82,6 +82,16 @@ namespace Contrast.K8s.AgentOperator.Modules
                     suppressSeccompProfile = parsedSeccompProfile;
                 }
 
+                // A value from 0-100 to denote how many options the operator should purposely fail in.
+                // The goal is to test and correctly handle a non-perfect cluster.
+                var chaosPercent = 0;
+                if (GetEnvironmentVariableAsInt("CONTRAST_CHAOS_RATIO", out var parsedChaosPercent)
+                    && parsedChaosPercent > 0)
+                {
+                    logger.LogOptionValue("chaos-percent", chaosPercent, parsedChaosPercent);
+                    chaosPercent = parsedChaosPercent;
+                }
+
                 return new OperatorOptions(
                     @namespace,
                     settleDuration,
@@ -89,7 +99,8 @@ namespace Contrast.K8s.AgentOperator.Modules
                     fullMode,
                     eventQueueMergeWindowSeconds,
                     runInitContainersAsNonRoot,
-                    suppressSeccompProfile
+                    suppressSeccompProfile,
+                    chaosPercent / 100m
                 );
             }).SingleInstance();
 

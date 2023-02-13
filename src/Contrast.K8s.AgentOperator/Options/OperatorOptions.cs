@@ -12,5 +12,6 @@ namespace Contrast.K8s.AgentOperator.Options
                                   int EventQueueMergeWindowSeconds,
                                   bool RunInitContainersAsNonRoot,
                                   bool SuppressSeccompProfile,
+                                  decimal ChaosRatio,
                                   string FieldManagerName = "agents.contrastsecurity.com");
 }

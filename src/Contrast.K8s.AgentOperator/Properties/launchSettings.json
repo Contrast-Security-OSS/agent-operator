@@ -10,6 +10,7 @@
         "CONTRAST_SETTLE_DURATION": "2",
         "CONTRAST_DEVELOPMENT": "true",
         "CONTRAST_LOG_LEVEL": "Info",
+        "CONTRAST_CHAOS_RATIO": "50",
         "CONTRAST_RUN_INIT_CONTAINER_AS_NON_ROOT": "true",
         "DOTNET_GCHeapHardLimit": "0x18000000" // Mimic a container with a 512Mi limit. Must be in hex.
       },
