@@ -61,7 +61,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Leading
             var mediatorMock = Substitute.For<IMediator>();
             ILeaderElectionState state = new LeaderElectionState(mediatorMock);
 
-            mediatorMock.Publish(Arg.Is(new LeaderStateChanged(true))).Throws(new Exception());
+            mediatorMock.Publish(Arg.Is(new LeaderStateChanged(true))).ThrowsAsync(new Exception());
 
             // Act
             Func<Task> action = async () => await state.SetLeaderState(LeaderState.Leader);
