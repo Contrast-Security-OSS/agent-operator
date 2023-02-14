@@ -135,11 +135,11 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults
                 }
 
                 Logger.Warn(
-                    $"Secret '{@namespace}/{key}' exists, but the key '{key}' did not exist. Available keys are [{string.Join(", ", cachedSecret.KeyPairs.Select(x => x.Key))}].");
+                    $"Secret '{@namespace}/{name}' exists, but the key '{key}' did not exist. Available keys are [{string.Join(", ", cachedSecret.KeyPairs.Select(x => x.Key))}].");
             }
             else
             {
-                Logger.Info($"Secret {@namespace}/{key}' does not exist, is not accessible, or contains no data. This error condition may be transitive.");
+                Logger.Info($"Secret {@namespace}/{name}' does not exist, is not accessible, or contains no data. This error condition may be transitive.");
             }
 
             return null;
@@ -157,11 +157,11 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults
                 }
 
                 Logger.Warn(
-                    $"Secret '{@namespace}/{key}' exists, but the key '{key}' no longer exists. Available keys are [{string.Join(", ", liveSecret.Data.Keys)}].");
+                    $"Secret '{@namespace}/{name}' exists, but the key '{key}' no longer exists. Available keys are [{string.Join(", ", liveSecret.Data.Keys)}].");
             }
             else
             {
-                Logger.Warn($"Secret {@namespace}/{key}' no longer exists, is accessible, or contains data.");
+                Logger.Warn($"Secret {@namespace}/{name}' no longer exists, is accessible, or contains data.");
             }
 
             return null;
