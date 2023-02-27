@@ -33,13 +33,13 @@
         <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="8.0.0" />
         <PackageReference Include="Nito.AsyncEx" Version="5.1.2" />
 
-        <PackageReference Include="NLog" Version="5.1.1" />
-        <PackageReference Include="NLog.Web.AspNetCore" Version="5.2.1" />
+        <PackageReference Include="NLog" Version="5.1.2" />
+        <PackageReference Include="NLog.Web.AspNetCore" Version="5.2.2" />
 
         <PackageReference Include="Glob" Version="1.1.9" />
-        <PackageReference Include="MediatR" Version="11.1.0" />
+        <PackageReference Include="MediatR" Version="12.0.1" />
         <PackageReference Include="CompareNETObjects" Version="4.79.0" />
-        <PackageReference Include="YamlDotNet" Version="13.0.0" />
+        <PackageReference Include="YamlDotNet" Version="13.0.1" />
 
         <PackageReference Include="JetBrains.Annotations" Version="2022.3.1" />
 

@@ -6,6 +6,7 @@ using Autofac.Features.Variance;
 using Contrast.K8s.AgentOperator.Autofac;
 using JetBrains.Annotations;
 using MediatR;
+using System;
 
 namespace Contrast.K8s.AgentOperator.Modules
 {
@@ -17,11 +18,9 @@ namespace Contrast.K8s.AgentOperator.Modules
             builder.RegisterType<Mediator>()
                    .As<IMediator>()
                    .InstancePerLifetimeScope();
-            builder.Register<ServiceFactory>(context =>
-            {
-                var c = context.Resolve<IComponentContext>();
-                return t => c.Resolve(t);
-            }).SingleInstance();
+            builder.RegisterType<MediatorServiceProvider>()
+                   .As<IServiceProvider>()
+                   .SingleInstance();
             builder.RegisterSource(new ContravariantRegistrationSource());
             builder.RegisterAssemblyTypes(ThisAssembly)
                    .PublicOnly()
@@ -38,6 +37,21 @@ namespace Contrast.K8s.AgentOperator.Modules
                    .AssignableToOpenType(typeof(INotificationHandler<>))
                    .AsImplementedInterfaces()
                    .InstancePerLifetimeScope();
+        }
+
+        private class MediatorServiceProvider : IServiceProvider
+        {
+            private readonly IComponentContext _context;
+
+            public MediatorServiceProvider(IComponentContext context)
+            {
+                _context = context;
+            }
+
+            public object GetService(Type serviceType)
+            {
+                return _context.Resolve(serviceType);
+            }
         }
     }
 }
