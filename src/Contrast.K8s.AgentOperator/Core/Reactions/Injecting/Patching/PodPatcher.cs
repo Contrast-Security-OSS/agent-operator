@@ -295,6 +295,7 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching
                 }
             }
 
+            // Order does matter here, make sure these next two are after YamlKeys.
             if (configuration?.SuppressDefaultServerName != true
                 && !string.IsNullOrWhiteSpace(workloadNamespace))
             {
