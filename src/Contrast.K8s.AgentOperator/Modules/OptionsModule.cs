@@ -64,8 +64,6 @@ namespace Contrast.K8s.AgentOperator.Modules
                     eventQueueMergeWindowSeconds = parsedEventQueueMergeWindowSeconds;
                 }
 
-                // This should have been set to true by default on the GA release... but we forgot...
-                // Updated in 1.1.0 (which, yes is bad, but impact should be small).
                 // Users may override this on a per AgentConfiguration bases via the InitContainer override field.
                 var runInitContainersAsNonRoot = true;
                 if (GetEnvironmentVariableAsBoolean("CONTRAST_RUN_INIT_CONTAINER_AS_NON_ROOT", out var parsedRunInitContainersAsNonRoot))
