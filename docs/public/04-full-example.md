@@ -116,7 +116,7 @@ spec:
         app: hello-world-app
     spec:
       containers:
-        - image: mcr.microsoft.com/dotnet/samples:aspnetapp
+        - image: contrast/sample-app-aspnetcore:latest
           name: hello-world-app
 EOF
 
