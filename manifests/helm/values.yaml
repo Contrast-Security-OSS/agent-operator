@@ -6,6 +6,16 @@ image:
   # Defaults to the version specified in Chart.AppVersion.
   tag:
 
+imageCredentials:
+  # Name of the registry credential secret that should be used to pull the above image.
+  pullSecretName: image-credentials
+  # If enabled, a registry credential secret will be created using the above name and below credentials.
+  enabled: false
+  registry: contrast
+  username:
+  password:
+  email:
+
 operator:
   # The default registry to use, defaults to docker.io/contrast.
   defaultRegistry: contrast
