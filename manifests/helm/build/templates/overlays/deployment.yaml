@@ -6,6 +6,8 @@ metadata:
 spec:
   template:
     spec:
+      imagePullSecrets:
+        - name: '{{ .Values.imageCredentials.pullSecretName }}'
       containers:
         - name: contrast-agent-operator
           env:
