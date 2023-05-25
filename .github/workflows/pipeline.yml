@@ -75,7 +75,7 @@ jobs:
         with:
           file: Dockerfile
           context: .
-          push: true
+          push: ${{ github.event_name != 'pull_request' }} # don't push the image for PR builds
           cache-from: ${{ github.actor != 'dependabot[bot]' && format('type=registry,ref={0}:cache', env.IMAGE_NAME) || ''}}
           cache-to: ${{ github.actor != 'dependabot[bot]' && format('type=registry,ref={0}:cache,mode=max', env.IMAGE_NAME) || ''}}
           build-args: |
