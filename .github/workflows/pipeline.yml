@@ -179,6 +179,7 @@ jobs:
       fail-fast: false
     env:
       IMAGE: ghcr.io/contrast-security-oss/agent-operator/operator@${{ needs.build-image.outputs.digest }}
+    if: ${{ github.event_name != 'pull_request' }} # should match push logic in build-image
     steps:
       - uses: actions/checkout@v3
         with:
