@@ -11,7 +11,7 @@ using Contrast.K8s.AgentOperator.Core.State;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Interfaces;
 using Contrast.K8s.AgentOperator.Entities.OpenShift;
-using Contrast.K8s.AgentOperator.Entities.V1alpha1Rollout;
+using Contrast.K8s.AgentOperator.Entities;
 using JetBrains.Annotations;
 using k8s.Models;
 using MediatR;
