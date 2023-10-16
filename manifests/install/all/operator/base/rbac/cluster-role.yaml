@@ -7,14 +7,48 @@ metadata:
     app.kubernetes.io/part-of: contrast-agent-operator
 rules:
 - apiGroups:
+  - apps
+  - argoproj.io
   - ""
+  - apps.openshift.io
+  resources:
+  - daemonsets
+  - rollouts
+  - deployments
+  - statefulsets
+  - pods
+  - deploymentconfigs
+  verbs:
+  - get
+  - list
+  - watch
+  - patch
+- apiGroups:
   - agents.contrastsecurity.com
+  - dynatrace.com
+  resources:
+  - clusteragentconfigurations
+  - dynakubes
+  - clusteragentconnections
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - agents.contrastsecurity.com
+  - ""
   - coordination.k8s.io
   resources:
-  - secrets
   - agentconnections
+  - secrets
   - agentconfigurations
   - leases
+  verbs:
+  - '*'
+- apiGroups:
+  - agents.contrastsecurity.com
+  resources:
+  - agentinjectors
   verbs:
   - '*'
 - apiGroups:
@@ -29,38 +63,6 @@ rules:
   - patch
   - update
   - delete
-- apiGroups:
-  - apps
-  - ""
-  - apps.openshift.io
-  resources:
-  - daemonsets
-  - deployments
-  - statefulsets
-  - pods
-  - deploymentconfigs
-  verbs:
-  - get
-  - list
-  - watch
-  - patch
-- apiGroups:
-  - agents.contrastsecurity.com
-  resources:
-  - agentinjectors
-  verbs:
-  - '*'
-- apiGroups:
-  - agents.contrastsecurity.com
-  - dynatrace.com
-  resources:
-  - clusteragentconnections
-  - dynakubes
-  - clusteragentconfigurations
-  verbs:
-  - get
-  - list
-  - watch
 - apiGroups:
   - ""
   resources:
