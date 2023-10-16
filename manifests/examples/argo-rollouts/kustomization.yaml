@@ -1,0 +1,4 @@
+namespace: default
+resources:
+  - base/dotnet-core.yaml
+  - base/minimal-setup.yaml
