@@ -5,16 +5,11 @@ using System.Collections.Generic;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Interfaces;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
 
-
 namespace Contrast.K8s.AgentOperator.Core.State.Resources
 {
-
-        public record RolloutResource(string Uid,
-                                 IReadOnlyCollection<MetadataLabel> Labels,
-                                 PodTemplate PodTemplate,
-                                 PodSelector Selector)
-    : IResourceWithPodTemplate;
-    
+    public record RolloutResource(string Uid,
+                                  IReadOnlyCollection<MetadataLabel> Labels,
+                                  PodTemplate PodTemplate,
+                                  PodSelector Selector)
+        : IResourceWithPodTemplate;
 }
-
-
