@@ -1,0 +1,33 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: dotnet-core-app
+  namespace: default
+  labels:
+    app: dotnet-core-app
+spec:
+  replicas: 2
+  strategy:
+    canary:
+      steps:
+      - setWeight: 20
+      - pause: {}
+      - setWeight: 40
+      - pause: {duration: 10}
+  revisionHistoryLimit: 1
+  selector:
+    matchLabels:
+      app: dotnet-core-app
+  template:
+    metadata:
+      labels:
+        app: dotnet-core-app
+      annotations:
+        test: test
+    spec:
+      containers:
+        - image: contrast/sample-app-aspnetcore:latest
+          name: dotnet-core-app
+          ports:
+            - containerPort: 80
+              name: http
