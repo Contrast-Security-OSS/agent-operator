@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Kube;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
-using Contrast.K8s.AgentOperator.Entities;
+using Contrast.K8s.AgentOperator.Entities.Argo;
 using JetBrains.Annotations;
 using k8s.Models;
 using MediatR;
@@ -13,17 +13,17 @@ using MediatR;
 namespace Contrast.K8s.AgentOperator.Core.State.Appliers
 {
     [UsedImplicitly]
-    public class RolloutApplier : BaseApplier<V1alpha1Rollout, RolloutResource>
+    public class RolloutApplier : BaseApplier<V1Alpha1Rollout, RolloutResource>
     {
         public RolloutApplier(IStateContainer stateContainer, IMediator mediator) : base(stateContainer, mediator)
         {
         }
 
-        public override ValueTask<RolloutResource> CreateFrom(V1alpha1Rollout entity, CancellationToken cancellationToken = default)
+        public override ValueTask<RolloutResource> CreateFrom(V1Alpha1Rollout entity, CancellationToken cancellationToken = default)
         {
             var resource = new RolloutResource(
                 entity.Uid(),
-                entity.  Metadata.GetLabels(),
+                entity.Metadata.GetLabels(),
                 entity.Spec.Template.GetPod(),
                 entity.Spec.Selector.ToPodSelector()
             );

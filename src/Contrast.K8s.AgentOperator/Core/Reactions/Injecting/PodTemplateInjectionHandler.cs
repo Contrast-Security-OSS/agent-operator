@@ -10,8 +10,8 @@ using Contrast.K8s.AgentOperator.Core.Kube;
 using Contrast.K8s.AgentOperator.Core.State;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Interfaces;
+using Contrast.K8s.AgentOperator.Entities.Argo;
 using Contrast.K8s.AgentOperator.Entities.OpenShift;
-using Contrast.K8s.AgentOperator.Entities;
 using JetBrains.Annotations;
 using k8s.Models;
 using MediatR;
@@ -85,8 +85,8 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting
             {
                 DaemonSetResource => PatchToDesiredStateDaemonSet(desiredState, identity),
                 StatefulSetResource => PatchToDesiredStateStatefulSet(desiredState, identity),
-                RolloutResource => PatchToDesiredStateRollout(desiredState, identity),
                 DeploymentResource => PatchToDesiredStateDeployment(desiredState, identity),
+                RolloutResource => PatchToDesiredStateRollout(desiredState, identity),
                 DeploymentConfigResource => PatchToDesiredStateDeploymentConfig(desiredState, identity),
                 _ => throw new ArgumentOutOfRangeException()
             };
@@ -109,11 +109,13 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting
             await _state.MarkAsDirty(identity);
             await _patcher.Patch<V1Deployment>(identity.Name, identity.Namespace, o => { PatchAnnotations(desiredState, o.Spec.Template); });
         }
+
         private async ValueTask PatchToDesiredStateRollout(DesiredState desiredState, NamespacedResourceIdentity identity)
         {
             await _state.MarkAsDirty(identity);
-            await _patcher.Patch<V1alpha1Rollout>(identity.Name, identity.Namespace, o => { PatchAnnotations(desiredState, o.Spec.Template); });
+            await _patcher.Patch<V1Alpha1Rollout>(identity.Name, identity.Namespace, o => { PatchAnnotations(desiredState, o.Spec.Template); });
         }
+
         private async ValueTask PatchToDesiredStateDeploymentConfig(DesiredState desiredState, NamespacedResourceIdentity identity)
         {
             await _state.MarkAsDirty(identity);
