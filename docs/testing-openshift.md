@@ -11,7 +11,7 @@ Setup:
 
 ## Actually Testing
 
-Deploy `install-prod.yaml` from [releases](https://github.com/Contrast-Security-Inc/agent-operator/releases).
+Deploy `install-prod.yaml` from [releases](https://github.com/Contrast-Security-OSS/agent-operator/releases).
 
 ```bash
 # Install the production manifests.

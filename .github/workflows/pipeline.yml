@@ -460,7 +460,7 @@ jobs:
         with:
           status: ${{ job.status }}
           message: |-
-            Version <https://github.com/Contrast-Security-Inc/agent-operator/releases/tag/v${{ env.BUILD_VERSION }}|v${{ env.BUILD_VERSION }}> of the agent-operator was released!
+            Version <https://github.com/Contrast-Security-OSS/agent-operator/releases/tag/v${{ env.BUILD_VERSION }}|v${{ env.BUILD_VERSION }}> of the agent-operator was released!
           fallback: |-
             [GitHub] Version v${{ env.BUILD_VERSION }} of the agent-operator was released!
         env:
