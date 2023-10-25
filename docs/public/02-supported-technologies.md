@@ -4,12 +4,10 @@
 
 | Kubernetes Version | OpenShift Version | Operator Version | End-of-Support |
 |--------------------|-------------------|------------------|----------------|
-| v1.26              |                   | v0.14.0+         | 2024-02-24     |
-| v1.25              |                   | v0.8.0+          | 2023-10-27     |
-| v1.24              |                   | v0.4.0+          | 2023-09-29     |
-| v1.23              | v4.10             | v0.1.0+          | 2023-02-28     |
-| v1.22              | v4.9              | v0.1.0+          | 2022-10-28     |
-| v1.21              | v4.8              | v0.1.0+          | 2022-06-28     |
+| v1.28              |                   | v0.14.0+         | 2024-10-28     |
+| v1.27              |                   | v0.14.0+         | 2024-06-28     |
+| v1.26              | v4.13             | v0.14.0+         | 2024-02-28     |
+| v1.25              | v4.12             | v0.8.0+          | 2023-10-28     |
 
 - The Contrast Agent Operator follows the upstream [Kubernetes community support policy](https://kubernetes.io/releases/patch-releases/#support-period). End-of-life dates are documented on the [Kubernetes releases](https://kubernetes.io/releases/#release-history) page.
 - OpenShift support is dependent on the included version of Kubernetes. For example, OpenShift v4.10 uses Kubernetes v1.23 and will be supported by Contrast until 2023-02-28. See Red Hat's [support article](https://access.redhat.com/solutions/4870701) for the mapping between Kubernetes and OpenShift versions.

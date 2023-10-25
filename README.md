@@ -20,12 +20,10 @@ Make sure the operator supports your cluster version.
 
 | Kubernetes Version | OpenShift Version | Operator Version | End-of-Support |
 |--------------------|-------------------|------------------|----------------|
-| v1.26              |                   | v0.14.0+         | 2024-02-24     |
-| v1.25              | v4.12             | v0.8.0+          | 2023-10-27     |
-| v1.24              | v4.11             | v0.4.0+          | 2023-09-29     |
-| v1.23              | v4.10             | v0.1.0+          | 2023-02-28     |
-| v1.22              | v4.9              | v0.1.0+          | 2022-10-28     |
-| v1.21              | v4.8              | v0.1.0+          | 2022-06-28     |
+| v1.28              |                   | v0.14.0+         | 2024-10-28     |
+| v1.27              |                   | v0.14.0+         | 2024-06-28     |
+| v1.26              | v4.13             | v0.14.0+         | 2024-02-28     |
+| v1.25              | v4.12             | v0.8.0+          | 2023-10-28     |
 
 To install the latest version of the operator into a cluster, apply the installation YAML containing all the required manifests, including the CRDs and RBACs.
 
