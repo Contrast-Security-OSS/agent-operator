@@ -57,3 +57,54 @@ clusterDefaults:
   # Optional. Any custom configuration to use. Must be in the format of the standard YAML file.
   yaml: |-
     enable: true
+
+agentInjectors:
+  enabled: true
+  injectors:
+    - language: java
+      name: contrast-java-injector
+      # Optional, defaults to true (enabled)
+      enabled: true
+      #Required. This injector will be created in each specified namespace.
+      namespaces:
+        - default
+      selector:
+        labels:
+          - name: contrast-agent
+            value: java
+      # Optional image configuration.
+      # image:
+      #   registry: docker.io/contrast
+      #   name: agent-java
+      #   pullPolicy: Always
+      # Optional image version, defaults to latest
+      #imageVersion: 5
+      # Optional name of an AgentConfiguration to use with this injector
+      #configurationName: custom-config-name
+      # Optional name of an AgentConnection to use with this injector
+      #connectionName: custom-connection-name
+
+    - language: dotnet-core
+      name: contrast-dotnet-core-injector
+      namespaces:
+        - default
+      selector:
+        labels:
+          - name: contrast-agent
+            value: dotnet-core
+    - language: nodejs
+      name: contrast-nodejs-injector
+      namespaces:
+        - default
+      selector:
+        labels:
+          - name: contrast-agent
+            value: nodejs
+    - language: php
+      name: contrast-php-injector
+      namespaces:
+        - default
+      selector:
+        labels:
+          - name: contrast-agent
+            value: php
