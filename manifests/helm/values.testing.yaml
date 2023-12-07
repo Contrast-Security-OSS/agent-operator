@@ -7,3 +7,16 @@ clusterDefaults:
   yaml: |-
     enable: true
     second-line: something
+
+agentInjectors:
+  enabled: true
+  injectors:
+    - language: java
+      name: helm-java-injector
+      namespaces:
+        - test1
+        - test2
+      selector:
+        labels:
+          - name: contrast-agent
+            value: java
