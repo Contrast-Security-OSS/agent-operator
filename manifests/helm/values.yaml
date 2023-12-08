@@ -65,13 +65,17 @@ agentInjectors:
       name: contrast-java-injector
       # Optional, defaults to true (enabled)
       enabled: true
-      #Required. This injector will be created in each specified namespace.
+      # Required. This injector will be created in each specified namespace.
       namespaces:
         - default
+      # Optional, specify labels and/or image names to inject. If omitted, all workloads will be injected.
+      # Label selections are cumulative using the logical AND operation.
       selector:
         labels:
           - name: contrast-agent
             value: java
+        #images:
+        #  - imagename
       # Optional image configuration.
       # image:
       #   registry: docker.io/contrast

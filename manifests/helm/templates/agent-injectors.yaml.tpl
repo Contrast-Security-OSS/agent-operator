@@ -27,18 +27,17 @@ spec:
   image:
     {{- $injector.image | toYaml | nindent 4 }}
   {{- end}}
+  {{- if or $injector.selector $injector.images }}
   {{ $selector := $injector.selector | default dict -}}
-  {{- $labels := $selector.labels -}}
-  {{- $images := $selector.images -}}
-  {{- $_ := required "One of injector.selector.labels or injector.selector.images required" (coalesce $labels $images) -}}
   selector:
-  {{- if $labels }}
+  {{- if $selector.labels }}
     labels:
-      {{- $labels | toYaml | nindent 6 }}
+      {{- $selector.labels | toYaml | nindent 6 }}
   {{- end }}
-  {{- if $images }}
+  {{- if $selector.images }}
     images:
-      {{- $images | toYaml | nindent 6 }}
+      {{- $selector.images | toYaml | nindent 6 }}
+  {{- end }}
   {{- end }}
 {{- end }}
 {{- end }}
