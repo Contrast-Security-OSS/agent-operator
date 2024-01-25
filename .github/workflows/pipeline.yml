@@ -429,7 +429,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
       - name: Publish Helm Chart
-        uses: peter-evans/repository-dispatch@v2
+        uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.GH_PR_WRITE_PAT }}
           repository: Contrast-Security-OSS/helm-charts
