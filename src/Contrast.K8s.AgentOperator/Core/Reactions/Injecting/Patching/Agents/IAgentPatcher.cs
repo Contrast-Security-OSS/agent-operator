@@ -9,6 +9,8 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents
 {
     public interface IAgentPatcher
     {
+        bool Deprecated => false;
+
         AgentInjectionType Type { get; }
 
         IEnumerable<V1EnvVar> GenerateEnvVars(PatchingContext context);

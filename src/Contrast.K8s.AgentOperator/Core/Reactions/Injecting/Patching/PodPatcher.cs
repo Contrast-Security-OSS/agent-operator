@@ -41,6 +41,11 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching
             var patchers = _patchersFactory.Invoke();
             var patcher = patchers.FirstOrDefault(x => x.Type == context.Injector.Type);
 
+            if (patcher is { Deprecated: true })
+            {
+                Logger.Warn($"Using deprecated agent injector '{patcher?.Type.ToString() ?? "Default"}'.");
+            }
+
             if (patcher?.GetOverrideAgentMountPath() is { } agentMountPathOverride)
             {
                 context = context with
