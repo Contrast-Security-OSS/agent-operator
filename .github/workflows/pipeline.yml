@@ -270,7 +270,7 @@ jobs:
           tar xf kubeconform-linux-amd64.tar.gz
           sudo install kubeconform /usr/local/bin/kubeconform
       - name: Download Manifests
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         id: download-artifacts
         with:
           name: ${{ matrix.artifact }}
@@ -408,7 +408,7 @@ jobs:
           dst: |
             ${{ steps.dockerhub-meta.outputs.tags }}
             ${{ steps.quay-meta.outputs.tags }}
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         id: download-artifacts
         with:
           name: manifests
