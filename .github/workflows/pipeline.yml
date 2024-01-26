@@ -115,7 +115,7 @@ jobs:
           cp manifests/install/prod-quay/install-prod-quay.yaml ./install-prod-quay.yaml
         shell: bash
       - name: Publish (Artifacts)
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: manifests
           path: |
@@ -151,14 +151,14 @@ jobs:
             | tee ./manifests/helm/dist/output.yaml
         shell: bash
       - name: Publish (Chart)
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: helm-chart
           path: |
             manifests/helm/dist/*.tgz
           retention-days: 7
       - name: Publish (Manifests)
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: helm-manifests
           path: |
