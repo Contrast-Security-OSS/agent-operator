@@ -10,13 +10,13 @@ using Xunit.Abstractions;
 
 namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection.Agents
 {
-    public class NodeJsInjectionTests : IClassFixture<TestingContext>
+    public class NodeJsEsmInjectionTests : IClassFixture<TestingContext>
     {
-        private const string ScenarioName = "injection-nodejs";
+        private const string ScenarioName = "injection-nodejs-esm";
 
         private readonly TestingContext _context;
 
-        public NodeJsInjectionTests(TestingContext context, ITestOutputHelper outputHelper)
+        public NodeJsEsmInjectionTests(TestingContext context, ITestOutputHelper outputHelper)
         {
             _context = context;
             _context.RegisterOutput(outputHelper);
@@ -35,7 +35,7 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection.Agents
             {
                 var container = result.Spec.Containers.Should().ContainSingle().Subject;
                 container.Env.Should().Contain(x => x.Name == "NODE_OPTIONS")
-                         .Which.Value.Should().Be("--require /contrast/agent/node_modules/@contrast/agent");
+                         .Which.Value.Should().Be("--import /contrast/agent/node_modules/@contrast/agent");
                 container.Env.Should().Contain(x => x.Name == "CONTRAST__AGENT__LOGGER__PATH")
                          .Which.Value.Should().Be("/contrast/data/logs/contrast_agent.log");
             }

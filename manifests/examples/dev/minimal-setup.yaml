@@ -81,6 +81,26 @@ spec:
 apiVersion: agents.contrastsecurity.com/v1beta1
 kind: AgentInjector
 metadata:
+  name: example-injector-nodejs-esm
+  namespace: dev
+spec:
+  enabled: true
+  version: latest
+  type: nodejs-esm
+  selector:
+    images:
+      - "*"
+    labels:
+      - name: app
+        value: nodejs-esm-app
+  connection:
+    name: example-agent-connection
+  configuration:
+    name: example-agent-configuration
+---
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: AgentInjector
+metadata:
   name: example-injector-php
   namespace: dev
 spec:
@@ -93,6 +113,26 @@ spec:
     labels:
       - name: app
         value: php-app
+  connection:
+    name: example-agent-connection
+  configuration:
+    name: example-agent-configuration
+---
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: AgentInjector
+metadata:
+  name: example-injector-python
+  namespace: dev
+spec:
+  enabled: true
+  version: latest
+  type: python
+  selector:
+    images:
+      - "*"
+    labels:
+      - name: app
+        value: python-app
   connection:
     name: example-agent-connection
   configuration:

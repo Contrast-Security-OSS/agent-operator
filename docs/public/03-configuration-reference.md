@@ -2,11 +2,12 @@
 
 The topic describes the schema for every configuration entity type the Contrast Agent Operator accepts. Some entities are optional.
 
-- [AgentConfiguration](#AgentConfiguration)
-- [AgentConnection](#AgentConnection)
-- [AgentInjector](#AgentInjector)
-- [ClusterAgentConfiguration](#ClusterAgentConfiguration)
-- [ClusterAgentConnection](#ClusterAgentConnection)
+- [Configuration reference](#configuration-reference)
+  - [AgentConfiguration](#agentconfiguration)
+  - [AgentConnection](#agentconnection)
+  - [AgentInjector](#agentinjector)
+  - [ClusterAgentConfiguration](#clusteragentconfiguration)
+  - [ClusterAgentConnection](#clusteragentconnection)
 
 ## AgentConfiguration
 
@@ -101,7 +102,7 @@ spec:
 |---------------------------|---------------------|----------|------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | spec.enabled              | boolean             | No       | TRUE                                                                         | Enables or disables this agent injector.                                                                                                                                |
 | spec.version              | string              | No       | latest                                                                       | The version of the agent to inject. The literal 'latest' will inject the latest version. Partial version matches are supported, e.g. '2' will select version '2.1.0'. |
-| spec.type                 | agentType           | Yes      |                                                                              | The type of agent to inject. Can be one of ['dotnet-core', 'java', 'nodejs', 'php'].                                                                                    |
+| spec.type                 | agentType           | Yes      |                                                                              | The type of agent to inject. Can be one of ['dotnet-core', 'java', 'nodejs', 'nodejs-esm', 'php', 'python'].                                                                                    |
 | spec.image.registry       | string              | No       | docker.io/contrast                                                           | The image registry to use for downloading agent images. This registry must be accessible by the pods being injected and by the operator.                                |
 | spec.image.name           | string              | No       | {based on type}                                                              | The name of the injector image to use.                                                                                                                                  |
 | spec.image.pullSecretName | string              | No       |                                                                              | The name of a pull Secret to append to the pod's imagePullSecrets list.                                                                                                 |
@@ -134,8 +135,9 @@ spec:
 | .NET Core               | dotnet-core    |
 | Java                    | java           |
 | NodeJS                  | nodejs         |
-| NodeJS (Protect only)   | nodejs-protect |
+| NodeJS ESM              | nodejs-esm     |
 | PHP                     | php            |
+| Python                  | python         |
 
 - Types are further documented in "[Supported technologies](./02-supported-technologies.md)".
 

@@ -10,6 +10,7 @@ using Xunit.Abstractions;
 
 namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection.Agents
 {
+    //Deprecated, remove after nodejs-protect support is removed
     public class NodeJsProtectInjectionTests : IClassFixture<TestingContext>
     {
         private const string ScenarioName = "injection-nodejs-protect";

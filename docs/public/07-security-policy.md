@@ -31,5 +31,6 @@ When `CONTRAST_RUN_INIT_CONTAINER_AS_NON_ROOT=true` is applied or when executing
 | `dotnet-core`    | `2.4.4`         |
 | `java`           | `4.11.0`        |
 | `nodejs`         | `4.30.0`        |
-| `nodejs-protect` | `5.2.0`         |
+| `nodejs-esm`     | `5.0.0`         |
 | `php`            | `1.8.0`         |
+| `python`         | `7.2.0`         |
