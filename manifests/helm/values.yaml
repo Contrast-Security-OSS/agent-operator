@@ -100,9 +100,25 @@ agentInjectors:
         labels:
           - name: contrast-agent
             value: nodejs
+    - language: nodejs-esm
+      name: contrast-nodejs-esm-injector
+      namespaces:
+        - default
+      selector:
+        labels:
+          - name: contrast-agent
+            value: nodejs-esm
     - language: php
       name: contrast-php-injector
       selector:
         labels:
           - name: contrast-agent
             value: php
+    - language: python
+      name: contrast-python-injector
+      namespaces:
+        - default
+      selector:
+        labels:
+          - name: contrast-agent
+            value: python

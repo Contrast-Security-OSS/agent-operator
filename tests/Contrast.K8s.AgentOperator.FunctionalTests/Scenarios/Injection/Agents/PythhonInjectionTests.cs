@@ -10,13 +10,13 @@ using Xunit.Abstractions;
 
 namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection.Agents
 {
-    public class NodeJsInjectionTests : IClassFixture<TestingContext>
+    public class PythonInjectionTests : IClassFixture<TestingContext>
     {
-        private const string ScenarioName = "injection-nodejs";
+        private const string ScenarioName = "injection-python";
 
         private readonly TestingContext _context;
 
-        public NodeJsInjectionTests(TestingContext context, ITestOutputHelper outputHelper)
+        public PythonInjectionTests(TestingContext context, ITestOutputHelper outputHelper)
         {
             _context = context;
             _context.RegisterOutput(outputHelper);
@@ -34,10 +34,14 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection.Agents
             using (new AssertionScope())
             {
                 var container = result.Spec.Containers.Should().ContainSingle().Subject;
-                container.Env.Should().Contain(x => x.Name == "NODE_OPTIONS")
-                         .Which.Value.Should().Be("--require /contrast/agent/node_modules/@contrast/agent");
+                container.Env.Should().Contain(x => x.Name == "PYTHONPATH")
+                    .Which.Value.Should().Be("/contrast/agent:/contrast/agent/contrast/loader");
+                container.Env.Should().Contain(x => x.Name == "CONTRAST__AGENT__PYTHON__REWRITE")
+                    .Which.Value.Should().Be("true");
+                container.Env.Should().Contain(x => x.Name == "__CONTRAST_USING_RUNNER")
+                    .Which.Value.Should().Be("true");
                 container.Env.Should().Contain(x => x.Name == "CONTRAST__AGENT__LOGGER__PATH")
-                         .Which.Value.Should().Be("/contrast/data/logs/contrast_agent.log");
+                    .Which.Value.Should().Be("/contrast/data/logs/contrast_agent.log");
             }
         }
 
@@ -51,7 +55,7 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection.Agents
 
             // Assert
             result.Spec.InitContainers.Should().ContainSingle(x => x.Name == "contrast-init")
-                  .Which.Image.Should().Be("contrast/agent-nodejs:latest");
+                .Which.Image.Should().Be("contrast/agent-python:latest");
         }
     }
 }

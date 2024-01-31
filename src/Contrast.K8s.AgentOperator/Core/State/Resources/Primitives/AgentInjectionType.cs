@@ -8,8 +8,10 @@ namespace Contrast.K8s.AgentOperator.Core.State.Resources.Primitives
         DotNetCore,
         Java,
         NodeJs,
-        NodeJsProtect,
+        NodeJsEsm,
+        NodeJsProtect, //deprecated
         Php,
+        Python,
         Dummy
     }
 }

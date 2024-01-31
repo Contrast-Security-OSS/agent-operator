@@ -1,4 +1,6 @@
 #!/bin/pwsh
+# Run under powershell core
+#Requires -Version 6.0
 
 $project = [System.IO.Path]::GetFullPath("..\src\Contrast.K8s.AgentOperator\Contrast.K8s.AgentOperator.csproj")
 $output = [System.IO.Path]::GetFullPath(".\generated\")

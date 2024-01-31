@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nodejs-esm-app
+  namespace: dev
+  labels:
+    app: nodejs-esm-app
+spec:
+  replicas: 2
+  revisionHistoryLimit: 1
+  selector:
+    matchLabels:
+      app: nodejs-esm-app
+  template:
+    metadata:
+      labels:
+        app: nodejs-esm-app
+      annotations:
+        test: test
+    spec:
+      containers:
+        - image: TODO
+          name: nodejs-esm-app
+          ports:
+            - containerPort: 3000
+              name: http
+          # livenessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: 3000
+          # readinessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: 3000
+          # resources:
+          #   limits:
+          #     cpu: '2'
+          #     memory: 1024M

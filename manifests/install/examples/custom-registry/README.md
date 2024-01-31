@@ -19,6 +19,7 @@ Make sure to import all images built by [agent-operator-images](https://github.c
 <CONTRAST_DEFAULT_REGISTRY>/agent-java
 <CONTRAST_DEFAULT_REGISTRY>/agent-nodejs
 <CONTRAST_DEFAULT_REGISTRY>/agent-php
+<CONTRAST_DEFAULT_REGISTRY>/agent-python
 ```
 
 If using [Kustomize](https://kustomize.io), the `patchesStrategicMerge` patch can be used, see [`./kustomization.yaml`](./kustomization.yaml).

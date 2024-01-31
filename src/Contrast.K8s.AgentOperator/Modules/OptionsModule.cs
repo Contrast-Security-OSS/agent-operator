@@ -199,14 +199,21 @@ namespace Contrast.K8s.AgentOperator.Modules
             {
                 var logger = context.Resolve<IOptionsLogger>();
 
-                var enableEarlyChanging = false;
-                if (GetEnvironmentVariableAsBoolean("CONTRAST_ENABLE_EARLY_CHAINING", out var parsedResult))
+                var enableEarlyChaining = false;
+                if (GetEnvironmentVariableAsBoolean("CONTRAST_ENABLE_EARLY_CHAINING", out var parsedChainingResult))
                 {
-                    logger.LogOptionValue("webhook-configuration-name", enableEarlyChanging, parsedResult);
-                    enableEarlyChanging = parsedResult;
+                    logger.LogOptionValue("enable-early-chaining", enableEarlyChaining, parsedChainingResult);
+                    enableEarlyChaining = parsedChainingResult;
                 }
 
-                return new InjectorOptions(enableEarlyChanging);
+                var enablePythonRewrite = true;
+                if (GetEnvironmentVariableAsBoolean("CONTRAST_ENABLE_PYTHON_REWRITE", out var parsedRewriteResult))
+                {
+                    logger.LogOptionValue("enable-python-rewrite", enablePythonRewrite, parsedRewriteResult);
+                    enablePythonRewrite = parsedRewriteResult;
+                }
+
+                return new InjectorOptions(enableEarlyChaining, enablePythonRewrite);
             }).SingleInstance();
         }
 

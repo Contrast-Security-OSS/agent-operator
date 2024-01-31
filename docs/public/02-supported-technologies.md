@@ -20,8 +20,10 @@
 | .NET Core             | dotnet-core    | Supported      | [Supported .NET Core technologies](https://docs.contrastsecurity.com/en/-net-core-supported-technologies.html) |
 | Java                  | java           | Supported      | [Supported Java technologies](https://docs.contrastsecurity.com/en/java-supported-technologies.html)           |
 | NodeJS                | nodejs         | Beta           | [Supported NodeJS technologies](https://docs.contrastsecurity.com/en/node-js-supported-technologies.html )     |
-| NodeJS (Protect only) | nodejs-protect | Beta           | [Supported NodeJS technologies](https://docs.contrastsecurity.com/en/node-js-supported-technologies.html )     |
+| NodeJS ESM            | nodejs-esm     | Beta           | [Supported NodeJS technologies](https://docs.contrastsecurity.com/en/node-js-supported-technologies.html )     |
+| NodeJS (Protect only) | nodejs-protect | Deprecated     | [Supported NodeJS technologies](https://docs.contrastsecurity.com/en/node-js-supported-technologies.html )     |
 | PHP                   | php            | Beta           | [Supported PHP technologies](https://docs.contrastsecurity.com/en/php-supported-technologies.html)             |
+| Python                | python         | Beta           | [Supported Python technologies](https://docs.contrastsecurity.com/en/python-supported-technologies.html)       |
 
 - Injection of NodeJS and PHP applications is in beta. Beta status means the feature might change or act unexpectedly. By using this feature, you agree to the [Contrast Beta Terms and Conditions](https://docs.contrastsecurity.com/en/beta-terms-and-conditions.html "Contrast Beta Terms and Conditions").
 - Injection of the NodeJS Agent may result in a substantial increase in the startup time of the instrumented application. If startup time is unacceptable, injecting the agent during compilation may be desireable. If the application was injected by the NodeJS agent during compilation then injection during runtime by the operator should be disabled. See the [rewriter CLI](https://docs.contrastsecurity.com/en/node-js-agent-rewriter-cli.html) for more information.

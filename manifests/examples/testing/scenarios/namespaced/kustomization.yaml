@@ -14,9 +14,11 @@ resources:
   - ./injection-dummy.yaml
   - ./injection-java.yaml
   - ./injection-javatooloptions.yaml
-  - ./injection-nodejs-v4.yaml
+  - ./injection-nodejs.yaml
+  - ./injection-nodejs-esm.yaml
   - ./injection-nodejs-protect.yaml
   - ./injection-php.yaml
+  - ./injection-python.yaml
   - ./missing-deps.yaml
   - ./multiple-images.yaml
   - ./namespace.yaml
