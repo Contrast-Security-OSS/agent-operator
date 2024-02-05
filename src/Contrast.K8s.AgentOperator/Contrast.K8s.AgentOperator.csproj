@@ -39,7 +39,7 @@
         <PackageReference Include="Glob" Version="1.1.9" />
         <PackageReference Include="MediatR" Version="12.0.1" />
         <PackageReference Include="CompareNETObjects" Version="4.79.0" />
-        <PackageReference Include="YamlDotNet" Version="13.0.1" />
+        <PackageReference Include="YamlDotNet" Version="15.1.1" />
 
         <PackageReference Include="JetBrains.Annotations" Version="2022.3.1" />
 
