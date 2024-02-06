@@ -19,10 +19,10 @@ spec:
         test: test
     spec:
       containers:
-        - image: TODO
+        - image: contrast/sample-app-flask
           name: python-app
           ports:
-            - containerPort: 3000
+            - containerPort: 8000
               name: http
           # livenessProbe:
           #   httpGet:
