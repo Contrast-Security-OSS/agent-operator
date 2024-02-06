@@ -21,7 +21,7 @@ spec:
       imagePullSecrets:
         - name: contrastdotnet-pull-secret
       containers:
-        - image: contrastdotnet.azurecr.io/agent-operator/samples/php-dvwa:latest
+        - image: contrast/sample-app-php
           name: php-app
           ports:
             - containerPort: 80
