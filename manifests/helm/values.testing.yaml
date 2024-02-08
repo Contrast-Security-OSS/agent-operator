@@ -10,12 +10,12 @@ clusterDefaults:
 
 agentInjectors:
   enabled: true
+  namespaces:
+    - test1
+    - test2
   injectors:
     - language: java
       name: helm-java-injector
-      namespaces:
-        - test1
-        - test2
       selector:
         labels:
           - name: contrast-agent
