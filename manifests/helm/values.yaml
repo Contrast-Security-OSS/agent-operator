@@ -60,14 +60,14 @@ clusterDefaults:
 
 agentInjectors:
   enabled: true
+  # Required. All injectors will be created in each specified namespace.
+  namespaces:
+    - default
   injectors:
     - language: java
       name: contrast-java-injector
       # Optional, defaults to true (enabled)
       enabled: true
-      # Required. This injector will be created in each specified namespace.
-      namespaces:
-        - default
       # Optional, specify labels and/or image names to inject. If omitted, all workloads will be injected.
       # Label selections are cumulative using the logical AND operation.
       selector:
@@ -90,24 +90,18 @@ agentInjectors:
 
     - language: dotnet-core
       name: contrast-dotnet-core-injector
-      namespaces:
-        - default
       selector:
         labels:
           - name: contrast-agent
             value: dotnet-core
     - language: nodejs
       name: contrast-nodejs-injector
-      namespaces:
-        - default
       selector:
         labels:
           - name: contrast-agent
             value: nodejs
     - language: php
       name: contrast-php-injector
-      namespaces:
-        - default
       selector:
         labels:
           - name: contrast-agent

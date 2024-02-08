@@ -1,6 +1,6 @@
 {{ if .Values.agentInjectors.enabled }}
-{{- range $injector := .Values.agentInjectors.injectors }}
-{{- range $namespace := .namespaces }}
+{{- range $namespace := .Values.agentInjectors.namespaces }}
+{{- range $injector := $.Values.agentInjectors.injectors }}
 ---
 apiVersion: agents.contrastsecurity.com/v1beta1
 kind: AgentInjector
