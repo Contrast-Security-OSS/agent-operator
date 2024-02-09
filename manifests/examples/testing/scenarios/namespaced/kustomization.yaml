@@ -14,7 +14,7 @@ resources:
   - ./injection-dummy.yaml
   - ./injection-java.yaml
   - ./injection-javatooloptions.yaml
-  - ./injection-nodejs.yaml
+  - ./injection-nodejs-cjs.yaml
   - ./injection-nodejs-esm.yaml
   - ./injection-nodejs-protect.yaml
   - ./injection-php.yaml
