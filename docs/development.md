@@ -31,7 +31,7 @@ Using the "Bridge to Kubernetes", we can redirect requests to a cluster service 
 
 https://docs.microsoft.com/en-us/visualstudio/bridge/bridge-to-kubernetes-vs-code
 
-- Ensure `manifests\install\dev` is deployed into your local cluster.
+- Ensure `manifests\install\dev` is deployed into your local cluster. (`kubectl apply -k manifests/install/dev`)
 - Ensure the VS Code extension is installed.
 - Open the `manifests` folder in VSCode.
 - Select the operator namespace.
@@ -85,3 +85,13 @@ kubectl apply -k ./manifests/examples/testing/
 ```
 
 Afterwards, the functional tests are ready to be ran.
+
+
+## Running the dev example manifest
+
+```bash
+# Install sample apps
+kubectl apply -k manifests/examples/dev
+# Switch to dev namespace
+kubectl config set-context --current --namespace=dev
+```

@@ -9,6 +9,8 @@ spec:
     spec:
       containers:
         - name: contrast-agent-operator
+          securityContext:
+            runAsNonRoot: false
           env:
             - name: CONTRAST_AGENT_TELEMETRY_OPTOUT
               value: "true"

@@ -173,4 +173,7 @@ metadata:
   namespace: dev
 spec:
   yaml: |
-    enabled: true
+    enable: true
+    agent:
+      logger:
+        stdout: true
