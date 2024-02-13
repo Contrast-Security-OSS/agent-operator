@@ -9,7 +9,7 @@ RUN set -xe \
     && apt-get install -y --no-install-recommends curl jq \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-FROM mcr.microsoft.com/dotnet/sdk:6.0.418 AS build
+FROM mcr.microsoft.com/dotnet/sdk:6.0.419 AS build
 WORKDIR /source
 
 # Restore
