@@ -2,6 +2,8 @@
 
 Follow [argo rollouts installation](https://argo-rollouts.readthedocs.io/en/stable/installation/) instructions to install the controller and kubectl plugin
 
+Windows Note: Rename the downloaded executable from `kubectl-argo-rollouts-windows-amd64` to `kubectl-argo-rollouts` and have the folder in the `PATH`
+
 ## Actually Testing
 
 Deploy `install-prod.yaml` from [releases](https://github.com/Contrast-Security-OSS/agent-operator/releases).
