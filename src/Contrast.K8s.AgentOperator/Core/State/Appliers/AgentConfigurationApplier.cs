@@ -12,54 +12,53 @@ using k8s.Models;
 using MediatR;
 using NLog;
 
-namespace Contrast.K8s.AgentOperator.Core.State.Appliers
+namespace Contrast.K8s.AgentOperator.Core.State.Appliers;
+
+[UsedImplicitly]
+public class AgentConfigurationApplier : BaseApplier<V1Beta1AgentConfiguration, AgentConfigurationResource>
 {
-    [UsedImplicitly]
-    public class AgentConfigurationApplier : BaseApplier<V1Beta1AgentConfiguration, AgentConfigurationResource>
+    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+    private readonly IYamlParser _yamlParser;
+
+    public AgentConfigurationApplier(IStateContainer stateContainer, IMediator mediator, IYamlParser yamlParser) : base(stateContainer, mediator)
     {
-        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-        private readonly IYamlParser _yamlParser;
+        _yamlParser = yamlParser;
+    }
 
-        public AgentConfigurationApplier(IStateContainer stateContainer, IMediator mediator, IYamlParser yamlParser) : base(stateContainer, mediator)
+    public override ValueTask<AgentConfigurationResource> CreateFrom(V1Beta1AgentConfiguration entity, CancellationToken cancellationToken = default)
+    {
+        var yamlValues = new Dictionary<string, string>();
+        if (entity.Spec.Yaml is { } yaml
+            && !string.IsNullOrWhiteSpace(yaml))
         {
-            _yamlParser = yamlParser;
-        }
-
-        public override ValueTask<AgentConfigurationResource> CreateFrom(V1Beta1AgentConfiguration entity, CancellationToken cancellationToken = default)
-        {
-            var yamlValues = new Dictionary<string, string>();
-            if (entity.Spec.Yaml is { } yaml
-                && !string.IsNullOrWhiteSpace(yaml))
+            var parsedYaml = _yamlParser.Parse(yaml, out var result);
+            if (!result.IsValid)
             {
-                var parsedYaml = _yamlParser.Parse(yaml, out var result);
-                if (!result.IsValid)
+                Logger.Error(
+                    $"Failed to parse yaml in AgentConfiguration '{entity.Namespace()}/{entity.Name()}' and will be ignored (Error: '{result.Error}').");
+            }
+            else
+            {
+                foreach (var (key, value) in parsedYaml)
                 {
-                    Logger.Error(
-                        $"Failed to parse yaml in AgentConfiguration '{entity.Namespace()}/{entity.Name()}' and will be ignored (Error: '{result.Error}').");
-                }
-                else
-                {
-                    foreach (var (key, value) in parsedYaml)
+                    if (value.Value != null)
                     {
-                        if (value.Value != null)
-                        {
-                            yamlValues.Add(key, value.Value);
-                        }
+                        yamlValues.Add(key, value.Value);
                     }
                 }
             }
-
-            var overrides = entity.Spec.InitContainer != null
-                ? new InitContainerOverrides(entity.Spec.InitContainer?.SecurityContext)
-                : null;
-
-            var resource = new AgentConfigurationResource(
-                yamlValues,
-                entity.Spec.SuppressDefaultServerName,
-                entity.Spec.SuppressDefaultApplicationName,
-                overrides
-            );
-            return ValueTask.FromResult(resource);
         }
+
+        var overrides = entity.Spec.InitContainer != null
+            ? new InitContainerOverrides(entity.Spec.InitContainer?.SecurityContext)
+            : null;
+
+        var resource = new AgentConfigurationResource(
+            yamlValues,
+            entity.Spec.SuppressDefaultServerName,
+            entity.Spec.SuppressDefaultApplicationName,
+            overrides
+        );
+        return ValueTask.FromResult(resource);
     }
 }

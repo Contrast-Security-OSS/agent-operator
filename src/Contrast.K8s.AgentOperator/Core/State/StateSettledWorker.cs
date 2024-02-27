@@ -10,31 +10,30 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.Hosting;
 using NLog;
 
-namespace Contrast.K8s.AgentOperator.Core.State
+namespace Contrast.K8s.AgentOperator.Core.State;
+
+[UsedImplicitly]
+public class StateSettledWorker : BackgroundService
 {
-    [UsedImplicitly]
-    public class StateSettledWorker : BackgroundService
+    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+    private readonly OperatorOptions _operatorOptions;
+    private readonly IEventStream _eventStream;
+
+    public StateSettledWorker(OperatorOptions operatorOptions, IEventStream eventStream)
     {
-        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-        private readonly OperatorOptions _operatorOptions;
-        private readonly IEventStream _eventStream;
+        _operatorOptions = operatorOptions;
+        _eventStream = eventStream;
+    }
 
-        public StateSettledWorker(OperatorOptions operatorOptions, IEventStream eventStream)
-        {
-            _operatorOptions = operatorOptions;
-            _eventStream = eventStream;
-        }
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        var delay = TimeSpan.FromSeconds(_operatorOptions.SettlingDurationSeconds);
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            var delay = TimeSpan.FromSeconds(_operatorOptions.SettlingDurationSeconds);
+        Logger.Info($"Waiting {delay.TotalSeconds} seconds for operator to rebuild cluster state before applying changes.");
+        await Task.Delay(delay, stoppingToken);
 
-            Logger.Info($"Waiting {delay.TotalSeconds} seconds for operator to rebuild cluster state before applying changes.");
-            await Task.Delay(delay, stoppingToken);
+        await _eventStream.DispatchDeferred(new StateSettled(), stoppingToken);
 
-            await _eventStream.DispatchDeferred(new StateSettled(), stoppingToken);
-
-            await Task.Delay(Timeout.Infinite, stoppingToken);
-        }
+        await Task.Delay(Timeout.Infinite, stoppingToken);
     }
 }

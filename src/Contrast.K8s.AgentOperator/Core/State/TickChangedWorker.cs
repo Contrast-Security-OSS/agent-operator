@@ -7,25 +7,24 @@ using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Events;
 using Microsoft.Extensions.Hosting;
 
-namespace Contrast.K8s.AgentOperator.Core.State
+namespace Contrast.K8s.AgentOperator.Core.State;
+
+public class TickChangedWorker : BackgroundService
 {
-    public class TickChangedWorker : BackgroundService
+    private readonly IEventStream _eventStream;
+
+    public TickChangedWorker(IEventStream eventStream)
     {
-        private readonly IEventStream _eventStream;
+        _eventStream = eventStream;
+    }
 
-        public TickChangedWorker(IEventStream eventStream)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        var tickDelay = TimeSpan.FromSeconds(1);
+        while (!stoppingToken.IsCancellationRequested)
         {
-            _eventStream = eventStream;
-        }
-
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            var tickDelay = TimeSpan.FromSeconds(1);
-            while (!stoppingToken.IsCancellationRequested)
-            {
-                await Task.Delay(tickDelay, stoppingToken);
-                await _eventStream.DispatchDeferred(TickChanged.Instance, stoppingToken);
-            }
+            await Task.Delay(tickDelay, stoppingToken);
+            await _eventStream.DispatchDeferred(TickChanged.Instance, stoppingToken);
         }
     }
 }

@@ -9,65 +9,64 @@ using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
 using k8s.Models;
 using NLog;
 
-namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents
+namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents;
+
+public class JavaAgentPatcher : IAgentPatcher
 {
-    public class JavaAgentPatcher : IAgentPatcher
+    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
+    public AgentInjectionType Type => AgentInjectionType.Java;
+
+    public IEnumerable<V1EnvVar> GenerateEnvVars(PatchingContext context)
     {
-        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        yield return new V1EnvVar("JAVA_TOOL_OPTIONS", GetContrastAgentArgument(context));
+        yield return new V1EnvVar("CONTRAST__AGENT__CONTRAST_WORKING_DIR", context.WritableMountPath);
+        yield return new V1EnvVar("CONTRAST__AGENT__LOGGER__PATH", $"{context.WritableMountPath}/logs/contrast_agent.log");
+    }
 
-        public AgentInjectionType Type => AgentInjectionType.Java;
-
-        public IEnumerable<V1EnvVar> GenerateEnvVars(PatchingContext context)
+    public void PatchContainer(V1Container container, PatchingContext context)
+    {
+        if (GetFirstOrDefaultEnvVar(container.Env, "JAVA_TOOL_OPTIONS") is { Value: { } currentJavaToolOptions }
+            && !string.IsNullOrWhiteSpace(currentJavaToolOptions)
+            && !currentJavaToolOptions.EndsWith("contrast-agent.jar", StringComparison.OrdinalIgnoreCase)
+            && GetFirstOrDefaultEnvVar(container.Env, "CONTRAST_EXISTING_JAVA_TOOL_OPTIONS") is null)
         {
-            yield return new V1EnvVar("JAVA_TOOL_OPTIONS", GetContrastAgentArgument(context));
-            yield return new V1EnvVar("CONTRAST__AGENT__CONTRAST_WORKING_DIR", context.WritableMountPath);
-            yield return new V1EnvVar("CONTRAST__AGENT__LOGGER__PATH", $"{context.WritableMountPath}/logs/contrast_agent.log");
-        }
+            var contrastAgentArgument = GetContrastAgentArgument(context);
 
-        public void PatchContainer(V1Container container, PatchingContext context)
-        {
-            if (GetFirstOrDefaultEnvVar(container.Env, "JAVA_TOOL_OPTIONS") is { Value: { } currentJavaToolOptions }
-                && !string.IsNullOrWhiteSpace(currentJavaToolOptions)
-                && !currentJavaToolOptions.EndsWith("contrast-agent.jar", StringComparison.OrdinalIgnoreCase)
-                && GetFirstOrDefaultEnvVar(container.Env, "CONTRAST_EXISTING_JAVA_TOOL_OPTIONS") is null)
+            //Parse and patch the existing JAVA_TOOL_OPTIONS
+            container.Env.AddOrUpdate(new V1EnvVar("CONTRAST_EXISTING_JAVA_TOOL_OPTIONS", currentJavaToolOptions));
+
+            try
             {
-                var contrastAgentArgument = GetContrastAgentArgument(context);
+                var options = JavaArgumentParser.ParseArguments(currentJavaToolOptions).ToList();
 
-                //Parse and patch the existing JAVA_TOOL_OPTIONS
-                container.Env.AddOrUpdate(new V1EnvVar("CONTRAST_EXISTING_JAVA_TOOL_OPTIONS", currentJavaToolOptions));
-
-                try
+                //Patch contrast-agent.jar to the correct path
+                var contrastJavaAgentIndex = options.FindIndex(x => x.StartsWith("-javaagent", StringComparison.OrdinalIgnoreCase)
+                                                                    && x.Contains("contrast-agent.jar", StringComparison.OrdinalIgnoreCase));
+                if (contrastJavaAgentIndex >= 0)
                 {
-                    var options = JavaArgumentParser.ParseArguments(currentJavaToolOptions).ToList();
-
-                    //Patch contrast-agent.jar to the correct path
-                    var contrastJavaAgentIndex = options.FindIndex(x => x.StartsWith("-javaagent", StringComparison.OrdinalIgnoreCase)
-                                                                        && x.Contains("contrast-agent.jar", StringComparison.OrdinalIgnoreCase));
-                    if (contrastJavaAgentIndex >= 0)
-                    {
-                        options[contrastJavaAgentIndex] = contrastAgentArgument;
-                    }
-                    else //contrast-agent.jar is not in the arguments so just prepend it
-                    {
-                        options.Insert(0, contrastAgentArgument);
-                    }
-
-                    container.Env.AddOrUpdate(new V1EnvVar("JAVA_TOOL_OPTIONS", string.Join(' ', options)));
+                    options[contrastJavaAgentIndex] = contrastAgentArgument;
                 }
-                catch (Exception e)
+                else //contrast-agent.jar is not in the arguments so just prepend it
                 {
-                    Logger.Warn(e, "Failed to parse existing JAVA_TOOL_OPTIONS, unable to patch!");
+                    options.Insert(0, contrastAgentArgument);
                 }
+
+                container.Env.AddOrUpdate(new V1EnvVar("JAVA_TOOL_OPTIONS", string.Join(' ', options)));
+            }
+            catch (Exception e)
+            {
+                Logger.Warn(e, "Failed to parse existing JAVA_TOOL_OPTIONS, unable to patch!");
             }
         }
-
-        private static V1EnvVar? GetFirstOrDefaultEnvVar(IEnumerable<V1EnvVar> collection, string name)
-        {
-            return collection.FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase));
-        }
-
-        private static string GetContrastAgentArgument(PatchingContext context) => $"-javaagent:{context.AgentMountPath}/contrast-agent.jar";
-
-        public string GetOverrideAgentMountPath() => "/opt/contrast";
     }
+
+    private static V1EnvVar? GetFirstOrDefaultEnvVar(IEnumerable<V1EnvVar> collection, string name)
+    {
+        return collection.FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static string GetContrastAgentArgument(PatchingContext context) => $"-javaagent:{context.AgentMountPath}/contrast-agent.jar";
+
+    public string GetOverrideAgentMountPath() => "/opt/contrast";
 }

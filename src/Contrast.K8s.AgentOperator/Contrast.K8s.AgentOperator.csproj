@@ -1,63 +1,63 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
-    <PropertyGroup>
-        <OutputType>Exe</OutputType>
-        <TargetFramework>net6.0</TargetFramework>
-        <nullable>enable</nullable>
-        <LangVersion>latest</LangVersion>
-        <IsPackable>false</IsPackable>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <ServerGarbageCollection>true</ServerGarbageCollection>
-        <!--Ignore warnings about missing XML docs.-->
-        <NoWarn>CS1591</NoWarn>
-        <IsPublicBuild Condition="'$(IsPublicBuild)' == ''">false</IsPublicBuild>
-        <DefineConstants Condition="'$(IsPublicBuild)' != 'False'">CONTRAST_IS_PUBLIC_TELEMETRY_BUILD;$(DefineConstants)</DefineConstants>
-    </PropertyGroup>
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>10.0</LangVersion>
+    <nullable>enable</nullable>
+    <IsPackable>false</IsPackable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <ServerGarbageCollection>true</ServerGarbageCollection>
+    <!--Ignore warnings about missing XML docs.-->
+    <NoWarn>CS1591</NoWarn>
+    <IsPublicBuild Condition="'$(IsPublicBuild)' == ''">false</IsPublicBuild>
+    <DefineConstants Condition="'$(IsPublicBuild)' != 'False'">CONTRAST_IS_PUBLIC_TELEMETRY_BUILD;$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
 
-    <PropertyGroup>
-        <KubeOpsConfigRoot>$(MSBuildProjectDirectory)\Generated</KubeOpsConfigRoot>
-        <KubeOpsSkipDockerfile>true</KubeOpsSkipDockerfile>
+  <PropertyGroup>
+    <KubeOpsConfigRoot>$(MSBuildProjectDirectory)\Generated</KubeOpsConfigRoot>
+    <KubeOpsSkipDockerfile>true</KubeOpsSkipDockerfile>
 
-        <SkipKubeOpsGen Condition="'$(SkipKubeOpsGen)' == ''">true</SkipKubeOpsGen>
-        <KubeOpsSkipCrds>$(SkipKubeOpsGen)</KubeOpsSkipCrds>
-        <KubeOpsSkipRbac>$(SkipKubeOpsGen)</KubeOpsSkipRbac>
-        <KubeOpsSkipOperator>$(SkipKubeOpsGen)</KubeOpsSkipOperator>
-        <KubeOpsSkipInstaller>$(SkipKubeOpsGen)</KubeOpsSkipInstaller>
-    </PropertyGroup>
+    <SkipKubeOpsGen Condition="'$(SkipKubeOpsGen)' == ''">true</SkipKubeOpsGen>
+    <KubeOpsSkipCrds>$(SkipKubeOpsGen)</KubeOpsSkipCrds>
+    <KubeOpsSkipRbac>$(SkipKubeOpsGen)</KubeOpsSkipRbac>
+    <KubeOpsSkipOperator>$(SkipKubeOpsGen)</KubeOpsSkipOperator>
+    <KubeOpsSkipInstaller>$(SkipKubeOpsGen)</KubeOpsSkipInstaller>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-        <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
-        <PackageReference Include="CertificateManager" Version="1.0.8" />
-        <PackageReference Include="Autofac" Version="7.0.0" />
-        <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="8.0.0" />
-        <PackageReference Include="Nito.AsyncEx" Version="5.1.2" />
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
+    <PackageReference Include="CertificateManager" Version="1.0.8" />
+    <PackageReference Include="Autofac" Version="7.0.0" />
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="8.0.0" />
+    <PackageReference Include="Nito.AsyncEx" Version="5.1.2" />
 
-        <PackageReference Include="NLog" Version="5.1.2" />
-        <PackageReference Include="NLog.Web.AspNetCore" Version="5.2.2" />
+    <PackageReference Include="NLog" Version="5.1.2" />
+    <PackageReference Include="NLog.Web.AspNetCore" Version="5.2.2" />
 
-        <PackageReference Include="Glob" Version="1.1.9" />
-        <PackageReference Include="MediatR" Version="12.0.1" />
-        <PackageReference Include="CompareNETObjects" Version="4.79.0" />
-        <PackageReference Include="YamlDotNet" Version="13.0.1" />
+    <PackageReference Include="Glob" Version="1.1.9" />
+    <PackageReference Include="MediatR" Version="12.0.1" />
+    <PackageReference Include="CompareNETObjects" Version="4.79.0" />
+    <PackageReference Include="YamlDotNet" Version="13.0.1" />
 
-        <PackageReference Include="JetBrains.Annotations" Version="2022.3.1" />
+    <PackageReference Include="JetBrains.Annotations" Version="2022.3.1" />
 
-        <PackageReference Include="RestEase" Version="1.6.1" />
-        <PackageReference Include="RestEase.SourceGenerator" Version="1.6.1">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-        </PackageReference>
+    <PackageReference Include="RestEase" Version="1.6.1" />
+    <PackageReference Include="RestEase.SourceGenerator" Version="1.6.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
 
-        <PackageReference Include="Sigil" Version="5.0.0" />
+    <PackageReference Include="Sigil" Version="5.0.0" />
 
-        <!--https://github.com/dotnet/runtime/issues/60393-->
-        <PackageReference Include="HexMate" Version="0.0.3" />
-    </ItemGroup>
+    <!--https://github.com/dotnet/runtime/issues/60393-->
+    <PackageReference Include="HexMate" Version="0.0.3" />
+  </ItemGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\..\vendor\dotnet-kubernetes-client\src\DotnetKubernetesClient\DotnetKubernetesClient.csproj" />
-      <ProjectReference Include="..\..\vendor\dotnet-operator-sdk\src\KubeOps\KubeOps.csproj" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\vendor\dotnet-kubernetes-client\src\DotnetKubernetesClient\DotnetKubernetesClient.csproj" />
+    <ProjectReference Include="..\..\vendor\dotnet-operator-sdk\src\KubeOps\KubeOps.csproj" />
+  </ItemGroup>
 
 </Project>

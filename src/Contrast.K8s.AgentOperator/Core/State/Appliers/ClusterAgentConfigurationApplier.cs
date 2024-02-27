@@ -9,28 +9,27 @@ using JetBrains.Annotations;
 using k8s.Models;
 using MediatR;
 
-namespace Contrast.K8s.AgentOperator.Core.State.Appliers
+namespace Contrast.K8s.AgentOperator.Core.State.Appliers;
+
+[UsedImplicitly]
+public class ClusterAgentConfigurationApplier : BaseApplier<V1Beta1ClusterAgentConfiguration, ClusterAgentConfigurationResource>
 {
-    [UsedImplicitly]
-    public class ClusterAgentConfigurationApplier : BaseApplier<V1Beta1ClusterAgentConfiguration, ClusterAgentConfigurationResource>
+    private readonly AgentConfigurationApplier _agentConfigurationApplier;
+
+    public ClusterAgentConfigurationApplier(IStateContainer stateContainer, IMediator mediator, AgentConfigurationApplier agentConfigurationApplier) : base(
+        stateContainer, mediator)
     {
-        private readonly AgentConfigurationApplier _agentConfigurationApplier;
+        _agentConfigurationApplier = agentConfigurationApplier;
+    }
 
-        public ClusterAgentConfigurationApplier(IStateContainer stateContainer, IMediator mediator, AgentConfigurationApplier agentConfigurationApplier) : base(
-            stateContainer, mediator)
-        {
-            _agentConfigurationApplier = agentConfigurationApplier;
-        }
+    public override async ValueTask<ClusterAgentConfigurationResource> CreateFrom(V1Beta1ClusterAgentConfiguration entity,
+                                                                                  CancellationToken cancellationToken = default)
+    {
+        entity.Spec.Template!.Metadata.NamespaceProperty = entity.Namespace();
 
-        public override async ValueTask<ClusterAgentConfigurationResource> CreateFrom(V1Beta1ClusterAgentConfiguration entity,
-                                                                                      CancellationToken cancellationToken = default)
-        {
-            entity.Spec.Template!.Metadata.NamespaceProperty = entity.Namespace();
+        var template = await _agentConfigurationApplier.CreateFrom(entity.Spec.Template!, cancellationToken);
+        var namespaces = entity.Spec.Namespaces;
 
-            var template = await _agentConfigurationApplier.CreateFrom(entity.Spec.Template!, cancellationToken);
-            var namespaces = entity.Spec.Namespaces;
-
-            return new ClusterAgentConfigurationResource(template, namespaces);
-        }
+        return new ClusterAgentConfigurationResource(template, namespaces);
     }
 }

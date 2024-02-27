@@ -13,29 +13,28 @@ using JetBrains.Annotations;
 using k8s.Models;
 using MediatR;
 
-namespace Contrast.K8s.AgentOperator.Core.State.Appliers
+namespace Contrast.K8s.AgentOperator.Core.State.Appliers;
+
+[UsedImplicitly]
+public class SecretApplier : BaseApplier<V1Secret, SecretResource>
 {
-    [UsedImplicitly]
-    public class SecretApplier : BaseApplier<V1Secret, SecretResource>
+    public SecretApplier(IStateContainer stateContainer, IMediator mediator) : base(stateContainer, mediator)
     {
-        public SecretApplier(IStateContainer stateContainer, IMediator mediator) : base(stateContainer, mediator)
-        {
-        }
+    }
 
-        public override ValueTask<SecretResource> CreateFrom(V1Secret entity, CancellationToken cancellationToken = default)
-        {
-            var data = entity.Data ?? new Dictionary<string, byte[]>();
-            var keyPairs = data.Select(x => new SecretKeyValue(x.Key, Sha256(x.Value))).NormalizeSecrets();
+    public override ValueTask<SecretResource> CreateFrom(V1Secret entity, CancellationToken cancellationToken = default)
+    {
+        var data = entity.Data ?? new Dictionary<string, byte[]>();
+        var keyPairs = data.Select(x => new SecretKeyValue(x.Key, Sha256(x.Value))).NormalizeSecrets();
 
-            var resource = new SecretResource(keyPairs);
-            return ValueTask.FromResult(resource);
-        }
+        var resource = new SecretResource(keyPairs);
+        return ValueTask.FromResult(resource);
+    }
 
-        private static string Sha256(byte[] data)
-        {
-            using var sha256 = SHA256.Create();
-            var bytes = sha256.ComputeHash(data);
-            return HexConverter.ToLowerHex(bytes);
-        }
+    private static string Sha256(byte[] data)
+    {
+        using var sha256 = SHA256.Create();
+        var bytes = sha256.ComputeHash(data);
+        return HexConverter.ToLowerHex(bytes);
     }
 }

@@ -15,164 +15,163 @@ using k8s.Models;
 using MediatR;
 using NLog;
 
-namespace Contrast.K8s.AgentOperator.Core.Reactions.Monitoring
+namespace Contrast.K8s.AgentOperator.Core.Reactions.Monitoring;
+
+public class PodTemplateStatusHandler : INotificationHandler<InjectorMatched>
 {
-    public class PodTemplateStatusHandler : INotificationHandler<InjectorMatched>
+    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
+    private readonly IStateContainer _state;
+    private readonly IResourcePatcher _patcher;
+
+    public PodTemplateStatusHandler(IStateContainer state, IResourcePatcher patcher)
     {
-        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        _state = state;
+        _patcher = patcher;
+    }
 
-        private readonly IStateContainer _state;
-        private readonly IResourcePatcher _patcher;
+    public async Task Handle(InjectorMatched notification, CancellationToken cancellationToken)
+    {
+        var injector = notification.Injector;
+        var target = notification.Target;
 
-        public PodTemplateStatusHandler(IStateContainer state, IResourcePatcher patcher)
+        if (await _state.GetIsDirty(target.Identity, cancellationToken))
         {
-            _state = state;
-            _patcher = patcher;
+            return;
         }
 
-        public async Task Handle(InjectorMatched notification, CancellationToken cancellationToken)
-        {
-            var injector = notification.Injector;
-            var target = notification.Target;
+        var injectionDesired = injector != null;
+        var pods = await _state.GetByType<PodResource>(target.Identity.Namespace, cancellationToken);
 
-            if (await _state.GetIsDirty(target.Identity, cancellationToken))
+        foreach (var (podIdentity, podResource) in GetMatchingPods(pods, target.Resource.Selector, target.Identity.Namespace))
+        {
+            if (await _state.GetIsDirty(podIdentity, cancellationToken))
             {
-                return;
+                continue;
             }
 
-            var injectionDesired = injector != null;
-            var pods = await _state.GetByType<PodResource>(target.Identity.Namespace, cancellationToken);
-
-            foreach (var (podIdentity, podResource) in GetMatchingPods(pods, target.Resource.Selector, target.Identity.Namespace))
+            var desiredStatus = GetDesiredStatus(injectionDesired, podResource.IsInjected);
+            if (podResource.InjectionStatus != desiredStatus)
             {
-                if (await _state.GetIsDirty(podIdentity, cancellationToken))
+                // If status is null, but we want InjectionRemoved, do nothing (since we can't safely remove conditionals we added).
+                if (!(podResource.InjectionStatus == null && desiredStatus.Reason == "InjectionRemoved"))
                 {
-                    continue;
-                }
+                    Logger.Info($"Pod '{podIdentity.Namespace}/{podIdentity.Name}' status was updated '{podResource.InjectionStatus?.Reason ?? "None"}' -> '{desiredStatus.Reason}'.");
 
-                var desiredStatus = GetDesiredStatus(injectionDesired, podResource.IsInjected);
-                if (podResource.InjectionStatus != desiredStatus)
-                {
-                    // If status is null, but we want InjectionRemoved, do nothing (since we can't safely remove conditionals we added).
-                    if (!(podResource.InjectionStatus == null && desiredStatus.Reason == "InjectionRemoved"))
-                    {
-                        Logger.Info($"Pod '{podIdentity.Namespace}/{podIdentity.Name}' status was updated '{podResource.InjectionStatus?.Reason ?? "None"}' -> '{desiredStatus.Reason}'.");
+                    await _state.MarkAsDirty(podIdentity, cancellationToken);
+                    await _patcher.PatchStatus<V1Pod>(
+                        podIdentity.Name,
+                        podIdentity.Namespace,
+                        new GenericCondition
+                        {
+                            LastTransitionTime = DateTime.UtcNow,
+                            Type = PodConditionConstants.InjectionConvergenceConditionType,
+                            Message = desiredStatus.Message,
+                            Reason = desiredStatus.Reason,
+                            Status = desiredStatus.Status
+                        }
+                    );
+                }
+            }
+            else if (desiredStatus.Status == "False")
+            {
+                // No status update needed, but something hasn't converged yet.
+                Logger.Info($"Pod '{podIdentity.Namespace}/{podIdentity.Name}' status is still in '{podResource.InjectionStatus?.Reason ?? "None"}'.");
+            }
+        }
+    }
 
-                        await _state.MarkAsDirty(podIdentity, cancellationToken);
-                        await _patcher.PatchStatus<V1Pod>(
-                            podIdentity.Name,
-                            podIdentity.Namespace,
-                            new GenericCondition
-                            {
-                                LastTransitionTime = DateTime.UtcNow,
-                                Type = PodConditionConstants.InjectionConvergenceConditionType,
-                                Message = desiredStatus.Message,
-                                Reason = desiredStatus.Reason,
-                                Status = desiredStatus.Status
-                            }
-                        );
-                    }
-                }
-                else if (desiredStatus.Status == "False")
-                {
-                    // No status update needed, but something hasn't converged yet.
-                    Logger.Info($"Pod '{podIdentity.Namespace}/{podIdentity.Name}' status is still in '{podResource.InjectionStatus?.Reason ?? "None"}'.");
-                }
+    private static IEnumerable<ResourceIdentityPair<PodResource>> GetMatchingPods(IEnumerable<ResourceIdentityPair<PodResource>> pods,
+                                                                                  PodSelector podSelector,
+                                                                                  string @namespace)
+    {
+        return pods.Where(x => x.Identity.Namespace.Equals(@namespace, StringComparison.OrdinalIgnoreCase)
+                               && PodMatchesSelector(x.Resource, podSelector));
+    }
+
+    private static bool PodMatchesSelector(PodResource podResource, PodSelector selector)
+    {
+        // Hot path, reduce allocations.
+        // ReSharper disable once ForCanBeConvertedToForeach
+        for (var i = 0; i < selector.Expressions.Count; i++)
+        {
+            var (expressionKey, matchOperation, expressionValues) = selector.Expressions[i];
+
+            var labelValue = GetFirstOrDefaultLabel(podResource, expressionKey);
+            var matches = matchOperation switch
+            {
+                LabelMatchOperation.In => ContainsLabel(expressionValues, labelValue),
+                LabelMatchOperation.NotIn => !ContainsLabel(expressionValues, labelValue),
+                LabelMatchOperation.Exists => labelValue != null,
+                LabelMatchOperation.DoesNotExist => labelValue == null,
+                _ => throw new ArgumentOutOfRangeException()
+            };
+
+            if (!matches)
+            {
+                return false;
             }
         }
 
-        private static IEnumerable<ResourceIdentityPair<PodResource>> GetMatchingPods(IEnumerable<ResourceIdentityPair<PodResource>> pods,
-                                                                                      PodSelector podSelector,
-                                                                                      string @namespace)
+        return true;
+    }
+
+    private static string? GetFirstOrDefaultLabel(PodResource podResource, string name)
+    {
+        // This avoids a closure allocation over a FirstOrDefault.
+        // This showed up as a hot memory traffic path.
+        // ReSharper disable once ForCanBeConvertedToForeach
+        for (var i = 0; i < podResource.Labels.Count; i++)
         {
-            return pods.Where(x => x.Identity.Namespace.Equals(@namespace, StringComparison.OrdinalIgnoreCase)
-                                   && PodMatchesSelector(x.Resource, podSelector));
+            var label = podResource.Labels[i];
+            if (string.Equals(label.Name, name, StringComparison.OrdinalIgnoreCase))
+            {
+                return label.Value;
+            }
         }
 
-        private static bool PodMatchesSelector(PodResource podResource, PodSelector selector)
+        return null;
+    }
+
+    private static bool ContainsLabel(IReadOnlyList<string> collection, string? value)
+    {
+        // Another hot path, reduce allocations.
+        // ReSharper disable once ForCanBeConvertedToForeach
+        for (var i = 0; i < collection.Count; i++)
         {
-            // Hot path, reduce allocations.
-            // ReSharper disable once ForCanBeConvertedToForeach
-            for (var i = 0; i < selector.Expressions.Count; i++)
+            var item = collection[i];
+            if (string.Equals(item, value, StringComparison.OrdinalIgnoreCase))
             {
-                var (expressionKey, matchOperation, expressionValues) = selector.Expressions[i];
-
-                var labelValue = GetFirstOrDefaultLabel(podResource, expressionKey);
-                var matches = matchOperation switch
-                {
-                    LabelMatchOperation.In => ContainsLabel(expressionValues, labelValue),
-                    LabelMatchOperation.NotIn => !ContainsLabel(expressionValues, labelValue),
-                    LabelMatchOperation.Exists => labelValue != null,
-                    LabelMatchOperation.DoesNotExist => labelValue == null,
-                    _ => throw new ArgumentOutOfRangeException()
-                };
-
-                if (!matches)
-                {
-                    return false;
-                }
+                return true;
             }
-
-            return true;
         }
 
-        private static string? GetFirstOrDefaultLabel(PodResource podResource, string name)
+        return false;
+    }
+
+    private static PodInjectionConvergenceCondition GetDesiredStatus(bool injectionDesired, bool isPodInjected)
+    {
+        if (injectionDesired)
         {
-            // This avoids a closure allocation over a FirstOrDefault.
-            // This showed up as a hot memory traffic path.
-            // ReSharper disable once ForCanBeConvertedToForeach
-            for (var i = 0; i < podResource.Labels.Count; i++)
-            {
-                var label = podResource.Labels[i];
-                if (string.Equals(label.Name, name, StringComparison.OrdinalIgnoreCase))
-                {
-                    return label.Value;
-                }
-            }
-
-            return null;
-        }
-
-        private static bool ContainsLabel(IReadOnlyList<string> collection, string? value)
-        {
-            // Another hot path, reduce allocations.
-            // ReSharper disable once ForCanBeConvertedToForeach
-            for (var i = 0; i < collection.Count; i++)
-            {
-                var item = collection[i];
-                if (string.Equals(item, value, StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        private static PodInjectionConvergenceCondition GetDesiredStatus(bool injectionDesired, bool isPodInjected)
-        {
-            if (injectionDesired)
-            {
-                if (isPodInjected)
-                {
-                    // We are in a perfect state.
-                    return new PodInjectionConvergenceCondition("True", "InjectionComplete",
-                        "The pod is eligible for agent injection and is currently injected.");
-                }
-
-                return new PodInjectionConvergenceCondition("False", "InjectionPending",
-                    "The pod is eligible for agent injection, but is currently not injected.");
-            }
-
             if (isPodInjected)
             {
-                return new PodInjectionConvergenceCondition("False", "SuperfluousInjection",
-                    "The pod is not eligible for agent injection, but is currently injected.");
+                // We are in a perfect state.
+                return new PodInjectionConvergenceCondition("True", "InjectionComplete",
+                    "The pod is eligible for agent injection and is currently injected.");
             }
 
-            // Pod not injected and not 
-            return new PodInjectionConvergenceCondition("True", "InjectionRemoved",
-                "The pod is not eligible for agent injection and is currently not injected.");
+            return new PodInjectionConvergenceCondition("False", "InjectionPending",
+                "The pod is eligible for agent injection, but is currently not injected.");
         }
+
+        if (isPodInjected)
+        {
+            return new PodInjectionConvergenceCondition("False", "SuperfluousInjection",
+                "The pod is not eligible for agent injection, but is currently injected.");
+        }
+
+        // Pod not injected and not 
+        return new PodInjectionConvergenceCondition("True", "InjectionRemoved",
+            "The pod is not eligible for agent injection and is currently not injected.");
     }
 }

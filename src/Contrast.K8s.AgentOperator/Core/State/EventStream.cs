@@ -8,48 +8,47 @@ using Contrast.K8s.AgentOperator.Options;
 using MediatR;
 using NLog;
 
-namespace Contrast.K8s.AgentOperator.Core.State
+namespace Contrast.K8s.AgentOperator.Core.State;
+
+public interface IEventStream
 {
-    public interface IEventStream
+    ValueTask DispatchDeferred<T>(T request, CancellationToken cancellationToken = default) where T : INotification;
+    ValueTask<INotification> DequeueNext(CancellationToken cancellationToken = default);
+}
+
+public class EventStream : IEventStream
+{
+    private readonly OperatorOptions _operatorOptions;
+    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+    private readonly Channel<INotification> _channel;
+
+    public EventStream(OperatorOptions operatorOptions)
     {
-        ValueTask DispatchDeferred<T>(T request, CancellationToken cancellationToken = default) where T : INotification;
-        ValueTask<INotification> DequeueNext(CancellationToken cancellationToken = default);
+        _operatorOptions = operatorOptions;
+        _channel = Channel.CreateBounded<INotification>(CreateChannelOptions(), ItemDropped);
     }
 
-    public class EventStream : IEventStream
+    public ValueTask DispatchDeferred<T>(T request, CancellationToken cancellationToken = default) where T : INotification
     {
-        private readonly OperatorOptions _operatorOptions;
-        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-        private readonly Channel<INotification> _channel;
+        return _channel.Writer.WriteAsync(request, cancellationToken);
+    }
 
-        public EventStream(OperatorOptions operatorOptions)
-        {
-            _operatorOptions = operatorOptions;
-            _channel = Channel.CreateBounded<INotification>(CreateChannelOptions(), ItemDropped);
-        }
+    public ValueTask<INotification> DequeueNext(CancellationToken cancellationToken = default)
+    {
+        return _channel.Reader.ReadAsync(cancellationToken);
+    }
 
-        public ValueTask DispatchDeferred<T>(T request, CancellationToken cancellationToken = default) where T : INotification
+    private BoundedChannelOptions CreateChannelOptions()
+    {
+        return new BoundedChannelOptions(_operatorOptions.EventQueueSize)
         {
-            return _channel.Writer.WriteAsync(request, cancellationToken);
-        }
+            FullMode = _operatorOptions.EventQueueFullMode
+        };
+    }
 
-        public ValueTask<INotification> DequeueNext(CancellationToken cancellationToken = default)
-        {
-            return _channel.Reader.ReadAsync(cancellationToken);
-        }
-
-        private BoundedChannelOptions CreateChannelOptions()
-        {
-            return new BoundedChannelOptions(_operatorOptions.EventQueueSize)
-            {
-                FullMode = _operatorOptions.EventQueueFullMode
-            };
-        }
-
-        private static void ItemDropped(INotification obj)
-        {
-            Logger.Error($"Unable to process events quick enough, dropped event '{obj.GetType().FullName}' for safety. "
-                         + "Cluster snapshot will be out of date until this operator is restarted.");
-        }
+    private static void ItemDropped(INotification obj)
+    {
+        Logger.Error($"Unable to process events quick enough, dropped event '{obj.GetType().FullName}' for safety. "
+                     + "Cluster snapshot will be out of date until this operator is restarted.");
     }
 }

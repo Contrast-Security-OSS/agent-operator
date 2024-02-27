@@ -7,13 +7,12 @@ using Contrast.K8s.AgentOperator.Entities.Argo;
 using JetBrains.Annotations;
 using KubeOps.Operator.Rbac;
 
-namespace Contrast.K8s.AgentOperator.Controllers
+namespace Contrast.K8s.AgentOperator.Controllers;
+
+[EntityRbac(typeof(V1Alpha1Rollout), Verbs = VerbConstants.ReadAndPatch), UsedImplicitly]
+public class RolloutController : GenericController<V1Alpha1Rollout>
 {
-    [EntityRbac(typeof(V1Alpha1Rollout), Verbs = VerbConstants.ReadAndPatch), UsedImplicitly]
-    public class RolloutController : GenericController<V1Alpha1Rollout>
+    public RolloutController(IEventStream eventStream) : base(eventStream)
     {
-        public RolloutController(IEventStream eventStream) : base(eventStream)
-        {
-        }
     }
 }

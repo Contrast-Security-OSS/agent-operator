@@ -12,96 +12,95 @@ using k8s.Autorest;
 using k8s.Models;
 using NLog;
 
-namespace Contrast.K8s.AgentOperator.Core.Telemetry.Cluster
+namespace Contrast.K8s.AgentOperator.Core.Telemetry.Cluster;
+
+public interface IClusterIdWriter
 {
-    public interface IClusterIdWriter
+    Task<ClusterId?> GetId();
+    Task SetId(ClusterId clusterId);
+    ClusterId? ParseClusterId(V1Secret? clusterIdSecret);
+}
+
+public class ClusterIdWriter : IClusterIdWriter
+{
+    private const string PayloadKey = "payload";
+
+    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
+    private readonly IKubernetesClient _client;
+    private readonly TelemetryOptions _options;
+
+    public ClusterIdWriter(IKubernetesClient client, TelemetryOptions options)
     {
-        Task<ClusterId?> GetId();
-        Task SetId(ClusterId clusterId);
-        ClusterId? ParseClusterId(V1Secret? clusterIdSecret);
+        _client = client;
+        _options = options;
     }
 
-    public class ClusterIdWriter : IClusterIdWriter
+    public async Task<ClusterId?> GetId()
     {
-        private const string PayloadKey = "payload";
-
-        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-
-        private readonly IKubernetesClient _client;
-        private readonly TelemetryOptions _options;
-
-        public ClusterIdWriter(IKubernetesClient client, TelemetryOptions options)
+        try
         {
-            _client = client;
-            _options = options;
+            var clusterIdSecret = await _client.Get<V1Secret>(_options.ClusterIdSecretName, _options.ClusterIdSecretNamespace);
+
+            return ParseClusterId(clusterIdSecret);
+        }
+        catch (HttpOperationException e)
+        {
+            Logger.Warn(e, e.Response.Content);
+        }
+        catch (Exception e)
+        {
+            Logger.Warn(e);
         }
 
-        public async Task<ClusterId?> GetId()
+        return null;
+    }
+
+    public ClusterId? ParseClusterId(V1Secret? clusterIdSecret)
+    {
+        try
         {
-            try
+            if (clusterIdSecret?.Data is { } data
+                && data.TryGetValue(PayloadKey, out var bytes))
             {
-                var clusterIdSecret = await _client.Get<V1Secret>(_options.ClusterIdSecretName, _options.ClusterIdSecretNamespace);
+                var json = Encoding.UTF8.GetString(bytes);
+                var clusterId = KubernetesJson.Deserialize<ClusterId>(json);
 
-                return ParseClusterId(clusterIdSecret);
-            }
-            catch (HttpOperationException e)
-            {
-                Logger.Warn(e, e.Response.Content);
-            }
-            catch (Exception e)
-            {
-                Logger.Warn(e);
-            }
-
-            return null;
-        }
-
-        public ClusterId? ParseClusterId(V1Secret? clusterIdSecret)
-        {
-            try
-            {
-                if (clusterIdSecret?.Data is { } data
-                    && data.TryGetValue(PayloadKey, out var bytes))
+                if (clusterId is { }
+                    && clusterId.Guid != default
+                    && clusterId.CreatedOn != default)
                 {
-                    var json = Encoding.UTF8.GetString(bytes);
-                    var clusterId = KubernetesJson.Deserialize<ClusterId>(json);
-
-                    if (clusterId is { }
-                        && clusterId.Guid != default
-                        && clusterId.CreatedOn != default)
-                    {
-                        return clusterId;
-                    }
+                    return clusterId;
                 }
             }
-            catch (HttpOperationException e)
-            {
-                Logger.Warn(e, e.Response.Content);
-            }
-            catch (Exception e)
-            {
-                Logger.Warn(e);
-            }
-
-            return null;
         }
-
-        public async Task SetId(ClusterId clusterId)
+        catch (HttpOperationException e)
         {
-            var json = KubernetesJson.Serialize(clusterId);
-            var bytes = Encoding.UTF8.GetBytes(json);
-
-            await _client.Save(new V1Secret
-            {
-                Metadata = new V1ObjectMeta(
-                    name: _options.ClusterIdSecretName,
-                    namespaceProperty: _options.ClusterIdSecretNamespace
-                ),
-                Data = new Dictionary<string, byte[]>
-                {
-                    { PayloadKey, bytes }
-                }
-            });
+            Logger.Warn(e, e.Response.Content);
         }
+        catch (Exception e)
+        {
+            Logger.Warn(e);
+        }
+
+        return null;
+    }
+
+    public async Task SetId(ClusterId clusterId)
+    {
+        var json = KubernetesJson.Serialize(clusterId);
+        var bytes = Encoding.UTF8.GetBytes(json);
+
+        await _client.Save(new V1Secret
+        {
+            Metadata = new V1ObjectMeta(
+                name: _options.ClusterIdSecretName,
+                namespaceProperty: _options.ClusterIdSecretNamespace
+            ),
+            Data = new Dictionary<string, byte[]>
+            {
+                { PayloadKey, bytes }
+            }
+        });
     }
 }

@@ -7,27 +7,26 @@ using Contrast.K8s.AgentOperator.Core.Tls;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace Contrast.K8s.AgentOperator.Core
+namespace Contrast.K8s.AgentOperator.Core;
+
+[UsedImplicitly]
+public class ReadinessCheck : IHealthCheck
 {
-    [UsedImplicitly]
-    public class ReadinessCheck : IHealthCheck
+    private readonly IKestrelCertificateSelector _certificateSelector;
+
+    public ReadinessCheck(IKestrelCertificateSelector certificateSelector)
     {
-        private readonly IKestrelCertificateSelector _certificateSelector;
+        _certificateSelector = certificateSelector;
+    }
 
-        public ReadinessCheck(IKestrelCertificateSelector certificateSelector)
+    public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
+    {
+        var result = HealthCheckResult.Healthy();
+        if (!_certificateSelector.HasValidCertificate())
         {
-            _certificateSelector = certificateSelector;
+            result = HealthCheckResult.Unhealthy("No valid certificate has been loaded. If this warning continues to occur, a permission problem may be present.");
         }
 
-        public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
-        {
-            var result = HealthCheckResult.Healthy();
-            if (!_certificateSelector.HasValidCertificate())
-            {
-                result = HealthCheckResult.Unhealthy("No valid certificate has been loaded. If this warning continues to occur, a permission problem may be present.");
-            }
-
-            return Task.FromResult(result);
-        }
+        return Task.FromResult(result);
     }
 }

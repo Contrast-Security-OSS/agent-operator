@@ -3,10 +3,9 @@
 
 using MediatR;
 
-namespace Contrast.K8s.AgentOperator.Core.Events
+namespace Contrast.K8s.AgentOperator.Core.Events;
+
+public record TickChanged : INotification
 {
-    public record TickChanged : INotification
-    {
-        public static TickChanged Instance { get; } = new();
-    }
+    public static TickChanged Instance { get; } = new();
 }

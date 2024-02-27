@@ -6,38 +6,37 @@ using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Events;
 using MediatR;
 
-namespace Contrast.K8s.AgentOperator.Core.Reactions.Merging
+namespace Contrast.K8s.AgentOperator.Core.Reactions.Merging;
+
+public class MergingStateModifiedHandler : INotificationHandler<StateModified>, INotificationHandler<TickChanged>
 {
-    public class MergingStateModifiedHandler : INotificationHandler<StateModified>, INotificationHandler<TickChanged>
+    // This class basically implements head de-bouncing
+    //   to merge many StateModified events into a single DeferredStateModified events.
+
+    private readonly IMediator _mediator;
+    private readonly MergingStateProvider _provider;
+
+    public MergingStateModifiedHandler(IMediator mediator, MergingStateProvider provider)
     {
-        // This class basically implements head de-bouncing
-        //   to merge many StateModified events into a single DeferredStateModified events.
+        _mediator = mediator;
+        _provider = provider;
+    }
 
-        private readonly IMediator _mediator;
-        private readonly MergingStateProvider _provider;
+    public Task Handle(StateModified notification, CancellationToken cancellationToken)
+    {
+        return Handle(false, cancellationToken);
+    }
 
-        public MergingStateModifiedHandler(IMediator mediator, MergingStateProvider provider)
+    public Task Handle(TickChanged notification, CancellationToken cancellationToken)
+    {
+        return Handle(true, cancellationToken);
+    }
+
+    private async Task Handle(bool isTick, CancellationToken cancellationToken = default)
+    {
+        if (await _provider.GetNextEvent(isTick, cancellationToken) is { } @event)
         {
-            _mediator = mediator;
-            _provider = provider;
-        }
-
-        public Task Handle(StateModified notification, CancellationToken cancellationToken)
-        {
-            return Handle(false, cancellationToken);
-        }
-
-        public Task Handle(TickChanged notification, CancellationToken cancellationToken)
-        {
-            return Handle(true, cancellationToken);
-        }
-
-        private async Task Handle(bool isTick, CancellationToken cancellationToken = default)
-        {
-            if (await _provider.GetNextEvent(isTick, cancellationToken) is { } @event)
-            {
-                await _mediator.Publish(@event, cancellationToken);
-            }
+            await _mediator.Publish(@event, cancellationToken);
         }
     }
 }

@@ -13,139 +13,138 @@ using JetBrains.Annotations;
 using Newtonsoft.Json;
 using NLog;
 
-namespace Contrast.K8s.AgentOperator.Core.Telemetry
-{
-    public interface ITelemetryService
-    {
-        Task<TelemetrySubmissionResult> SubmitMeasurement(TelemetryMeasurement measurement,
-                                                          CancellationToken cancellationToken = default);
+namespace Contrast.K8s.AgentOperator.Core.Telemetry;
 
-        Task<TelemetrySubmissionResult> SubmitExceptionReports(IReadOnlyCollection<ExceptionReportWithOccurrences> exceptionReports,
-                                                               CancellationToken cancellationToken = default);
+public interface ITelemetryService
+{
+    Task<TelemetrySubmissionResult> SubmitMeasurement(TelemetryMeasurement measurement,
+                                                      CancellationToken cancellationToken = default);
+
+    Task<TelemetrySubmissionResult> SubmitExceptionReports(IReadOnlyCollection<ExceptionReportWithOccurrences> exceptionReports,
+                                                           CancellationToken cancellationToken = default);
+}
+
+[UsedImplicitly]
+public class TelemetryService : ITelemetryService
+{
+    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
+    private readonly DefaultTagsFactory _tagsFactory;
+    private readonly ITelemetryClient _client;
+    private readonly ExceptionReportMapper _exceptionReportMapper;
+
+    public TelemetryService(DefaultTagsFactory tagsFactory,
+                            ITelemetryClient client,
+                            ExceptionReportMapper exceptionReportMapper)
+    {
+        _tagsFactory = tagsFactory;
+        _client = client;
+        _exceptionReportMapper = exceptionReportMapper;
     }
 
-    [UsedImplicitly]
-    public class TelemetryService : ITelemetryService
+    public async Task<TelemetrySubmissionResult> SubmitMeasurement(TelemetryMeasurement measurement, CancellationToken cancellationToken = default)
     {
-        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        var machineId = _tagsFactory.GetMachineId();
+        var defaultTags = await _tagsFactory.GetDefaultTags();
+        var tags = defaultTags
+                   .Concat(measurement.ExtraTags)
+                   .ToDictionary(x => x.Key, x => x.Value);
+        var path = CreatePath(measurement.Path);
 
-        private readonly DefaultTagsFactory _tagsFactory;
-        private readonly ITelemetryClient _client;
-        private readonly ExceptionReportMapper _exceptionReportMapper;
-
-        public TelemetryService(DefaultTagsFactory tagsFactory,
-                                ITelemetryClient client,
-                                ExceptionReportMapper exceptionReportMapper)
+        var payload = new SubmitMeasurementPayLoad(measurement.Timestamp, machineId)
         {
-            _tagsFactory = tagsFactory;
-            _client = client;
-            _exceptionReportMapper = exceptionReportMapper;
-        }
-
-        public async Task<TelemetrySubmissionResult> SubmitMeasurement(TelemetryMeasurement measurement, CancellationToken cancellationToken = default)
-        {
-            var machineId = _tagsFactory.GetMachineId();
-            var defaultTags = await _tagsFactory.GetDefaultTags();
-            var tags = defaultTags
-                       .Concat(measurement.ExtraTags)
-                       .ToDictionary(x => x.Key, x => x.Value);
-            var path = CreatePath(measurement.Path);
-
-            var payload = new SubmitMeasurementPayLoad(measurement.Timestamp, machineId)
-            {
-                Fields = measurement.Values,
-                Tags = tags
-            };
+            Fields = measurement.Values,
+            Tags = tags
+        };
 
 #if DEBUG
-            Logger.Debug(() => JsonConvert.SerializeObject(payload));
+        Logger.Debug(() => JsonConvert.SerializeObject(payload));
 #endif
 
-            try
+        try
+        {
+            using var result = await _client.SubmitMeasurement(
+                path,
+                new List<SubmitMeasurementPayLoad>
+                {
+                    payload
+                },
+                cancellationToken
+            );
+
+            if (result.IsSuccessStatusCode)
             {
-                using var result = await _client.SubmitMeasurement(
-                    path,
-                    new List<SubmitMeasurementPayLoad>
-                    {
-                        payload
-                    },
-                    cancellationToken
-                );
-
-                if (result.IsSuccessStatusCode)
-                {
-                    return TelemetrySubmissionResult.Success;
-                }
-
-                Logger.Trace($"An error occurred while submitting telemetry, got status code {result.StatusCode}.");
-
-                if ((int)result.StatusCode >= 400
-                    && (int)result.StatusCode < 500
-                    && (int)result.StatusCode != 429)
-                {
-                    // Something is broken on our end.
-                    return TelemetrySubmissionResult.PermanentError;
-                }
-
-                return TelemetrySubmissionResult.TransientError;
+                return TelemetrySubmissionResult.Success;
             }
-            catch (Exception e)
+
+            Logger.Trace($"An error occurred while submitting telemetry, got status code {result.StatusCode}.");
+
+            if ((int)result.StatusCode >= 400
+                && (int)result.StatusCode < 500
+                && (int)result.StatusCode != 429)
             {
-                Logger.Trace(e, "An error occurred while submitting telemetry.");
+                // Something is broken on our end.
                 return TelemetrySubmissionResult.PermanentError;
             }
+
+            return TelemetrySubmissionResult.TransientError;
         }
-
-        public async Task<TelemetrySubmissionResult> SubmitExceptionReports(IReadOnlyCollection<ExceptionReportWithOccurrences> exceptionReports,
-                                                                            CancellationToken cancellationToken = default)
+        catch (Exception e)
         {
-            var machineId = _tagsFactory.GetMachineId();
-            var defaultTags = await _tagsFactory.GetDefaultTags();
-            var path = CreatePath("exception-report");
+            Logger.Trace(e, "An error occurred while submitting telemetry.");
+            return TelemetrySubmissionResult.PermanentError;
+        }
+    }
 
-            var submitReports = exceptionReports
-                                .Select(er => _exceptionReportMapper.CreateFrom(er.Report, defaultTags, machineId, er.Occurrences))
-                                .ToList();
+    public async Task<TelemetrySubmissionResult> SubmitExceptionReports(IReadOnlyCollection<ExceptionReportWithOccurrences> exceptionReports,
+                                                                        CancellationToken cancellationToken = default)
+    {
+        var machineId = _tagsFactory.GetMachineId();
+        var defaultTags = await _tagsFactory.GetDefaultTags();
+        var path = CreatePath("exception-report");
+
+        var submitReports = exceptionReports
+                            .Select(er => _exceptionReportMapper.CreateFrom(er.Report, defaultTags, machineId, er.Occurrences))
+                            .ToList();
 
 #if DEBUG
-            Logger.Debug(() => JsonConvert.SerializeObject(submitReports));
+        Logger.Debug(() => JsonConvert.SerializeObject(submitReports));
 #endif
 
-            try
+        try
+        {
+            using var result = await _client.SubmitExceptionReports(
+                path,
+                submitReports,
+                cancellationToken
+            );
+
+            if (result.IsSuccessStatusCode)
             {
-                using var result = await _client.SubmitExceptionReports(
-                    path,
-                    submitReports,
-                    cancellationToken
-                );
-
-                if (result.IsSuccessStatusCode)
-                {
-                    return TelemetrySubmissionResult.Success;
-                }
-
-                Logger.Trace($"An error occurred while submitting exception reports, got status code {result.StatusCode}.");
-
-                if ((int)result.StatusCode >= 400
-                    && (int)result.StatusCode < 500
-                    && (int)result.StatusCode != 429)
-                {
-                    // Something is broken on our end.
-                    return TelemetrySubmissionResult.PermanentError;
-                }
-
-                return TelemetrySubmissionResult.TransientError;
+                return TelemetrySubmissionResult.Success;
             }
-            catch (Exception e)
+
+            Logger.Trace($"An error occurred while submitting exception reports, got status code {result.StatusCode}.");
+
+            if ((int)result.StatusCode >= 400
+                && (int)result.StatusCode < 500
+                && (int)result.StatusCode != 429)
             {
-                Logger.Trace(e, "An error occurred while submitting exception report.");
+                // Something is broken on our end.
                 return TelemetrySubmissionResult.PermanentError;
             }
-        }
 
-        private string CreatePath(string pathSuffix)
-        {
-            return $"agent-operator/{pathSuffix}";
+            return TelemetrySubmissionResult.TransientError;
         }
+        catch (Exception e)
+        {
+            Logger.Trace(e, "An error occurred while submitting exception report.");
+            return TelemetrySubmissionResult.PermanentError;
+        }
+    }
+
+    private string CreatePath(string pathSuffix)
+    {
+        return $"agent-operator/{pathSuffix}";
     }
 }

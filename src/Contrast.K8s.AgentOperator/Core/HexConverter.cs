@@ -4,28 +4,27 @@
 using System.Text;
 using HexMate;
 
-namespace Contrast.K8s.AgentOperator.Core
+namespace Contrast.K8s.AgentOperator.Core;
+
+public static class HexConverter
 {
-    public static class HexConverter
+    public static string ToLowerHex(byte[] bytes)
     {
-        public static string ToLowerHex(byte[] bytes)
+        return Convert.ToHexString(bytes, HexFormattingOptions.Lowercase);
+    }
+
+    public static string ToLowerHex(byte[] bytes, int length)
+    {
+        // This returns null bytes for some reason...
+        //return Convert.ToHexString(bytes, 0, length, HexFormattingOptions.Lowercase);
+
+        var hashString = new StringBuilder();
+        for (var index = 0; index < bytes.Length && hashString.Length <= length; index++)
         {
-            return Convert.ToHexString(bytes, HexFormattingOptions.Lowercase);
+            var x = bytes[index];
+            hashString.Append($"{x:x2}");
         }
 
-        public static string ToLowerHex(byte[] bytes, int length)
-        {
-            // This returns null bytes for some reason...
-            //return Convert.ToHexString(bytes, 0, length, HexFormattingOptions.Lowercase);
-
-            var hashString = new StringBuilder();
-            for (var index = 0; index < bytes.Length && hashString.Length <= length; index++)
-            {
-                var x = bytes[index];
-                hashString.Append($"{x:x2}");
-            }
-
-            return hashString.ToString();
-        }
+        return hashString.ToString();
     }
 }

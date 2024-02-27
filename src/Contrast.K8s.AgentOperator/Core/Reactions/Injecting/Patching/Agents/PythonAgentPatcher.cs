@@ -6,27 +6,26 @@ using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
 using Contrast.K8s.AgentOperator.Options;
 using k8s.Models;
 
-namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents
+namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents;
+
+public class PythonAgentPatcher : IAgentPatcher
 {
-    public class PythonAgentPatcher : IAgentPatcher
+    private readonly InjectorOptions _injectorOptions;
+    public AgentInjectionType Type => AgentInjectionType.Python;
+
+    public PythonAgentPatcher(InjectorOptions injectorOptions)
     {
-        private readonly InjectorOptions _injectorOptions;
-        public AgentInjectionType Type => AgentInjectionType.Python;
+        _injectorOptions = injectorOptions;
+    }
 
-        public PythonAgentPatcher(InjectorOptions injectorOptions)
+    public IEnumerable<V1EnvVar> GenerateEnvVars(PatchingContext context)
+    {
+        yield return new V1EnvVar("PYTHONPATH", $"{context.AgentMountPath}:{context.AgentMountPath}/contrast/loader");
+        if (_injectorOptions.EnablePythonRewriter)
         {
-            _injectorOptions = injectorOptions;
+            yield return new V1EnvVar("CONTRAST__AGENT__PYTHON__REWRITE", "true");
         }
-
-        public IEnumerable<V1EnvVar> GenerateEnvVars(PatchingContext context)
-        {
-            yield return new V1EnvVar("PYTHONPATH", $"{context.AgentMountPath}:{context.AgentMountPath}/contrast/loader");
-            if (_injectorOptions.EnablePythonRewriter)
-            {
-                yield return new V1EnvVar("CONTRAST__AGENT__PYTHON__REWRITE", "true");
-            }
-            yield return new V1EnvVar("__CONTRAST_USING_RUNNER", "true");
-            yield return new V1EnvVar("CONTRAST__AGENT__LOGGER__PATH", $"{context.WritableMountPath}/logs/contrast_agent.log");
-        }
+        yield return new V1EnvVar("__CONTRAST_USING_RUNNER", "true");
+        yield return new V1EnvVar("CONTRAST__AGENT__LOGGER__PATH", $"{context.WritableMountPath}/logs/contrast_agent.log");
     }
 }

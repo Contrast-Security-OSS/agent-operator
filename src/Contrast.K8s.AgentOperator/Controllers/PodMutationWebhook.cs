@@ -10,27 +10,26 @@ using KubeOps.Operator.Rbac;
 using KubeOps.Operator.Webhooks;
 using MediatR;
 
-namespace Contrast.K8s.AgentOperator.Controllers
+namespace Contrast.K8s.AgentOperator.Controllers;
+
+[EntityRbac(typeof(V1Pod), Verbs = VerbConstants.ReadAndPatch), UsedImplicitly]
+public class PodMutationWebhook : IMutationWebhook<V1Pod>
 {
-    [EntityRbac(typeof(V1Pod), Verbs = VerbConstants.ReadAndPatch), UsedImplicitly]
-    public class PodMutationWebhook : IMutationWebhook<V1Pod>
+    private readonly IMediator _mediator;
+
+    public AdmissionOperations Operations => AdmissionOperations.Create;
+
+    public PodMutationWebhook(IMediator mediator)
     {
-        private readonly IMediator _mediator;
+        _mediator = mediator;
+    }
 
-        public AdmissionOperations Operations => AdmissionOperations.Create;
+    public async Task<MutationResult> CreateAsync(V1Pod newEntity, bool dryRun)
+    {
+        var result = await _mediator.Send(new EntityCreating<V1Pod>(newEntity));
 
-        public PodMutationWebhook(IMediator mediator)
-        {
-            _mediator = mediator;
-        }
-
-        public async Task<MutationResult> CreateAsync(V1Pod newEntity, bool dryRun)
-        {
-            var result = await _mediator.Send(new EntityCreating<V1Pod>(newEntity));
-
-            return result is NeedsChangeEntityCreatingMutationResult<V1Pod> mutationResult
-                ? MutationResult.Modified(mutationResult.Entity)
-                : MutationResult.NoChanges();
-        }
+        return result is NeedsChangeEntityCreatingMutationResult<V1Pod> mutationResult
+            ? MutationResult.Modified(mutationResult.Entity)
+            : MutationResult.NoChanges();
     }
 }

@@ -3,13 +3,12 @@
 
 using System;
 
-namespace Contrast.K8s.AgentOperator.Core.Telemetry.Cluster
+namespace Contrast.K8s.AgentOperator.Core.Telemetry.Cluster;
+
+public record ClusterId(Guid Guid, DateTimeOffset CreatedOn)
 {
-    public record ClusterId(Guid Guid, DateTimeOffset CreatedOn)
+    public static ClusterId NewId()
     {
-        public static ClusterId NewId()
-        {
-            return new ClusterId(Guid.NewGuid(), DateTimeOffset.Now);
-        }
+        return new ClusterId(Guid.NewGuid(), DateTimeOffset.Now);
     }
 }

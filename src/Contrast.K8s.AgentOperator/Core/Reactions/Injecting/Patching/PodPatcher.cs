@@ -12,311 +12,310 @@ using Contrast.K8s.AgentOperator.Options;
 using k8s.Models;
 using NLog;
 
-namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching
+namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching;
+
+public interface IPodPatcher
 {
-    public interface IPodPatcher
+    ValueTask Patch(PatchingContext context, V1Pod pod, CancellationToken cancellationToken = default);
+}
+
+public class PodPatcher : IPodPatcher
+{
+    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
+    private readonly Func<IEnumerable<IAgentPatcher>> _patchersFactory;
+    private readonly IGlobMatcher _globMatcher;
+    private readonly IClusterIdState _clusterIdState;
+    private readonly OperatorOptions _operatorOptions;
+
+    public PodPatcher(Func<IEnumerable<IAgentPatcher>> patchersFactory, IGlobMatcher globMatcher, IClusterIdState clusterIdState, OperatorOptions operatorOptions)
     {
-        ValueTask Patch(PatchingContext context, V1Pod pod, CancellationToken cancellationToken = default);
+        _patchersFactory = patchersFactory;
+        _globMatcher = globMatcher;
+        _clusterIdState = clusterIdState;
+        _operatorOptions = operatorOptions;
     }
 
-    public class PodPatcher : IPodPatcher
+    public ValueTask Patch(PatchingContext context, V1Pod pod, CancellationToken cancellationToken = default)
     {
-        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        var patchers = _patchersFactory.Invoke();
+        var patcher = patchers.FirstOrDefault(x => x.Type == context.Injector.Type);
 
-        private readonly Func<IEnumerable<IAgentPatcher>> _patchersFactory;
-        private readonly IGlobMatcher _globMatcher;
-        private readonly IClusterIdState _clusterIdState;
-        private readonly OperatorOptions _operatorOptions;
-
-        public PodPatcher(Func<IEnumerable<IAgentPatcher>> patchersFactory, IGlobMatcher globMatcher, IClusterIdState clusterIdState, OperatorOptions operatorOptions)
+        if (patcher is { Deprecated: true })
         {
-            _patchersFactory = patchersFactory;
-            _globMatcher = globMatcher;
-            _clusterIdState = clusterIdState;
-            _operatorOptions = operatorOptions;
+            Logger.Warn($"Using deprecated agent injector '{patcher?.Type.ToString() ?? "Default"}'.");
         }
 
-        public ValueTask Patch(PatchingContext context, V1Pod pod, CancellationToken cancellationToken = default)
+        if (patcher?.GetOverrideAgentMountPath() is { } agentMountPathOverride)
         {
-            var patchers = _patchersFactory.Invoke();
-            var patcher = patchers.FirstOrDefault(x => x.Type == context.Injector.Type);
-
-            if (patcher is { Deprecated: true })
+            context = context with
             {
-                Logger.Warn($"Using deprecated agent injector '{patcher?.Type.ToString() ?? "Default"}'.");
-            }
-
-            if (patcher?.GetOverrideAgentMountPath() is { } agentMountPathOverride)
-            {
-                context = context with
-                {
-                    AgentMountPath = agentMountPathOverride
-                };
-            }
-
-            Logger.Trace($"Selected agent injector '{patcher?.Type.ToString() ?? "Default"}'.");
-
-            ApplyPatches(context, pod, patcher);
-
-            return ValueTask.CompletedTask;
+                AgentMountPath = agentMountPathOverride
+            };
         }
 
-        private void ApplyPatches(PatchingContext context, V1Pod pod, IAgentPatcher? agentPatcher)
+        Logger.Trace($"Selected agent injector '{patcher?.Type.ToString() ?? "Default"}'.");
+
+        ApplyPatches(context, pod, patcher);
+
+        return ValueTask.CompletedTask;
+    }
+
+    private void ApplyPatches(PatchingContext context, V1Pod pod, IAgentPatcher? agentPatcher)
+    {
+        // Pod annotations.
+        pod.SetAnnotation(InjectionConstants.IsInjectedAttributeName, true.ToString());
+        pod.SetAnnotation(InjectionConstants.InjectedOnAttributeName, DateTimeOffset.UtcNow.ToString("O"));
+        pod.SetAnnotation(InjectionConstants.InjectedByAttributeName, $"Contrast.K8s.AgentOperator/{OperatorVersion.Version}");
+        pod.SetAnnotation(InjectionConstants.InjectorTypeAttributeName, context.Injector.Type.ToString());
+
+        // Volumes.
+        pod.Spec.Volumes ??= new List<V1Volume>();
+        var agentVolume = new V1Volume("contrast-agent")
         {
-            // Pod annotations.
-            pod.SetAnnotation(InjectionConstants.IsInjectedAttributeName, true.ToString());
-            pod.SetAnnotation(InjectionConstants.InjectedOnAttributeName, DateTimeOffset.UtcNow.ToString("O"));
-            pod.SetAnnotation(InjectionConstants.InjectedByAttributeName, $"Contrast.K8s.AgentOperator/{OperatorVersion.Version}");
-            pod.SetAnnotation(InjectionConstants.InjectorTypeAttributeName, context.Injector.Type.ToString());
+            EmptyDir = new V1EmptyDirVolumeSource()
+        };
+        pod.Spec.Volumes.AddOrUpdate(agentVolume.Name, agentVolume);
 
-            // Volumes.
-            pod.Spec.Volumes ??= new List<V1Volume>();
-            var agentVolume = new V1Volume("contrast-agent")
+        var writableVolume = new V1Volume("contrast-writable")
+        {
+            EmptyDir = new V1EmptyDirVolumeSource()
+        };
+        pod.Spec.Volumes.AddOrUpdate(writableVolume.Name, writableVolume);
+
+        // Init Container.
+        {
+            var podSecurityContext = (V1PodSecurityContext?) pod.Spec.SecurityContext;
+            var containerSecurityContext = pod.Spec.Containers.FirstOrDefault()?.SecurityContext;
+
+            var initContainer = CreateInitContainer(context, agentVolume, writableVolume, podSecurityContext, containerSecurityContext);
+            pod.Spec.InitContainers ??= new List<V1Container>();
+            pod.Spec.InitContainers.AddOrUpdate(initContainer.Name, initContainer);
+        }
+
+        // Pull secrets.
+        if (context.Injector.ImagePullSecret is { } pullSecret)
+        {
+            pod.Spec.ImagePullSecrets ??= new List<V1LocalObjectReference>();
+            pod.Spec.ImagePullSecrets.AddOrUpdate(
+                x => string.Equals(x.Name, pullSecret.Name, StringComparison.Ordinal),
+                new V1LocalObjectReference(pullSecret.Name)
+            );
+        }
+
+        // Normal Containers.
+        foreach (var container in GetMatchingContainers(context, pod))
+        {
+            container.VolumeMounts ??= new List<V1VolumeMount>();
+
+            var agentVolumeMount = new V1VolumeMount(context.AgentMountPath, agentVolume.Name, readOnlyProperty: true);
+            container.VolumeMounts.AddOrUpdate(agentVolumeMount.Name, agentVolumeMount);
+
+            var writableVolumeMount = new V1VolumeMount(context.WritableMountPath, writableVolume.Name, readOnlyProperty: false);
+            container.VolumeMounts.AddOrUpdate(writableVolumeMount.Name, writableVolumeMount);
+
+            var genericPatches = GenerateEnvVars(context);
+            var agentPatches = agentPatcher?.GenerateEnvVars(context) ?? Array.Empty<V1EnvVar>();
+
+            foreach (var envVar in genericPatches.Concat(agentPatches))
             {
-                EmptyDir = new V1EmptyDirVolumeSource()
-            };
-            pod.Spec.Volumes.AddOrUpdate(agentVolume.Name, agentVolume);
+                container.Env ??= new List<V1EnvVar>();
 
-            var writableVolume = new V1Volume("contrast-writable")
-            {
-                EmptyDir = new V1EmptyDirVolumeSource()
-            };
-            pod.Spec.Volumes.AddOrUpdate(writableVolume.Name, writableVolume);
-
-            // Init Container.
-            {
-                var podSecurityContext = (V1PodSecurityContext?) pod.Spec.SecurityContext;
-                var containerSecurityContext = pod.Spec.Containers.FirstOrDefault()?.SecurityContext;
-
-                var initContainer = CreateInitContainer(context, agentVolume, writableVolume, podSecurityContext, containerSecurityContext);
-                pod.Spec.InitContainers ??= new List<V1Container>();
-                pod.Spec.InitContainers.AddOrUpdate(initContainer.Name, initContainer);
-            }
-
-            // Pull secrets.
-            if (context.Injector.ImagePullSecret is { } pullSecret)
-            {
-                pod.Spec.ImagePullSecrets ??= new List<V1LocalObjectReference>();
-                pod.Spec.ImagePullSecrets.AddOrUpdate(
-                    x => string.Equals(x.Name, pullSecret.Name, StringComparison.Ordinal),
-                    new V1LocalObjectReference(pullSecret.Name)
-                );
-            }
-
-            // Normal Containers.
-            foreach (var container in GetMatchingContainers(context, pod))
-            {
-                container.VolumeMounts ??= new List<V1VolumeMount>();
-
-                var agentVolumeMount = new V1VolumeMount(context.AgentMountPath, agentVolume.Name, readOnlyProperty: true);
-                container.VolumeMounts.AddOrUpdate(agentVolumeMount.Name, agentVolumeMount);
-
-                var writableVolumeMount = new V1VolumeMount(context.WritableMountPath, writableVolume.Name, readOnlyProperty: false);
-                container.VolumeMounts.AddOrUpdate(writableVolumeMount.Name, writableVolumeMount);
-
-                var genericPatches = GenerateEnvVars(context);
-                var agentPatches = agentPatcher?.GenerateEnvVars(context) ?? Array.Empty<V1EnvVar>();
-
-                foreach (var envVar in genericPatches.Concat(agentPatches))
+                // Don't override existing env vars.
+                if (!container.Env.Any(x => string.Equals(x.Name, envVar.Name, StringComparison.OrdinalIgnoreCase)))
                 {
-                    container.Env ??= new List<V1EnvVar>();
-
-                    // Don't override existing env vars.
-                    if (!container.Env.Any(x => string.Equals(x.Name, envVar.Name, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        container.Env.Add(envVar);
-                    }
+                    container.Env.Add(envVar);
                 }
-
-                agentPatcher?.PatchContainer(container, context);
             }
+
+            agentPatcher?.PatchContainer(container, context);
+        }
+    }
+
+    private V1Container CreateInitContainer(PatchingContext context,
+                                            V1Volume agentVolume,
+                                            V1Volume writableVolume,
+                                            V1PodSecurityContext? podSecurityContext,
+                                            V1SecurityContext? containerSecurityContext)
+    {
+        const string initAgentMountPath = "/contrast-init/agent";
+        const string initWritableMountPath = "/contrast-init/data";
+
+        var securityContextTainted = context.Configuration?.InitContainerOverrides?.SecurityContext != null;
+        var securityContent = context.Configuration?.InitContainerOverrides?.SecurityContext
+                              ?? new V1SecurityContext();
+
+        // https://kubernetes.io/docs/concepts/security/pod-security-standards/
+        // We cannot safely enable this as this will break existing operator deployments or injections with older agents.
+        // In the future we will default to this being enabled, but for now (at least during the beta) this needs to default to false.
+        // (we need the container image to denote the user, not us, or we might break OpenShift)
+        // It appears OpenShift is okay with this being true, if the container image sets a user. This differs from upstream K8s.
+        securityContent.RunAsNonRoot ??= _operatorOptions.RunInitContainersAsNonRoot;
+        securityContent.AllowPrivilegeEscalation ??= false;
+        securityContent.Privileged ??= false;
+        securityContent.ReadOnlyRootFilesystem ??= true;
+
+        // OpenShift's default restrictive policy disallows setting the SeccompProfile.Type to anything other than null.
+        // This differs from upstream K8s and friends.
+        // See: https://github.com/openshift/cluster-kube-apiserver-operator/issues/1325
+        // This is needed for K8s's restrictive policy 1.23+.
+        if (!_operatorOptions.SuppressSeccompProfile)
+        {
+            securityContent.SeccompProfile ??= new V1SeccompProfile();
+            securityContent.SeccompProfile.Type ??= "RuntimeDefault";
         }
 
-        private V1Container CreateInitContainer(PatchingContext context,
-                                                V1Volume agentVolume,
-                                                V1Volume writableVolume,
-                                                V1PodSecurityContext? podSecurityContext,
-                                                V1SecurityContext? containerSecurityContext)
+        // In OpenShift, there's a race condition around operator mutating webhooks and the build-in mutating webhook that applies security policies.
+        // If a mutating webhook adds a sidecar/init container, security policies are not re-applied.
+        // This is continuously brought up as an issue since at least 2019... since reinvocationPolicy was added to upstream.
+        if ((containerSecurityContext?.RunAsUser ?? podSecurityContext?.RunAsUser) is {} runAsUser)
         {
-            const string initAgentMountPath = "/contrast-init/agent";
-            const string initWritableMountPath = "/contrast-init/data";
-
-            var securityContextTainted = context.Configuration?.InitContainerOverrides?.SecurityContext != null;
-            var securityContent = context.Configuration?.InitContainerOverrides?.SecurityContext
-                                  ?? new V1SecurityContext();
-
-            // https://kubernetes.io/docs/concepts/security/pod-security-standards/
-            // We cannot safely enable this as this will break existing operator deployments or injections with older agents.
-            // In the future we will default to this being enabled, but for now (at least during the beta) this needs to default to false.
-            // (we need the container image to denote the user, not us, or we might break OpenShift)
-            // It appears OpenShift is okay with this being true, if the container image sets a user. This differs from upstream K8s.
-            securityContent.RunAsNonRoot ??= _operatorOptions.RunInitContainersAsNonRoot;
-            securityContent.AllowPrivilegeEscalation ??= false;
-            securityContent.Privileged ??= false;
-            securityContent.ReadOnlyRootFilesystem ??= true;
-
-            // OpenShift's default restrictive policy disallows setting the SeccompProfile.Type to anything other than null.
-            // This differs from upstream K8s and friends.
-            // See: https://github.com/openshift/cluster-kube-apiserver-operator/issues/1325
-            // This is needed for K8s's restrictive policy 1.23+.
-            if (!_operatorOptions.SuppressSeccompProfile)
-            {
-                securityContent.SeccompProfile ??= new V1SeccompProfile();
-                securityContent.SeccompProfile.Type ??= "RuntimeDefault";
-            }
-
-            // In OpenShift, there's a race condition around operator mutating webhooks and the build-in mutating webhook that applies security policies.
-            // If a mutating webhook adds a sidecar/init container, security policies are not re-applied.
-            // This is continuously brought up as an issue since at least 2019... since reinvocationPolicy was added to upstream.
-            if ((containerSecurityContext?.RunAsUser ?? podSecurityContext?.RunAsUser) is {} runAsUser)
-            {
-                // Run as the same user as the prime container.
-                securityContent.RunAsUser ??= runAsUser;
-            }
-
-            if ((containerSecurityContext?.RunAsGroup ?? podSecurityContext?.RunAsGroup) is {} runAsGroup)
-            {
-                // Run as the same group as the prime container.
-                securityContent.RunAsGroup ??= runAsGroup;
-            }
-
-            // OpenShift default policy as of 4.10 requires explicit drops, even if "ALL" is specified.
-            // So merge any drops added by policy (or user).
-            securityContent.Capabilities ??= new V1Capabilities();
-            securityContent.Capabilities.Drop ??= MergeDropCapabilities(containerSecurityContext);
-
-            // https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-requests-and-limits-of-pod-and-container
-            const string cpuLimit = "100m";
-            const string memoryLimit = "64Mi";
-
-            var resources = new V1ResourceRequirements();
-
-            resources.Requests ??= new Dictionary<string, ResourceQuantity>(StringComparer.Ordinal);
-            resources.Requests.TryAdd("cpu", new ResourceQuantity(cpuLimit));
-            resources.Requests.TryAdd("memory", new ResourceQuantity(memoryLimit));
-
-            resources.Limits ??= new Dictionary<string, ResourceQuantity>(StringComparer.Ordinal);
-            resources.Limits.TryAdd("cpu", new ResourceQuantity(cpuLimit));
-            resources.Limits.TryAdd("memory", new ResourceQuantity(memoryLimit));
-
-            var initContainer = new V1Container("contrast-init")
-            {
-                Image = context.Injector.Image.GetFullyQualifiedContainerImageName(),
-                VolumeMounts = new List<V1VolumeMount>
-                {
-                    new(initAgentMountPath, agentVolume.Name),
-                    new(initWritableMountPath, writableVolume.Name),
-                },
-                ImagePullPolicy = context.Injector.ImagePullPolicy,
-                Env = new List<V1EnvVar>
-                {
-                    // This isn't used in modern agent images, but is still used in older images.
-                    new("CONTRAST_MOUNT_PATH", initAgentMountPath),
-                    new("CONTRAST_MOUNT_AGENT_PATH", initAgentMountPath),
-                    new("CONTRAST_MOUNT_WRITABLE_PATH", initWritableMountPath),
-                },
-                Resources = resources,
-                SecurityContext = securityContent
-            };
-
-            // This is for our CS team to aid in debugging, but also for our functional tests.
-            if (securityContextTainted)
-            {
-                initContainer.Env.Add(new V1EnvVar("CONTRAST_DEBUGGING_SECURITY_CONTEXT_TAINTED", true.ToString()));
-            }
-
-            return initContainer;
+            // Run as the same user as the prime container.
+            securityContent.RunAsUser ??= runAsUser;
         }
 
-        private static IList<string> MergeDropCapabilities(V1SecurityContext? containerSecurityContext)
+        if ((containerSecurityContext?.RunAsGroup ?? podSecurityContext?.RunAsGroup) is {} runAsGroup)
         {
-            const string defaultDrop = "ALL"; // K8s docs sometimes say 'all' is valid, but the security policy in v1.25 requires 'ALL'.
+            // Run as the same group as the prime container.
+            securityContent.RunAsGroup ??= runAsGroup;
+        }
 
-            if (containerSecurityContext?.Capabilities?.Drop is { Count: > 0 } existingCapabilitiesDrop)
+        // OpenShift default policy as of 4.10 requires explicit drops, even if "ALL" is specified.
+        // So merge any drops added by policy (or user).
+        securityContent.Capabilities ??= new V1Capabilities();
+        securityContent.Capabilities.Drop ??= MergeDropCapabilities(containerSecurityContext);
+
+        // https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-requests-and-limits-of-pod-and-container
+        const string cpuLimit = "100m";
+        const string memoryLimit = "64Mi";
+
+        var resources = new V1ResourceRequirements();
+
+        resources.Requests ??= new Dictionary<string, ResourceQuantity>(StringComparer.Ordinal);
+        resources.Requests.TryAdd("cpu", new ResourceQuantity(cpuLimit));
+        resources.Requests.TryAdd("memory", new ResourceQuantity(memoryLimit));
+
+        resources.Limits ??= new Dictionary<string, ResourceQuantity>(StringComparer.Ordinal);
+        resources.Limits.TryAdd("cpu", new ResourceQuantity(cpuLimit));
+        resources.Limits.TryAdd("memory", new ResourceQuantity(memoryLimit));
+
+        var initContainer = new V1Container("contrast-init")
+        {
+            Image = context.Injector.Image.GetFullyQualifiedContainerImageName(),
+            VolumeMounts = new List<V1VolumeMount>
             {
-                return new HashSet<string>(existingCapabilitiesDrop, StringComparer.OrdinalIgnoreCase)
-                {
-                    defaultDrop
-                }.ToList();
-            }
+                new(initAgentMountPath, agentVolume.Name),
+                new(initWritableMountPath, writableVolume.Name),
+            },
+            ImagePullPolicy = context.Injector.ImagePullPolicy,
+            Env = new List<V1EnvVar>
+            {
+                // This isn't used in modern agent images, but is still used in older images.
+                new("CONTRAST_MOUNT_PATH", initAgentMountPath),
+                new("CONTRAST_MOUNT_AGENT_PATH", initAgentMountPath),
+                new("CONTRAST_MOUNT_WRITABLE_PATH", initWritableMountPath),
+            },
+            Resources = resources,
+            SecurityContext = securityContent
+        };
 
-            return new List<string>
+        // This is for our CS team to aid in debugging, but also for our functional tests.
+        if (securityContextTainted)
+        {
+            initContainer.Env.Add(new V1EnvVar("CONTRAST_DEBUGGING_SECURITY_CONTEXT_TAINTED", true.ToString()));
+        }
+
+        return initContainer;
+    }
+
+    private static IList<string> MergeDropCapabilities(V1SecurityContext? containerSecurityContext)
+    {
+        const string defaultDrop = "ALL"; // K8s docs sometimes say 'all' is valid, but the security policy in v1.25 requires 'ALL'.
+
+        if (containerSecurityContext?.Capabilities?.Drop is { Count: > 0 } existingCapabilitiesDrop)
+        {
+            return new HashSet<string>(existingCapabilitiesDrop, StringComparer.OrdinalIgnoreCase)
             {
                 defaultDrop
-            };
+            }.ToList();
         }
 
-        private IEnumerable<V1Container> GetMatchingContainers(PatchingContext context, V1Pod pod)
+        return new List<string>
         {
-            var imagesPatterns = context.Injector.Selector.ImagesPatterns;
-            foreach (var container in pod.Spec.Containers)
+            defaultDrop
+        };
+    }
+
+    private IEnumerable<V1Container> GetMatchingContainers(PatchingContext context, V1Pod pod)
+    {
+        var imagesPatterns = context.Injector.Selector.ImagesPatterns;
+        foreach (var container in pod.Spec.Containers)
+        {
+            if (!imagesPatterns.Any()
+                || imagesPatterns.Any(p => _globMatcher.Matches(p, container.Image)))
             {
-                if (!imagesPatterns.Any()
-                    || imagesPatterns.Any(p => _globMatcher.Matches(p, container.Image)))
+                yield return container;
+            }
+        }
+    }
+
+    private IEnumerable<V1EnvVar> GenerateEnvVars(PatchingContext context)
+    {
+        var (workloadName, workloadNamespace, _, connection, configuration, agentMountPath, writableMountPath) = context;
+
+        // This isn't used in modern agent images, but is still used in older images.
+        yield return new V1EnvVar("CONTRAST_MOUNT_PATH", agentMountPath);
+        yield return new V1EnvVar("CONTRAST_MOUNT_AGENT_PATH", agentMountPath);
+        yield return new V1EnvVar("CONTRAST_MOUNT_WRITABLE_PATH", writableMountPath);
+
+        yield return new V1EnvVar("CONTRAST__API__URL", connection.TeamServerUri);
+        yield return new V1EnvVar(
+            "CONTRAST__API__API_KEY",
+            valueFrom: new V1EnvVarSource(
+                secretKeyRef: new V1SecretKeySelector(connection.ApiKey.Key, connection.ApiKey.Name)
+            )
+        );
+        yield return new V1EnvVar(
+            "CONTRAST__API__SERVICE_KEY",
+            valueFrom: new V1EnvVarSource(
+                secretKeyRef: new V1SecretKeySelector(connection.ServiceKey.Key, connection.ServiceKey.Name)
+            )
+        );
+        yield return new V1EnvVar(
+            "CONTRAST__API__USER_NAME",
+            valueFrom: new V1EnvVarSource(
+                secretKeyRef: new V1SecretKeySelector(connection.UserName.Key, connection.UserName.Name)
+            )
+        );
+
+        if (configuration?.YamlKeys is { } yamlKeys)
+        {
+            foreach (var (key, value) in yamlKeys)
+            {
+                if (!string.IsNullOrWhiteSpace(key)
+                    && !string.IsNullOrWhiteSpace(value))
                 {
-                    yield return container;
+                    yield return new V1EnvVar($"CONTRAST__{key.Replace(".", "__").ToUpperInvariant()}", value);
                 }
             }
         }
 
-        private IEnumerable<V1EnvVar> GenerateEnvVars(PatchingContext context)
+        // Order does matter here, make sure these next two are after YamlKeys.
+        if (configuration?.SuppressDefaultServerName != true
+            && !string.IsNullOrWhiteSpace(workloadNamespace))
         {
-            var (workloadName, workloadNamespace, _, connection, configuration, agentMountPath, writableMountPath) = context;
+            yield return new V1EnvVar("CONTRAST__SERVER__NAME", $"kubernetes-{workloadNamespace}");
+        }
 
-            // This isn't used in modern agent images, but is still used in older images.
-            yield return new V1EnvVar("CONTRAST_MOUNT_PATH", agentMountPath);
-            yield return new V1EnvVar("CONTRAST_MOUNT_AGENT_PATH", agentMountPath);
-            yield return new V1EnvVar("CONTRAST_MOUNT_WRITABLE_PATH", writableMountPath);
+        if (configuration?.SuppressDefaultApplicationName != true
+            && !string.IsNullOrWhiteSpace(workloadName))
+        {
+            yield return new V1EnvVar("CONTRAST__APPLICATION__NAME", workloadName);
+        }
 
-            yield return new V1EnvVar("CONTRAST__API__URL", connection.TeamServerUri);
-            yield return new V1EnvVar(
-                "CONTRAST__API__API_KEY",
-                valueFrom: new V1EnvVarSource(
-                    secretKeyRef: new V1SecretKeySelector(connection.ApiKey.Key, connection.ApiKey.Name)
-                )
-            );
-            yield return new V1EnvVar(
-                "CONTRAST__API__SERVICE_KEY",
-                valueFrom: new V1EnvVarSource(
-                    secretKeyRef: new V1SecretKeySelector(connection.ServiceKey.Key, connection.ServiceKey.Name)
-                )
-            );
-            yield return new V1EnvVar(
-                "CONTRAST__API__USER_NAME",
-                valueFrom: new V1EnvVarSource(
-                    secretKeyRef: new V1SecretKeySelector(connection.UserName.Key, connection.UserName.Name)
-                )
-            );
-
-            if (configuration?.YamlKeys is { } yamlKeys)
-            {
-                foreach (var (key, value) in yamlKeys)
-                {
-                    if (!string.IsNullOrWhiteSpace(key)
-                        && !string.IsNullOrWhiteSpace(value))
-                    {
-                        yield return new V1EnvVar($"CONTRAST__{key.Replace(".", "__").ToUpperInvariant()}", value);
-                    }
-                }
-            }
-
-            // Order does matter here, make sure these next two are after YamlKeys.
-            if (configuration?.SuppressDefaultServerName != true
-                && !string.IsNullOrWhiteSpace(workloadNamespace))
-            {
-                yield return new V1EnvVar("CONTRAST__SERVER__NAME", $"kubernetes-{workloadNamespace}");
-            }
-
-            if (configuration?.SuppressDefaultApplicationName != true
-                && !string.IsNullOrWhiteSpace(workloadName))
-            {
-                yield return new V1EnvVar("CONTRAST__APPLICATION__NAME", workloadName);
-            }
-
-            if (_clusterIdState.GetClusterId() is { } clusterId)
-            {
-                yield return new V1EnvVar("CONTRAST_CLUSTER_ID", clusterId.Guid.ToString("D"));
-            }
+        if (_clusterIdState.GetClusterId() is { } clusterId)
+        {
+            yield return new V1EnvVar("CONTRAST_CLUSTER_ID", clusterId.Guid.ToString("D"));
         }
     }
 }

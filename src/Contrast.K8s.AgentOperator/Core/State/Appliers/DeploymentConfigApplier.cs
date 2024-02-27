@@ -12,43 +12,42 @@ using JetBrains.Annotations;
 using k8s.Models;
 using MediatR;
 
-namespace Contrast.K8s.AgentOperator.Core.State.Appliers
+namespace Contrast.K8s.AgentOperator.Core.State.Appliers;
+
+[UsedImplicitly]
+public class DeploymentConfigApplier : BaseApplier<V1DeploymentConfig, DeploymentConfigResource>
 {
-    [UsedImplicitly]
-    public class DeploymentConfigApplier : BaseApplier<V1DeploymentConfig, DeploymentConfigResource>
+    public DeploymentConfigApplier(IStateContainer stateContainer, IMediator mediator) : base(stateContainer, mediator)
     {
-        public DeploymentConfigApplier(IStateContainer stateContainer, IMediator mediator) : base(stateContainer, mediator)
-        {
-        }
+    }
 
-        public override ValueTask<DeploymentConfigResource> CreateFrom(V1DeploymentConfig entity, CancellationToken cancellationToken = default)
-        {
-            var resource = new DeploymentConfigResource(
-                entity.Uid(),
-                entity.Metadata.GetLabels(),
-                entity.Spec.Template.GetPod(),
-                GetSelector(entity)
-            );
+    public override ValueTask<DeploymentConfigResource> CreateFrom(V1DeploymentConfig entity, CancellationToken cancellationToken = default)
+    {
+        var resource = new DeploymentConfigResource(
+            entity.Uid(),
+            entity.Metadata.GetLabels(),
+            entity.Spec.Template.GetPod(),
+            GetSelector(entity)
+        );
 
-            return ValueTask.FromResult(resource);
-        }
+        return ValueTask.FromResult(resource);
+    }
 
-        private static PodSelector GetSelector(V1DeploymentConfig entity)
+    private static PodSelector GetSelector(V1DeploymentConfig entity)
+    {
+        var expressions = new List<PodMatchExpression>();
+        if (entity.Spec.Selector is { } matchLabels)
         {
-            var expressions = new List<PodMatchExpression>();
-            if (entity.Spec.Selector is { } matchLabels)
+            foreach (var matchLabel in matchLabels)
             {
-                foreach (var matchLabel in matchLabels)
+                expressions.Add(new PodMatchExpression(matchLabel.Key, LabelMatchOperation.In, new List<string>
                 {
-                    expressions.Add(new PodMatchExpression(matchLabel.Key, LabelMatchOperation.In, new List<string>
-                    {
-                        matchLabel.Value
-                    }));
-                }
+                    matchLabel.Value
+                }));
             }
-
-            var selector = new PodSelector(expressions);
-            return selector;
         }
+
+        var selector = new PodSelector(expressions);
+        return selector;
     }
 }

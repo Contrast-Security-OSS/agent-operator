@@ -7,32 +7,31 @@ using Contrast.K8s.AgentOperator.Autofac;
 using JetBrains.Annotations;
 using MediatR;
 
-namespace Contrast.K8s.AgentOperator.Modules
+namespace Contrast.K8s.AgentOperator.Modules;
+
+[UsedImplicitly]
+public class MediatorModule : Module
 {
-    [UsedImplicitly]
-    public class MediatorModule : Module
+    protected override void Load(ContainerBuilder builder)
     {
-        protected override void Load(ContainerBuilder builder)
-        {
-            builder.RegisterType<Mediator>()
-                   .As<IMediator>()
-                   .InstancePerLifetimeScope();
-            builder.RegisterSource(new ContravariantRegistrationSource());
-            builder.RegisterAssemblyTypes(ThisAssembly)
-                   .PublicOnly()
-                   .AssignableToOpenType(typeof(IRequestHandler<>))
-                   .AsImplementedInterfaces()
-                   .InstancePerLifetimeScope();
-            builder.RegisterAssemblyTypes(ThisAssembly)
-                   .PublicOnly()
-                   .AssignableToOpenType(typeof(IRequestHandler<,>))
-                   .AsImplementedInterfaces()
-                   .InstancePerLifetimeScope();
-            builder.RegisterAssemblyTypes(ThisAssembly)
-                   .PublicOnly()
-                   .AssignableToOpenType(typeof(INotificationHandler<>))
-                   .AsImplementedInterfaces()
-                   .InstancePerLifetimeScope();
-        }
+        builder.RegisterType<Mediator>()
+               .As<IMediator>()
+               .InstancePerLifetimeScope();
+        builder.RegisterSource(new ContravariantRegistrationSource());
+        builder.RegisterAssemblyTypes(ThisAssembly)
+               .PublicOnly()
+               .AssignableToOpenType(typeof(IRequestHandler<>))
+               .AsImplementedInterfaces()
+               .InstancePerLifetimeScope();
+        builder.RegisterAssemblyTypes(ThisAssembly)
+               .PublicOnly()
+               .AssignableToOpenType(typeof(IRequestHandler<,>))
+               .AsImplementedInterfaces()
+               .InstancePerLifetimeScope();
+        builder.RegisterAssemblyTypes(ThisAssembly)
+               .PublicOnly()
+               .AssignableToOpenType(typeof(INotificationHandler<>))
+               .AsImplementedInterfaces()
+               .InstancePerLifetimeScope();
     }
 }

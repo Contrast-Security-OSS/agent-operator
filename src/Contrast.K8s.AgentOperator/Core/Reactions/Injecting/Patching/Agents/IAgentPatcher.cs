@@ -5,20 +5,19 @@ using System.Collections.Generic;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
 using k8s.Models;
 
-namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents
+namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents;
+
+public interface IAgentPatcher
 {
-    public interface IAgentPatcher
+    bool Deprecated => false;
+
+    AgentInjectionType Type { get; }
+
+    IEnumerable<V1EnvVar> GenerateEnvVars(PatchingContext context);
+
+    public void PatchContainer(V1Container container, PatchingContext context)
     {
-        bool Deprecated => false;
-
-        AgentInjectionType Type { get; }
-
-        IEnumerable<V1EnvVar> GenerateEnvVars(PatchingContext context);
-
-        public void PatchContainer(V1Container container, PatchingContext context)
-        {
-        }
-
-        public string? GetOverrideAgentMountPath() => null;
     }
+
+    public string? GetOverrideAgentMountPath() => null;
 }

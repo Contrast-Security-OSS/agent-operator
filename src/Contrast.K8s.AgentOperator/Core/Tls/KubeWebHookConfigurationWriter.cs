@@ -11,94 +11,93 @@ using DotnetKubernetesClient;
 using k8s.Models;
 using NLog;
 
-namespace Contrast.K8s.AgentOperator.Core.Tls
+namespace Contrast.K8s.AgentOperator.Core.Tls;
+
+public interface IKubeWebHookConfigurationWriter
 {
-    public interface IKubeWebHookConfigurationWriter
+    ValueTask<V1Secret?> FetchCurrentCertificate();
+    ValueTask UpdateClusterWebHookConfiguration(TlsCertificateChainExport chainExport);
+}
+
+public class KubeWebHookConfigurationWriter : IKubeWebHookConfigurationWriter
+{
+    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+    private readonly TlsStorageOptions _tlsStorageOptions;
+    private readonly MutatingWebHookOptions _mutatingWebHookOptions;
+    private readonly IKubernetesClient _kubernetesClient;
+    private readonly IResourcePatcher _resourcePatcher;
+
+    public KubeWebHookConfigurationWriter(TlsStorageOptions tlsStorageOptions,
+                                          MutatingWebHookOptions mutatingWebHookOptions,
+                                          IKubernetesClient kubernetesClient,
+                                          IResourcePatcher resourcePatcher)
     {
-        ValueTask<V1Secret?> FetchCurrentCertificate();
-        ValueTask UpdateClusterWebHookConfiguration(TlsCertificateChainExport chainExport);
+        _tlsStorageOptions = tlsStorageOptions;
+        _mutatingWebHookOptions = mutatingWebHookOptions;
+        _kubernetesClient = kubernetesClient;
+        _resourcePatcher = resourcePatcher;
     }
 
-    public class KubeWebHookConfigurationWriter : IKubeWebHookConfigurationWriter
+    public async ValueTask<V1Secret?> FetchCurrentCertificate()
     {
-        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-        private readonly TlsStorageOptions _tlsStorageOptions;
-        private readonly MutatingWebHookOptions _mutatingWebHookOptions;
-        private readonly IKubernetesClient _kubernetesClient;
-        private readonly IResourcePatcher _resourcePatcher;
+        var existingSecret = await _kubernetesClient.Get<V1Secret>(_tlsStorageOptions.SecretName, _tlsStorageOptions.SecretNamespace);
+        return existingSecret;
+    }
 
-        public KubeWebHookConfigurationWriter(TlsStorageOptions tlsStorageOptions,
-                                              MutatingWebHookOptions mutatingWebHookOptions,
-                                              IKubernetesClient kubernetesClient,
-                                              IResourcePatcher resourcePatcher)
-        {
-            _tlsStorageOptions = tlsStorageOptions;
-            _mutatingWebHookOptions = mutatingWebHookOptions;
-            _kubernetesClient = kubernetesClient;
-            _resourcePatcher = resourcePatcher;
-        }
+    public async ValueTask UpdateClusterWebHookConfiguration(TlsCertificateChainExport chainExport)
+    {
+        await PublishCertificateSecret(chainExport);
+        await UpdateWebHookConfiguration(chainExport);
+    }
 
-        public async ValueTask<V1Secret?> FetchCurrentCertificate()
+    private async ValueTask PublishCertificateSecret(TlsCertificateChainExport chainExport)
+    {
+        Logger.Info($"Ensuring certificates in '{_tlsStorageOptions.SecretNamespace}/{_tlsStorageOptions.SecretName}' are correct.");
+        var secret = new V1Secret
         {
-            var existingSecret = await _kubernetesClient.Get<V1Secret>(_tlsStorageOptions.SecretName, _tlsStorageOptions.SecretNamespace);
-            return existingSecret;
-        }
-
-        public async ValueTask UpdateClusterWebHookConfiguration(TlsCertificateChainExport chainExport)
-        {
-            await PublishCertificateSecret(chainExport);
-            await UpdateWebHookConfiguration(chainExport);
-        }
-
-        private async ValueTask PublishCertificateSecret(TlsCertificateChainExport chainExport)
-        {
-            Logger.Info($"Ensuring certificates in '{_tlsStorageOptions.SecretNamespace}/{_tlsStorageOptions.SecretName}' are correct.");
-            var secret = new V1Secret
+            Kind = V1Secret.KubeKind,
+            Metadata = new V1ObjectMeta
             {
-                Kind = V1Secret.KubeKind,
-                Metadata = new V1ObjectMeta
-                {
-                    Name = _tlsStorageOptions.SecretName,
-                    NamespaceProperty = _tlsStorageOptions.SecretNamespace,
-                },
-                Data = new Dictionary<string, byte[]>
-                {
-                    { _tlsStorageOptions.CaCertificateName, chainExport.CaCertificatePfx },
-                    { _tlsStorageOptions.CaPublicName, chainExport.CaPublicPem },
-                    { _tlsStorageOptions.ServerCertificateName, chainExport.ServerCertificatePfx },
-                    { _tlsStorageOptions.VersionName, chainExport.Version },
-                    { _tlsStorageOptions.SanDnsNamesHashName, chainExport.SansHash }
-                }
-            };
-
-            await _kubernetesClient.Save(secret);
-        }
-
-        private async ValueTask UpdateWebHookConfiguration(TlsCertificateChainExport chainExport)
-        {
-            Logger.Info($"Ensuring web hook ca bundle in '{_mutatingWebHookOptions.ConfigurationName}' is correct.");
-
-            var success = await _resourcePatcher.Patch<V1MutatingWebhookConfiguration>(
-                _mutatingWebHookOptions.ConfigurationName,
-                null,
-                configuration =>
-                {
-                    var webHook = configuration.Webhooks
-                                               .FirstOrDefault(
-                                                   x => string.Equals(x.Name, _mutatingWebHookOptions.WebHookName, StringComparison.OrdinalIgnoreCase)
-                                               );
-                    if (webHook != null)
-                    {
-                        webHook.ClientConfig.CaBundle = chainExport.CaPublicPem;
-                    }
-                }
-            );
-
-            if (!success)
+                Name = _tlsStorageOptions.SecretName,
+                NamespaceProperty = _tlsStorageOptions.SecretNamespace,
+            },
+            Data = new Dictionary<string, byte[]>
             {
-                Logger.Warn($"MutatingWebhookConfiguration '{_mutatingWebHookOptions.ConfigurationName}' "
-                            + "was not found, web hooks will likely be broken.");
+                { _tlsStorageOptions.CaCertificateName, chainExport.CaCertificatePfx },
+                { _tlsStorageOptions.CaPublicName, chainExport.CaPublicPem },
+                { _tlsStorageOptions.ServerCertificateName, chainExport.ServerCertificatePfx },
+                { _tlsStorageOptions.VersionName, chainExport.Version },
+                { _tlsStorageOptions.SanDnsNamesHashName, chainExport.SansHash }
             }
+        };
+
+        await _kubernetesClient.Save(secret);
+    }
+
+    private async ValueTask UpdateWebHookConfiguration(TlsCertificateChainExport chainExport)
+    {
+        Logger.Info($"Ensuring web hook ca bundle in '{_mutatingWebHookOptions.ConfigurationName}' is correct.");
+
+        var success = await _resourcePatcher.Patch<V1MutatingWebhookConfiguration>(
+            _mutatingWebHookOptions.ConfigurationName,
+            null,
+            configuration =>
+            {
+                var webHook = configuration.Webhooks
+                                           .FirstOrDefault(
+                                               x => string.Equals(x.Name, _mutatingWebHookOptions.WebHookName, StringComparison.OrdinalIgnoreCase)
+                                           );
+                if (webHook != null)
+                {
+                    webHook.ClientConfig.CaBundle = chainExport.CaPublicPem;
+                }
+            }
+        );
+
+        if (!success)
+        {
+            Logger.Warn($"MutatingWebhookConfiguration '{_mutatingWebHookOptions.ConfigurationName}' "
+                        + "was not found, web hooks will likely be broken.");
         }
     }
 }

@@ -5,68 +5,67 @@ using System;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
 using Contrast.K8s.AgentOperator.Options;
 
-namespace Contrast.K8s.AgentOperator.Core
+namespace Contrast.K8s.AgentOperator.Core;
+
+public interface IAgentInjectionTypeConverter
 {
-    public interface IAgentInjectionTypeConverter
+    string GetDefaultImageRegistry(AgentInjectionType type);
+    string GetDefaultImageName(AgentInjectionType type);
+    AgentInjectionType GetTypeFromString(string type);
+}
+
+public class AgentInjectionTypeConverter : IAgentInjectionTypeConverter
+{
+    private readonly ImageRepositoryOptions _repositoryOptions;
+
+    public AgentInjectionTypeConverter(ImageRepositoryOptions repositoryOptions)
     {
-        string GetDefaultImageRegistry(AgentInjectionType type);
-        string GetDefaultImageName(AgentInjectionType type);
-        AgentInjectionType GetTypeFromString(string type);
+        _repositoryOptions = repositoryOptions;
     }
 
-    public class AgentInjectionTypeConverter : IAgentInjectionTypeConverter
+    public string GetDefaultImageRegistry(AgentInjectionType type)
     {
-        private readonly ImageRepositoryOptions _repositoryOptions;
-
-        public AgentInjectionTypeConverter(ImageRepositoryOptions repositoryOptions)
+        return type switch
         {
-            _repositoryOptions = repositoryOptions;
-        }
+            AgentInjectionType.Dummy => "docker.io/library",
+            _ => _repositoryOptions.DefaultRegistry
+        };
+    }
 
-        public string GetDefaultImageRegistry(AgentInjectionType type)
+    public string GetDefaultImageName(AgentInjectionType type)
+    {
+        return type switch
         {
-            return type switch
-            {
-                AgentInjectionType.Dummy => "docker.io/library",
-                _ => _repositoryOptions.DefaultRegistry
-            };
-        }
+            AgentInjectionType.DotNetCore => "agent-dotnet-core",
+            AgentInjectionType.Java => "agent-java",
+            AgentInjectionType.NodeJs => "agent-nodejs",
+            AgentInjectionType.NodeJsEsm => "agent-nodejs",
+            AgentInjectionType.NodeJsProtect => "agent-nodejs-protect",
+            AgentInjectionType.Php => "agent-php",
+            AgentInjectionType.Python => "agent-python",
+            AgentInjectionType.Dummy => "busybox",
+            _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+        };
+    }
 
-        public string GetDefaultImageName(AgentInjectionType type)
+    public AgentInjectionType GetTypeFromString(string type)
+    {
+        return type.ToLowerInvariant() switch
         {
-            return type switch
-            {
-                AgentInjectionType.DotNetCore => "agent-dotnet-core",
-                AgentInjectionType.Java => "agent-java",
-                AgentInjectionType.NodeJs => "agent-nodejs",
-                AgentInjectionType.NodeJsEsm => "agent-nodejs",
-                AgentInjectionType.NodeJsProtect => "agent-nodejs-protect",
-                AgentInjectionType.Php => "agent-php",
-                AgentInjectionType.Python => "agent-python",
-                AgentInjectionType.Dummy => "busybox",
-                _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
-            };
-        }
-
-        public AgentInjectionType GetTypeFromString(string type)
-        {
-            return type.ToLowerInvariant() switch
-            {
-                "dotnet" => AgentInjectionType.DotNetCore,
-                "dotnet-core" => AgentInjectionType.DotNetCore,
-                "java" => AgentInjectionType.Java,
-                "node" => AgentInjectionType.NodeJs,
-                "node-esm" => AgentInjectionType.NodeJsEsm,
-                "node-protect" => AgentInjectionType.NodeJsProtect,
-                "nodejs" => AgentInjectionType.NodeJs,
-                "nodejs-esm" => AgentInjectionType.NodeJsEsm,
-                "nodejs-protect" => AgentInjectionType.NodeJsProtect,
-                "php" => AgentInjectionType.Php,
-                "personal-home-page" => AgentInjectionType.Php,
-                "python" => AgentInjectionType.Python,
-                "dummy" => AgentInjectionType.Dummy,
-                _ => throw new ArgumentOutOfRangeException()
-            };
-        }
+            "dotnet" => AgentInjectionType.DotNetCore,
+            "dotnet-core" => AgentInjectionType.DotNetCore,
+            "java" => AgentInjectionType.Java,
+            "node" => AgentInjectionType.NodeJs,
+            "node-esm" => AgentInjectionType.NodeJsEsm,
+            "node-protect" => AgentInjectionType.NodeJsProtect,
+            "nodejs" => AgentInjectionType.NodeJs,
+            "nodejs-esm" => AgentInjectionType.NodeJsEsm,
+            "nodejs-protect" => AgentInjectionType.NodeJsProtect,
+            "php" => AgentInjectionType.Php,
+            "personal-home-page" => AgentInjectionType.Php,
+            "python" => AgentInjectionType.Python,
+            "dummy" => AgentInjectionType.Dummy,
+            _ => throw new ArgumentOutOfRangeException()
+        };
     }
 }

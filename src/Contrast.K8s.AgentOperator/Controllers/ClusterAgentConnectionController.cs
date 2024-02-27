@@ -7,13 +7,12 @@ using Contrast.K8s.AgentOperator.Entities;
 using JetBrains.Annotations;
 using KubeOps.Operator.Rbac;
 
-namespace Contrast.K8s.AgentOperator.Controllers
+namespace Contrast.K8s.AgentOperator.Controllers;
+
+[EntityRbac(typeof(V1Beta1ClusterAgentConnection), Verbs = VerbConstants.ReadOnly), UsedImplicitly]
+public class ClusterAgentConnectionController : GenericController<V1Beta1ClusterAgentConnection>
 {
-    [EntityRbac(typeof(V1Beta1ClusterAgentConnection), Verbs = VerbConstants.ReadOnly), UsedImplicitly]
-    public class ClusterAgentConnectionController : GenericController<V1Beta1ClusterAgentConnection>
+    public ClusterAgentConnectionController(IEventStream eventStream) : base(eventStream)
     {
-        public ClusterAgentConnectionController(IEventStream eventStream) : base(eventStream)
-        {
-        }
     }
 }

@@ -6,29 +6,28 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Contrast.K8s.AgentOperator.Core.Telemetry.Helpers
+namespace Contrast.K8s.AgentOperator.Core.Telemetry.Helpers;
+
+public class Sha256Hasher
 {
-    public class Sha256Hasher
+    // Super lazy, copied from the CoreFX repo.
+
+    public string Hash(string text)
     {
-        // Super lazy, copied from the CoreFX repo.
+        using var sha256 = SHA256.Create();
+        return HashInFormat(sha256, text);
+    }
 
-        public string Hash(string text)
+    private static string HashInFormat(HashAlgorithm algorithm, string text)
+    {
+        var bytes = Encoding.UTF8.GetBytes(text);
+        var hash = algorithm.ComputeHash(bytes);
+        var hashString = new StringBuilder();
+        foreach (var x in hash)
         {
-            using var sha256 = SHA256.Create();
-            return HashInFormat(sha256, text);
+            hashString.AppendFormat("{0:x2}", x);
         }
 
-        private static string HashInFormat(HashAlgorithm algorithm, string text)
-        {
-            var bytes = Encoding.UTF8.GetBytes(text);
-            var hash = algorithm.ComputeHash(bytes);
-            var hashString = new StringBuilder();
-            foreach (var x in hash)
-            {
-                hashString.AppendFormat("{0:x2}", x);
-            }
-
-            return hashString.ToString();
-        }
+        return hashString.ToString();
     }
 }

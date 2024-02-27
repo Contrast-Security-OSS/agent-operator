@@ -9,24 +9,23 @@ using JetBrains.Annotations;
 using k8s.Models;
 using MediatR;
 
-namespace Contrast.K8s.AgentOperator.Core.State.Appliers
-{
-    [UsedImplicitly]
-    public class StatefulSetApplier : BaseApplier<V1StatefulSet, StatefulSetResource>
-    {
-        public StatefulSetApplier(IStateContainer stateContainer, IMediator mediator) : base(stateContainer, mediator)
-        {
-        }
+namespace Contrast.K8s.AgentOperator.Core.State.Appliers;
 
-        public override ValueTask<StatefulSetResource> CreateFrom(V1StatefulSet entity, CancellationToken cancellationToken = default)
-        {
-            var resource = new StatefulSetResource(
-                entity.Uid(),
-                entity.Metadata.GetLabels(),
-                entity.Spec.Template.GetPod(),
-                entity.Spec.Selector.ToPodSelector()
-            );
-            return ValueTask.FromResult(resource);
-        }
+[UsedImplicitly]
+public class StatefulSetApplier : BaseApplier<V1StatefulSet, StatefulSetResource>
+{
+    public StatefulSetApplier(IStateContainer stateContainer, IMediator mediator) : base(stateContainer, mediator)
+    {
+    }
+
+    public override ValueTask<StatefulSetResource> CreateFrom(V1StatefulSet entity, CancellationToken cancellationToken = default)
+    {
+        var resource = new StatefulSetResource(
+            entity.Uid(),
+            entity.Metadata.GetLabels(),
+            entity.Spec.Template.GetPod(),
+            entity.Spec.Selector.ToPodSelector()
+        );
+        return ValueTask.FromResult(resource);
     }
 }

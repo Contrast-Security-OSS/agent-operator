@@ -10,25 +10,24 @@ using JetBrains.Annotations;
 using k8s.Models;
 using MediatR;
 
-namespace Contrast.K8s.AgentOperator.Core.State.Appliers
+namespace Contrast.K8s.AgentOperator.Core.State.Appliers;
+
+[UsedImplicitly]
+public class RolloutApplier : BaseApplier<V1Alpha1Rollout, RolloutResource>
 {
-    [UsedImplicitly]
-    public class RolloutApplier : BaseApplier<V1Alpha1Rollout, RolloutResource>
+    public RolloutApplier(IStateContainer stateContainer, IMediator mediator) : base(stateContainer, mediator)
     {
-        public RolloutApplier(IStateContainer stateContainer, IMediator mediator) : base(stateContainer, mediator)
-        {
-        }
+    }
 
-        public override ValueTask<RolloutResource> CreateFrom(V1Alpha1Rollout entity, CancellationToken cancellationToken = default)
-        {
-            var resource = new RolloutResource(
-                entity.Uid(),
-                entity.Metadata.GetLabels(),
-                entity.Spec.Template.GetPod(),
-                entity.Spec.Selector.ToPodSelector()
-            );
+    public override ValueTask<RolloutResource> CreateFrom(V1Alpha1Rollout entity, CancellationToken cancellationToken = default)
+    {
+        var resource = new RolloutResource(
+            entity.Uid(),
+            entity.Metadata.GetLabels(),
+            entity.Spec.Template.GetPod(),
+            entity.Spec.Selector.ToPodSelector()
+        );
 
-            return ValueTask.FromResult(resource);
-        }
+        return ValueTask.FromResult(resource);
     }
 }
