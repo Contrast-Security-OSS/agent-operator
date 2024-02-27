@@ -8,67 +8,66 @@ using FluentAssertions.Execution;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection.Agents
+namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection.Agents;
+
+public class JavaInjectionTests : IClassFixture<TestingContext>
 {
-    public class JavaInjectionTests : IClassFixture<TestingContext>
+    private const string ScenarioName = "injection-java";
+
+    private readonly TestingContext _context;
+
+    public JavaInjectionTests(TestingContext context, ITestOutputHelper outputHelper)
     {
-        private const string ScenarioName = "injection-java";
+        _context = context;
+        _context.RegisterOutput(outputHelper);
+    }
 
-        private readonly TestingContext _context;
+    [Fact]
+    public async Task When_injected_then_pod_should_have_agent_injection_environment_variables()
+    {
+        var client = await _context.GetClient();
 
-        public JavaInjectionTests(TestingContext context, ITestOutputHelper outputHelper)
+        // Act
+        var result = await client.GetInjectedPodByPrefix(ScenarioName);
+
+        // Assert
+        using (new AssertionScope())
         {
-            _context = context;
-            _context.RegisterOutput(outputHelper);
+            var container = result.Spec.Containers.Should().ContainSingle().Subject;
+
+            container.Env.Should().Contain(x => x.Name == "JAVA_TOOL_OPTIONS")
+                     .Which.Value.Should().Be("-javaagent:/opt/contrast/contrast-agent.jar");
+            container.Env.Should().Contain(x => x.Name == "CONTRAST__AGENT__CONTRAST_WORKING_DIR")
+                     .Which.Value.Should().Be("/contrast/data");
+            container.Env.Should().Contain(x => x.Name == "CONTRAST__AGENT__LOGGER__PATH")
+                     .Which.Value.Should().Be("/contrast/data/logs/contrast_agent.log");
         }
+    }
 
-        [Fact]
-        public async Task When_injected_then_pod_should_have_agent_injection_environment_variables()
-        {
-            var client = await _context.GetClient();
+    [Fact]
+    public async Task When_injected_then_pod_should_have_agent_injection_volume_mount()
+    {
+        var client = await _context.GetClient();
 
-            // Act
-            var result = await client.GetInjectedPodByPrefix(ScenarioName);
+        // Act
+        var result = await client.GetInjectedPodByPrefix(ScenarioName);
 
-            // Assert
-            using (new AssertionScope())
-            {
-                var container = result.Spec.Containers.Should().ContainSingle().Subject;
+        // Assert
+        result.Spec.Containers.Should().ContainSingle()
+              .Which.VolumeMounts.Should().ContainSingle(x => x.Name == "contrast-agent")
+              .Which.MountPath.Should().Be("/opt/contrast");
+    }
 
-                container.Env.Should().Contain(x => x.Name == "JAVA_TOOL_OPTIONS")
-                         .Which.Value.Should().Be("-javaagent:/opt/contrast/contrast-agent.jar");
-                container.Env.Should().Contain(x => x.Name == "CONTRAST__AGENT__CONTRAST_WORKING_DIR")
-                         .Which.Value.Should().Be("/contrast/data");
-                container.Env.Should().Contain(x => x.Name == "CONTRAST__AGENT__LOGGER__PATH")
-                         .Which.Value.Should().Be("/contrast/data/logs/contrast_agent.log");
-            }
-        }
+    [Fact]
+    public async Task When_injected_then_pod_should_have_agent_injection_init_image()
+    {
+        var client = await _context.GetClient();
 
-        [Fact]
-        public async Task When_injected_then_pod_should_have_agent_injection_volume_mount()
-        {
-            var client = await _context.GetClient();
+        // Act
+        var result = await client.GetInjectedPodByPrefix(ScenarioName);
 
-            // Act
-            var result = await client.GetInjectedPodByPrefix(ScenarioName);
-
-            // Assert
-            result.Spec.Containers.Should().ContainSingle()
-                  .Which.VolumeMounts.Should().ContainSingle(x => x.Name == "contrast-agent")
-                  .Which.MountPath.Should().Be("/opt/contrast");
-        }
-
-        [Fact]
-        public async Task When_injected_then_pod_should_have_agent_injection_init_image()
-        {
-            var client = await _context.GetClient();
-
-            // Act
-            var result = await client.GetInjectedPodByPrefix(ScenarioName);
-
-            // Assert
-            result.Spec.InitContainers.Should().ContainSingle(x => x.Name == "contrast-init")
-                  .Which.Image.Should().Be("contrast/agent-java:latest");
-        }
+        // Assert
+        result.Spec.InitContainers.Should().ContainSingle(x => x.Name == "contrast-init")
+              .Which.Image.Should().Be("contrast/agent-java:latest");
     }
 }

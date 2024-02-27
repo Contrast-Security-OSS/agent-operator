@@ -3,15 +3,14 @@
 
 using System.Threading.Channels;
 
-namespace Contrast.K8s.AgentOperator.Options
-{
-    public record OperatorOptions(string Namespace,
-                                  int SettlingDurationSeconds,
-                                  int EventQueueSize,
-                                  BoundedChannelFullMode EventQueueFullMode,
-                                  int EventQueueMergeWindowSeconds,
-                                  bool RunInitContainersAsNonRoot,
-                                  bool SuppressSeccompProfile,
-                                  decimal ChaosRatio,
-                                  string FieldManagerName = "agents.contrastsecurity.com");
-}
+namespace Contrast.K8s.AgentOperator.Options;
+
+public record OperatorOptions(string Namespace,
+                              int SettlingDurationSeconds,
+                              int EventQueueSize,
+                              BoundedChannelFullMode EventQueueFullMode,
+                              int EventQueueMergeWindowSeconds,
+                              bool RunInitContainersAsNonRoot,
+                              bool SuppressSeccompProfile,
+                              decimal ChaosRatio,
+                              string FieldManagerName = "agents.contrastsecurity.com");

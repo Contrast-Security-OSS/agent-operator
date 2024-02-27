@@ -8,38 +8,37 @@ using FluentAssertions.Execution;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection.Agents
+namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection.Agents;
+
+public class JavaToolOptionsInjectionTests : IClassFixture<TestingContext>
 {
-    public class JavaToolOptionsInjectionTests : IClassFixture<TestingContext>
+    private const string ScenarioName = "injection-javatooloptions";
+
+    private readonly TestingContext _context;
+
+    public JavaToolOptionsInjectionTests(TestingContext context, ITestOutputHelper outputHelper)
     {
-        private const string ScenarioName = "injection-javatooloptions";
+        _context = context;
+        _context.RegisterOutput(outputHelper);
+    }
 
-        private readonly TestingContext _context;
+    [Fact]
+    public async Task When_injected_then_pod_should_have_patched_java_tool_options_environment_variable()
+    {
+        var client = await _context.GetClient();
 
-        public JavaToolOptionsInjectionTests(TestingContext context, ITestOutputHelper outputHelper)
+        // Act
+        var result = await client.GetInjectedPodByPrefix(ScenarioName);
+
+        // Assert
+        using (new AssertionScope())
         {
-            _context = context;
-            _context.RegisterOutput(outputHelper);
-        }
+            var container = result.Spec.Containers.Should().ContainSingle().Subject;
 
-        [Fact]
-        public async Task When_injected_then_pod_should_have_patched_java_tool_options_environment_variable()
-        {
-            var client = await _context.GetClient();
-
-            // Act
-            var result = await client.GetInjectedPodByPrefix(ScenarioName);
-
-            // Assert
-            using (new AssertionScope())
-            {
-                var container = result.Spec.Containers.Should().ContainSingle().Subject;
-
-                container.Env.Should().Contain(x => x.Name == "JAVA_TOOL_OPTIONS")
-                    .Which.Value.Should().Be("-javaagent:/opt/contrast/contrast-agent.jar something");
-                container.Env.Should().Contain(x => x.Name == "CONTRAST_EXISTING_JAVA_TOOL_OPTIONS")
-                    .Which.Value.Should().Be("something");
-            }
+            container.Env.Should().Contain(x => x.Name == "JAVA_TOOL_OPTIONS")
+                .Which.Value.Should().Be("-javaagent:/opt/contrast/contrast-agent.jar something");
+            container.Env.Should().Contain(x => x.Name == "CONTRAST_EXISTING_JAVA_TOOL_OPTIONS")
+                .Which.Value.Should().Be("something");
         }
     }
 }

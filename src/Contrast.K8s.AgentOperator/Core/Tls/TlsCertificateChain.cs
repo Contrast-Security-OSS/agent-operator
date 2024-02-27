@@ -4,17 +4,16 @@
 using System;
 using System.Security.Cryptography.X509Certificates;
 
-namespace Contrast.K8s.AgentOperator.Core.Tls
+namespace Contrast.K8s.AgentOperator.Core.Tls;
+
+public record TlsCertificateChain(X509Certificate2 CaCertificate,
+                                  X509Certificate2 ServerCertificate,
+                                  byte[] SanDnsNamesHash,
+                                  byte[] Version) : IDisposable
 {
-    public record TlsCertificateChain(X509Certificate2 CaCertificate,
-                                      X509Certificate2 ServerCertificate,
-                                      byte[] SanDnsNamesHash,
-                                      byte[] Version) : IDisposable
+    public void Dispose()
     {
-        public void Dispose()
-        {
-            CaCertificate.Dispose();
-            ServerCertificate.Dispose();
-        }
+        CaCertificate.Dispose();
+        ServerCertificate.Dispose();
     }
 }

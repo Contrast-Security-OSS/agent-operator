@@ -8,52 +8,51 @@ using k8s.Models;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection
+namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection;
+
+public class TypesTests : IClassFixture<TestingContext>
 {
-    public class TypesTests : IClassFixture<TestingContext>
+    private readonly TestingContext _context;
+
+    public TypesTests(TestingContext context, ITestOutputHelper outputHelper)
     {
-        private readonly TestingContext _context;
+        _context = context;
+        _context.RegisterOutput(outputHelper);
+    }
 
-        public TypesTests(TestingContext context, ITestOutputHelper outputHelper)
-        {
-            _context = context;
-            _context.RegisterOutput(outputHelper);
-        }
+    [Fact]
+    public async Task When_injection_target_is_a_demon_set_then_annotations_should_be_injected()
+    {
+        var client = await _context.GetClient();
 
-        [Fact]
-        public async Task When_injection_target_is_a_demon_set_then_annotations_should_be_injected()
-        {
-            var client = await _context.GetClient();
+        // Act
+        var result = await client.GetInjectedPodByPrefix("type-daemonset");
 
-            // Act
-            var result = await client.GetInjectedPodByPrefix("type-daemonset");
+        // Assert
+        result.Annotations().Should().ContainKey("agents.contrastsecurity.com/is-injected").WhoseValue.Should().Be("True");
+    }
 
-            // Assert
-            result.Annotations().Should().ContainKey("agents.contrastsecurity.com/is-injected").WhoseValue.Should().Be("True");
-        }
+    [Fact]
+    public async Task When_injection_target_is_a_stateful_set_then_annotations_should_be_injected()
+    {
+        var client = await _context.GetClient();
 
-        [Fact]
-        public async Task When_injection_target_is_a_stateful_set_then_annotations_should_be_injected()
-        {
-            var client = await _context.GetClient();
+        // Act
+        var result = await client.GetInjectedPodByPrefix("type-statefulset");
 
-            // Act
-            var result = await client.GetInjectedPodByPrefix("type-statefulset");
+        // Assert
+        result.Annotations().Should().ContainKey("agents.contrastsecurity.com/is-injected").WhoseValue.Should().Be("True");
+    }
 
-            // Assert
-            result.Annotations().Should().ContainKey("agents.contrastsecurity.com/is-injected").WhoseValue.Should().Be("True");
-        }
+    [Fact]
+    public async Task When_injection_target_is_a_deployment_set_then_annotations_should_be_injected()
+    {
+        var client = await _context.GetClient();
 
-        [Fact]
-        public async Task When_injection_target_is_a_deployment_set_then_annotations_should_be_injected()
-        {
-            var client = await _context.GetClient();
+        // Act
+        var result = await client.GetInjectedPodByPrefix("type-deployment");
 
-            // Act
-            var result = await client.GetInjectedPodByPrefix("type-deployment");
-
-            // Assert
-            result.Annotations().Should().ContainKey("agents.contrastsecurity.com/is-injected").WhoseValue.Should().Be("True");
-        }
+        // Assert
+        result.Annotations().Should().ContainKey("agents.contrastsecurity.com/is-injected").WhoseValue.Should().Be("True");
     }
 }

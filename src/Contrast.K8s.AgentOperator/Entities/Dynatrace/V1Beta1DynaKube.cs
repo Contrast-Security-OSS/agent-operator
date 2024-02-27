@@ -6,40 +6,39 @@ using JetBrains.Annotations;
 using k8s.Models;
 using KubeOps.Operator.Entities;
 
-namespace Contrast.K8s.AgentOperator.Entities.Dynatrace
+namespace Contrast.K8s.AgentOperator.Entities.Dynatrace;
+
+[KubernetesEntity(Group = "dynatrace.com", ApiVersion = "v1beta1", Kind = "DynaKube", PluralName = "dynakubes"), UsedImplicitly]
+public class V1Beta1DynaKube : CustomKubernetesEntity<V1Beta1DynaKube.DynaKubeSpec>
 {
-    [KubernetesEntity(Group = "dynatrace.com", ApiVersion = "v1beta1", Kind = "DynaKube", PluralName = "dynakubes"), UsedImplicitly]
-    public class V1Beta1DynaKube : CustomKubernetesEntity<V1Beta1DynaKube.DynaKubeSpec>
+    /// <summary>
+    /// DynaKubeSpec represents the dynatrace operator config
+    /// </summary>
+    public class DynaKubeSpec
     {
         /// <summary>
-        /// DynaKubeSpec represents the dynatrace operator config
+        /// OneAgent Config
         /// </summary>
-        public class DynaKubeSpec
-        {
-            /// <summary>
-            /// OneAgent Config
-            /// </summary>
-            [JsonPropertyName("oneAgent")]
-            public OneAgentSpec? OneAgent { get; set; }
-        }
+        [JsonPropertyName("oneAgent")]
+        public OneAgentSpec? OneAgent { get; set; }
     }
+}
 
-    public class OneAgentSpec
+public class OneAgentSpec
+{
+    [JsonPropertyName("classicFullStack")]
+    public EmptyObject? ClassicFullStack { get; set; }
+
+    [JsonPropertyName("applicationMonitoring")]
+    public EmptyObject? ApplicationMonitoring { get; set; }
+
+    [JsonPropertyName("hostMonitoring")]
+    public EmptyObject? HostMonitoring { get; set; }
+
+    [JsonPropertyName("cloudNativeFullStack")]
+    public EmptyObject? CloudNativeFullStack { get; set; }
+
+    public class EmptyObject
     {
-        [JsonPropertyName("classicFullStack")]
-        public EmptyObject? ClassicFullStack { get; set; }
-
-        [JsonPropertyName("applicationMonitoring")]
-        public EmptyObject? ApplicationMonitoring { get; set; }
-
-        [JsonPropertyName("hostMonitoring")]
-        public EmptyObject? HostMonitoring { get; set; }
-
-        [JsonPropertyName("cloudNativeFullStack")]
-        public EmptyObject? CloudNativeFullStack { get; set; }
-
-        public class EmptyObject
-        {
-        }
     }
 }

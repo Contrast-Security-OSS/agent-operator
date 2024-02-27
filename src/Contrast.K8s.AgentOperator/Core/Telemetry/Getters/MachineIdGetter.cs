@@ -7,28 +7,27 @@ using System;
 using Contrast.K8s.AgentOperator.Core.Telemetry.Cluster;
 using Contrast.K8s.AgentOperator.Core.Telemetry.Helpers;
 
-namespace Contrast.K8s.AgentOperator.Core.Telemetry.Getters
+namespace Contrast.K8s.AgentOperator.Core.Telemetry.Getters;
+
+public class MachineIdGetter
 {
-    public class MachineIdGetter
+    private readonly IClusterIdState _clusterIdState;
+    private readonly Sha256Hasher _hasher;
+
+    public MachineIdGetter(IClusterIdState clusterIdState, Sha256Hasher hasher)
     {
-        private readonly IClusterIdState _clusterIdState;
-        private readonly Sha256Hasher _hasher;
+        _clusterIdState = clusterIdState;
+        _hasher = hasher;
+    }
 
-        public MachineIdGetter(IClusterIdState clusterIdState, Sha256Hasher hasher)
+    public string GetMachineId()
+    {
+        var uniqueId = _clusterIdState.GetClusterId()?.ToString();
+        if (uniqueId != null)
         {
-            _clusterIdState = clusterIdState;
-            _hasher = hasher;
+            return _hasher.Hash(uniqueId);
         }
 
-        public string GetMachineId()
-        {
-            var uniqueId = _clusterIdState.GetClusterId()?.ToString();
-            if (uniqueId != null)
-            {
-                return _hasher.Hash(uniqueId);
-            }
-
-            return "_" + Guid.NewGuid().ToString("N");
-        }
+        return "_" + Guid.NewGuid().ToString("N");
     }
 }

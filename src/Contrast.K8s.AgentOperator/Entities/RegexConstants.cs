@@ -3,17 +3,16 @@
 
 using JetBrains.Annotations;
 
-namespace Contrast.K8s.AgentOperator.Entities
+namespace Contrast.K8s.AgentOperator.Entities;
+
+public static class RegexConstants
 {
-    public static class RegexConstants
-    {
-        [RegexPattern]
-        public const string AgentTypeRegex = @"^(dotnet-core|dotnet|java|node|nodejs|node-esm|nodejs-esm|node-protect|nodejs-protect|php|personal-home-page|python|dummy)$";
+    [RegexPattern]
+    public const string AgentTypeRegex = @"^(dotnet-core|dotnet|java|node|nodejs|node-esm|nodejs-esm|node-protect|nodejs-protect|php|personal-home-page|python|dummy)$";
 
-        [RegexPattern]
-        public const string InjectorVersionRegex = @"^(latest|(\d+(\.\d+){0,3}(-.+)?))$";
+    [RegexPattern]
+    public const string InjectorVersionRegex = @"^(latest|(\d+(\.\d+){0,3}(-.+)?))$";
 
-        [RegexPattern]
-        public const string PullPolicyRegex = @"^(Always|IfNotPresent|Never)$";
-    }
+    [RegexPattern]
+    public const string PullPolicyRegex = @"^(Always|IfNotPresent|Never)$";
 }

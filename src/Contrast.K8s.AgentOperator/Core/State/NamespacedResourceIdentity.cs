@@ -5,18 +5,17 @@ using System;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Interfaces;
 using JetBrains.Annotations;
 
-namespace Contrast.K8s.AgentOperator.Core.State
-{
-    public record NamespacedResourceIdentity([UsedImplicitly] string Name, [UsedImplicitly] string Namespace, [UsedImplicitly] Type Type)
-    {
-        public static NamespacedResourceIdentity Create<T>(string name, string @namespace) where T : INamespacedResource
-        {
-            return new NamespacedResourceIdentity(name, @namespace, typeof(T));
-        }
+namespace Contrast.K8s.AgentOperator.Core.State;
 
-        public override string ToString()
-        {
-            return $"{Type.Name}/{Namespace}/{Name}";
-        }
+public record NamespacedResourceIdentity([UsedImplicitly] string Name, [UsedImplicitly] string Namespace, [UsedImplicitly] Type Type)
+{
+    public static NamespacedResourceIdentity Create<T>(string name, string @namespace) where T : INamespacedResource
+    {
+        return new NamespacedResourceIdentity(name, @namespace, typeof(T));
+    }
+
+    public override string ToString()
+    {
+        return $"{Type.Name}/{Namespace}/{Name}";
     }
 }

@@ -3,28 +3,27 @@
 
 using RestEase;
 
-namespace Contrast.K8s.AgentOperator.Core.Telemetry.Client
+namespace Contrast.K8s.AgentOperator.Core.Telemetry.Client;
+
+public interface ITelemetryClientFactory
 {
-    public interface ITelemetryClientFactory
+    ITelemetryClient Create();
+}
+
+public class TelemetryClientFactory : ITelemetryClientFactory
+{
+    private const string TelemetryUri = "https://telemetry.dotnet.contrastsecurity.com";
+    private readonly TelemetryState _state;
+
+    public TelemetryClientFactory(TelemetryState state)
     {
-        ITelemetryClient Create();
+        _state = state;
     }
 
-    public class TelemetryClientFactory : ITelemetryClientFactory
+    public ITelemetryClient Create()
     {
-        private const string TelemetryUri = "https://telemetry.dotnet.contrastsecurity.com";
-        private readonly TelemetryState _state;
-
-        public TelemetryClientFactory(TelemetryState state)
-        {
-            _state = state;
-        }
-
-        public ITelemetryClient Create()
-        {
-            var client = RestClient.For<ITelemetryClient>(TelemetryUri);
-            client.UserAgent = $"AgentOperator/{_state.OperatorVersion}";
-            return client;
-        }
+        var client = RestClient.For<ITelemetryClient>(TelemetryUri);
+        client.UserAgent = $"AgentOperator/{_state.OperatorVersion}";
+        return client;
     }
 }

@@ -8,37 +8,36 @@ using FluentAssertions.Execution;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection
+namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection;
+
+public class MultipleImagesTests : IClassFixture<TestingContext>
 {
-    public class MultipleImagesTests : IClassFixture<TestingContext>
+    private const string ScenarioName = "multiple-images";
+
+    private readonly TestingContext _context;
+
+    public MultipleImagesTests(TestingContext context, ITestOutputHelper outputHelper)
     {
-        private const string ScenarioName = "multiple-images";
+        _context = context;
+        _context.RegisterOutput(outputHelper);
+    }
 
-        private readonly TestingContext _context;
+    [Fact]
+    public async Task When_multiple_containers_exist_then_image_selector_should_be_used()
+    {
+        var client = await _context.GetClient();
 
-        public MultipleImagesTests(TestingContext context, ITestOutputHelper outputHelper)
+        // Act
+        var result = await client.GetInjectedPodByPrefix(ScenarioName);
+
+        // Assert
+        using (new AssertionScope())
         {
-            _context = context;
-            _context.RegisterOutput(outputHelper);
-        }
+            var nonInjectionContainer = result.Spec.Containers.Should().ContainSingle(x => x.Name == "pause").Subject;
+            nonInjectionContainer.Env.Should().BeNull();
 
-        [Fact]
-        public async Task When_multiple_containers_exist_then_image_selector_should_be_used()
-        {
-            var client = await _context.GetClient();
-
-            // Act
-            var result = await client.GetInjectedPodByPrefix(ScenarioName);
-
-            // Assert
-            using (new AssertionScope())
-            {
-                var nonInjectionContainer = result.Spec.Containers.Should().ContainSingle(x => x.Name == "pause").Subject;
-                nonInjectionContainer.Env.Should().BeNull();
-
-                var injectionContainer = result.Spec.Containers.Should().ContainSingle(x => x.Name == "busybox").Subject;
-                injectionContainer.Env.Should().Contain(x => x.Name == "CONTRAST__API__URL");
-            }
+            var injectionContainer = result.Spec.Containers.Should().ContainSingle(x => x.Name == "busybox").Subject;
+            injectionContainer.Env.Should().Contain(x => x.Name == "CONTRAST__API__URL");
         }
     }
 }

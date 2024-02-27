@@ -7,22 +7,21 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Hosting;
 
-namespace Contrast.K8s.AgentOperator.Core.Telemetry.Counters
+namespace Contrast.K8s.AgentOperator.Core.Telemetry.Counters;
+
+[UsedImplicitly]
+public class PerformanceCountersWorker : BackgroundService
 {
-    [UsedImplicitly]
-    public class PerformanceCountersWorker : BackgroundService
+    private readonly Func<PerformanceCountersListener> _performanceCountersListenerFactory;
+
+    public PerformanceCountersWorker(Func<PerformanceCountersListener> performanceCountersListenerFactory)
     {
-        private readonly Func<PerformanceCountersListener> _performanceCountersListenerFactory;
+        _performanceCountersListenerFactory = performanceCountersListenerFactory;
+    }
 
-        public PerformanceCountersWorker(Func<PerformanceCountersListener> performanceCountersListenerFactory)
-        {
-            _performanceCountersListenerFactory = performanceCountersListenerFactory;
-        }
-
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            using var listener = _performanceCountersListenerFactory.Invoke();
-            await Task.Delay(Timeout.Infinite, stoppingToken);
-        }
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        using var listener = _performanceCountersListenerFactory.Invoke();
+        await Task.Delay(Timeout.Infinite, stoppingToken);
     }
 }

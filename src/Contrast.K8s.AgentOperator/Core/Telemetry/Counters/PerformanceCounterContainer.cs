@@ -6,34 +6,33 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Contrast.K8s.AgentOperator.Core.Telemetry.Counters
+namespace Contrast.K8s.AgentOperator.Core.Telemetry.Counters;
+
+public class PerformanceCounterContainer
 {
-    public class PerformanceCounterContainer
+    private readonly ConcurrentDictionary<string, decimal> _counters = new();
+    private readonly TaskCompletionSource<bool> _ready = new();
+
+    public void UpdateCounters(IReadOnlyDictionary<string, decimal> counters)
     {
-        private readonly ConcurrentDictionary<string, decimal> _counters = new();
-        private readonly TaskCompletionSource<bool> _ready = new();
-
-        public void UpdateCounters(IReadOnlyDictionary<string, decimal> counters)
+        foreach (var (key, value) in counters)
         {
-            foreach (var (key, value) in counters)
-            {
-                _counters.AddOrUpdate(key, value, (_, _) => value);
-            }
-
-            if (!_ready.Task.IsCompleted)
-            {
-                _ready.TrySetResult(true);
-            }
+            _counters.AddOrUpdate(key, value, (_, _) => value);
         }
 
-        public async Task<Dictionary<string, decimal>> GetCounters()
+        if (!_ready.Task.IsCompleted)
         {
-            if (!_ready.Task.IsCompleted)
-            {
-                await _ready.Task;
-            }
-
-            return _counters.ToDictionary(x => x.Key, x => x.Value);
+            _ready.TrySetResult(true);
         }
+    }
+
+    public async Task<Dictionary<string, decimal>> GetCounters()
+    {
+        if (!_ready.Task.IsCompleted)
+        {
+            await _ready.Task;
+        }
+
+        return _counters.ToDictionary(x => x.Key, x => x.Value);
     }
 }

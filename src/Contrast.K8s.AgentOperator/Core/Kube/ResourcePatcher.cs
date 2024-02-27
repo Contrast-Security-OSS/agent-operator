@@ -16,107 +16,74 @@ using k8s.Models;
 using Newtonsoft.Json;
 using NLog;
 
-namespace Contrast.K8s.AgentOperator.Core.Kube
+namespace Contrast.K8s.AgentOperator.Core.Kube;
+
+public interface IResourcePatcher
 {
-    public interface IResourcePatcher
+    ValueTask<bool> Patch<T>(string name, string? @namespace, Action<T> mutator) where T : class, IKubernetesObject<V1ObjectMeta>;
+    ValueTask<bool> PatchStatus<T>(string name, string? @namespace, GenericCondition condition) where T : class, IKubernetesObject<V1ObjectMeta>;
+}
+
+public class ResourcePatcher : IResourcePatcher
+{
+    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
+    private readonly JsonDiffer _jsonDiffer;
+    private readonly IKubernetesClient _client;
+    private readonly KubernetesJsonSerializer _jsonSerializer;
+    private readonly OperatorOptions _operatorOptions;
+
+    public ResourcePatcher(JsonDiffer jsonDiffer, IKubernetesClient client, KubernetesJsonSerializer jsonSerializer, OperatorOptions operatorOptions)
     {
-        ValueTask<bool> Patch<T>(string name, string? @namespace, Action<T> mutator) where T : class, IKubernetesObject<V1ObjectMeta>;
-        ValueTask<bool> PatchStatus<T>(string name, string? @namespace, GenericCondition condition) where T : class, IKubernetesObject<V1ObjectMeta>;
+        _jsonDiffer = jsonDiffer;
+        _client = client;
+        _jsonSerializer = jsonSerializer;
+        _operatorOptions = operatorOptions;
     }
 
-    public class ResourcePatcher : IResourcePatcher
+    public async ValueTask<bool> Patch<T>(string name, string? @namespace, Action<T> mutator) where T : class, IKubernetesObject<V1ObjectMeta>
     {
-        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-
-        private readonly JsonDiffer _jsonDiffer;
-        private readonly IKubernetesClient _client;
-        private readonly KubernetesJsonSerializer _jsonSerializer;
-        private readonly OperatorOptions _operatorOptions;
-
-        public ResourcePatcher(JsonDiffer jsonDiffer, IKubernetesClient client, KubernetesJsonSerializer jsonSerializer, OperatorOptions operatorOptions)
+        if (string.IsNullOrEmpty(name))
         {
-            _jsonDiffer = jsonDiffer;
-            _client = client;
-            _jsonSerializer = jsonSerializer;
-            _operatorOptions = operatorOptions;
+            throw new ArgumentException("Value must not be empty or null.", nameof(name));
         }
 
-        public async ValueTask<bool> Patch<T>(string name, string? @namespace, Action<T> mutator) where T : class, IKubernetesObject<V1ObjectMeta>
+        if (@namespace != null && string.IsNullOrEmpty(@namespace))
         {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentException("Value must not be empty or null.", nameof(name));
-            }
-
-            if (@namespace != null && string.IsNullOrEmpty(@namespace))
-            {
-                throw new ArgumentException("If set, value cannot be empty.", nameof(@namespace));
-            }
-
-            var entity = await _client.Get<T>(name, @namespace);
-            if (entity != null)
-            {
-                await Patch(entity, mutator);
-            }
-            else
-            {
-                Logger.Trace($"Could not locate entity '{entity.Namespace()}/{entity.Name()}' to patch.");
-            }
-
-            return entity != null;
+            throw new ArgumentException("If set, value cannot be empty.", nameof(@namespace));
         }
 
-        private async ValueTask Patch<T>(T entity, Action<T> mutator) where T : IKubernetesObject<V1ObjectMeta>
+        var entity = await _client.Get<T>(name, @namespace);
+        if (entity != null)
         {
-            var stopwatch = Stopwatch.StartNew();
-            var entityCopy = _jsonSerializer.DeepClone(entity);
-
-            var currentVersion = _jsonSerializer.ToJToken(entityCopy);
-            mutator.Invoke(entityCopy);
-            var nextVersion = _jsonSerializer.ToJToken(entityCopy);
-
-            var diff = _jsonDiffer.Diff(currentVersion, nextVersion, false);
-            if (diff.Operations.Any())
-            {
-                Logger.Trace(() => $"Preparing to patch '{entity.Namespace()}/{entity.Name()}' ('{entity.Kind}/{entity.ApiVersion}') "
-                                   + $"with '{diff.ToString(Formatting.None)}'.");
-
-                try
-                {
-                    await _client.Patch(entity, diff, _operatorOptions.FieldManagerName);
-                }
-                catch (HttpOperationException e) when (e.Response.StatusCode == HttpStatusCode.NotFound)
-                {
-                    Logger.Trace("Entity disappeared while patching.");
-                }
-
-                Logger.Trace($"Patch complete after {stopwatch.ElapsedMilliseconds}ms.");
-            }
+            await Patch(entity, mutator);
+        }
+        else
+        {
+            Logger.Trace($"Could not locate entity '{entity.Namespace()}/{entity.Name()}' to patch.");
         }
 
-        public async ValueTask<bool> PatchStatus<T>(string name, string? @namespace, GenericCondition condition) where T : class, IKubernetesObject<V1ObjectMeta>
+        return entity != null;
+    }
+
+    private async ValueTask Patch<T>(T entity, Action<T> mutator) where T : IKubernetesObject<V1ObjectMeta>
+    {
+        var stopwatch = Stopwatch.StartNew();
+        var entityCopy = _jsonSerializer.DeepClone(entity);
+
+        var currentVersion = _jsonSerializer.ToJToken(entityCopy);
+        mutator.Invoke(entityCopy);
+        var nextVersion = _jsonSerializer.ToJToken(entityCopy);
+
+        var diff = _jsonDiffer.Diff(currentVersion, nextVersion, false);
+        if (diff.Operations.Any())
         {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentException("Value must not be empty or null.", nameof(name));
-            }
-
-            if (@namespace != null && string.IsNullOrEmpty(@namespace))
-            {
-                throw new ArgumentException("If set, value cannot be empty.", nameof(@namespace));
-            }
-
-            var stopwatch = Stopwatch.StartNew();
-
-            var crd = CustomEntityDefinitionExtensions.CreateResourceDefinition<T>();
-
-            Logger.Trace(() =>
-                $"Preparing to patch status '{@namespace}/{name}' ('{crd.Kind}/{crd.Version}') "
-                + $"with '{KubernetesJson.Serialize(condition)}'.");
+            Logger.Trace(() => $"Preparing to patch '{entity.Namespace()}/{entity.Name()}' ('{entity.Kind}/{entity.ApiVersion}') "
+                               + $"with '{diff.ToString(Formatting.None)}'.");
 
             try
             {
-                await _client.PatchStatus<T>(name, @namespace, condition, _operatorOptions.FieldManagerName);
+                await _client.Patch(entity, diff, _operatorOptions.FieldManagerName);
             }
             catch (HttpOperationException e) when (e.Response.StatusCode == HttpStatusCode.NotFound)
             {
@@ -124,8 +91,40 @@ namespace Contrast.K8s.AgentOperator.Core.Kube
             }
 
             Logger.Trace($"Patch complete after {stopwatch.ElapsedMilliseconds}ms.");
-
-            return true;
         }
+    }
+
+    public async ValueTask<bool> PatchStatus<T>(string name, string? @namespace, GenericCondition condition) where T : class, IKubernetesObject<V1ObjectMeta>
+    {
+        if (string.IsNullOrEmpty(name))
+        {
+            throw new ArgumentException("Value must not be empty or null.", nameof(name));
+        }
+
+        if (@namespace != null && string.IsNullOrEmpty(@namespace))
+        {
+            throw new ArgumentException("If set, value cannot be empty.", nameof(@namespace));
+        }
+
+        var stopwatch = Stopwatch.StartNew();
+
+        var crd = CustomEntityDefinitionExtensions.CreateResourceDefinition<T>();
+
+        Logger.Trace(() =>
+            $"Preparing to patch status '{@namespace}/{name}' ('{crd.Kind}/{crd.Version}') "
+            + $"with '{KubernetesJson.Serialize(condition)}'.");
+
+        try
+        {
+            await _client.PatchStatus<T>(name, @namespace, condition, _operatorOptions.FieldManagerName);
+        }
+        catch (HttpOperationException e) when (e.Response.StatusCode == HttpStatusCode.NotFound)
+        {
+            Logger.Trace("Entity disappeared while patching.");
+        }
+
+        Logger.Trace($"Patch complete after {stopwatch.ElapsedMilliseconds}ms.");
+
+        return true;
     }
 }

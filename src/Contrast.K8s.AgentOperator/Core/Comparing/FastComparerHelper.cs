@@ -4,32 +4,31 @@
 using System;
 using System.Collections.Generic;
 
-namespace Contrast.K8s.AgentOperator.Core.Comparing
+namespace Contrast.K8s.AgentOperator.Core.Comparing;
+
+public static class FastComparerHelper
 {
-    public static class FastComparerHelper
+    private static readonly HashSet<Type> PrimitiveTypes = new()
     {
-        private static readonly HashSet<Type> PrimitiveTypes = new()
-        {
-            typeof(decimal),
-            typeof(string),
-            typeof(DateTime),
-            typeof(DateTimeOffset),
-            typeof(Guid),
-        };
+        typeof(decimal),
+        typeof(string),
+        typeof(DateTime),
+        typeof(DateTimeOffset),
+        typeof(Guid),
+    };
 
-        public static bool IsPrimitive(Type type)
-        {
-            return type.IsPrimitive
-                   || type.IsEnum
-                   || PrimitiveTypes.Contains(type)
-                   || IsNullablePrimitive(type);
-        }
+    public static bool IsPrimitive(Type type)
+    {
+        return type.IsPrimitive
+               || type.IsEnum
+               || PrimitiveTypes.Contains(type)
+               || IsNullablePrimitive(type);
+    }
 
-        private static bool IsNullablePrimitive(Type type)
-        {
-            return type.IsGenericType
-                   && type.GetGenericTypeDefinition() == typeof(Nullable<>)
-                   && IsPrimitive(type.GetGenericArguments()[0]);
-        }
+    private static bool IsNullablePrimitive(Type type)
+    {
+        return type.IsGenericType
+               && type.GetGenericTypeDefinition() == typeof(Nullable<>)
+               && IsPrimitive(type.GetGenericArguments()[0]);
     }
 }

@@ -9,28 +9,27 @@ using k8s.Models;
 using KubeOps.Operator.Controller;
 using KubeOps.Operator.Controller.Results;
 
-namespace Contrast.K8s.AgentOperator.Controllers
+namespace Contrast.K8s.AgentOperator.Controllers;
+
+public abstract class GenericController<T> : IResourceController<T> where T : IKubernetesObject<V1ObjectMeta>
 {
-    public abstract class GenericController<T> : IResourceController<T> where T : IKubernetesObject<V1ObjectMeta>
+    private readonly IEventStream _eventStream;
+
+    protected GenericController(IEventStream eventStream)
     {
-        private readonly IEventStream _eventStream;
+        _eventStream = eventStream;
+    }
 
-        protected GenericController(IEventStream eventStream)
-        {
-            _eventStream = eventStream;
-        }
+    public async Task<ResourceControllerResult?> ReconcileAsync(T entity)
+    {
+        await _eventStream.DispatchDeferred(new EntityReconciled<T>(entity));
+        return null;
+    }
 
-        public async Task<ResourceControllerResult?> ReconcileAsync(T entity)
-        {
-            await _eventStream.DispatchDeferred(new EntityReconciled<T>(entity));
-            return null;
-        }
+    public virtual Task StatusModifiedAsync(T entity) => Task.CompletedTask;
 
-        public virtual Task StatusModifiedAsync(T entity) => Task.CompletedTask;
-
-        public async Task DeletedAsync(T entity)
-        {
-            await _eventStream.DispatchDeferred(new EntityDeleted<T>(entity));
-        }
+    public async Task DeletedAsync(T entity)
+    {
+        await _eventStream.DispatchDeferred(new EntityDeleted<T>(entity));
     }
 }

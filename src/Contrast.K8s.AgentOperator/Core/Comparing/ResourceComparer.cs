@@ -3,25 +3,24 @@
 
 using Contrast.K8s.AgentOperator.Core.State.Resources.Interfaces;
 
-namespace Contrast.K8s.AgentOperator.Core.Comparing
+namespace Contrast.K8s.AgentOperator.Core.Comparing;
+
+public interface IResourceComparer
 {
-    public interface IResourceComparer
+    bool AreEqual<T>(T left, T right) where T : INamespacedResource?;
+}
+
+public class ResourceComparer : IResourceComparer
+{
+    private readonly FastComparer _comparer;
+
+    public ResourceComparer(FastComparer comparer)
     {
-        bool AreEqual<T>(T left, T right) where T : INamespacedResource?;
+        _comparer = comparer;
     }
 
-    public class ResourceComparer : IResourceComparer
+    public bool AreEqual<T>(T left, T right) where T : INamespacedResource?
     {
-        private readonly FastComparer _comparer;
-
-        public ResourceComparer(FastComparer comparer)
-        {
-            _comparer = comparer;
-        }
-
-        public bool AreEqual<T>(T left, T right) where T : INamespacedResource?
-        {
-            return _comparer.AreEqual(left, right);
-        }
+        return _comparer.AreEqual(left, right);
     }
 }

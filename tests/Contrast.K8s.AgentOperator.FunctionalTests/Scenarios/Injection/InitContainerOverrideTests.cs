@@ -10,56 +10,55 @@ using k8s.Models;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection
+namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection;
+
+public class InitContainerOverrideTests : IClassFixture<TestingContext>
 {
-    public class InitContainerOverrideTests : IClassFixture<TestingContext>
+    private const string ScenarioName = "init-container-overrides";
+
+    private readonly TestingContext _context;
+
+    public InitContainerOverrideTests(TestingContext context, ITestOutputHelper outputHelper)
     {
-        private const string ScenarioName = "init-container-overrides";
+        _context = context;
+        _context.RegisterOutput(outputHelper);
+    }
 
-        private readonly TestingContext _context;
+    [Fact]
+    public async Task When_any_overrides_are_applied_a_debugging_env_var_should_be_added()
+    {
+        var client = await _context.GetClient();
 
-        public InitContainerOverrideTests(TestingContext context, ITestOutputHelper outputHelper)
+        // Act
+        var result = await client.GetInjectedPodByPrefix(ScenarioName);
+
+        // Assert
+        using (new AssertionScope())
         {
-            _context = context;
-            _context.RegisterOutput(outputHelper);
+            var container = result.Spec.InitContainers.Single(x => x.Name == "contrast-init");
+            var env = container.Env;
+
+            env.Should().ContainSingle(x => x.Name == "CONTRAST_DEBUGGING_SECURITY_CONTEXT_TAINTED").Which.Value.Should().Be("True");
         }
+    }
 
-        [Fact]
-        public async Task When_any_overrides_are_applied_a_debugging_env_var_should_be_added()
+    [Fact]
+    public async Task When_init_container_overrides_exist_then_the_overrides_should_be_merged_and_applied()
+    {
+        var client = await _context.GetClient();
+
+        // Act
+        var result = await client.GetInjectedPodByPrefix(ScenarioName);
+
+        // Assert
+        using (new AssertionScope())
         {
-            var client = await _context.GetClient();
+            var container = result.Spec.InitContainers.Single(x => x.Name == "contrast-init");
+            var context = container.SecurityContext;
 
-            // Act
-            var result = await client.GetInjectedPodByPrefix(ScenarioName);
-
-            // Assert
-            using (new AssertionScope())
-            {
-                var container = result.Spec.InitContainers.Single(x => x.Name == "contrast-init");
-                var env = container.Env;
-
-                env.Should().ContainSingle(x => x.Name == "CONTRAST_DEBUGGING_SECURITY_CONTEXT_TAINTED").Which.Value.Should().Be("True");
-            }
-        }
-
-        [Fact]
-        public async Task When_init_container_overrides_exist_then_the_overrides_should_be_merged_and_applied()
-        {
-            var client = await _context.GetClient();
-
-            // Act
-            var result = await client.GetInjectedPodByPrefix(ScenarioName);
-
-            // Assert
-            using (new AssertionScope())
-            {
-                var container = result.Spec.InitContainers.Single(x => x.Name == "contrast-init");
-                var context = container.SecurityContext;
-
-                context.Should().NotBeNull();
-                context.RunAsUser.Should().Be(499);
-                context.RunAsNonRoot.Should().BeFalse();
-            }
+            context.Should().NotBeNull();
+            context.RunAsUser.Should().Be(499);
+            context.RunAsNonRoot.Should().BeFalse();
         }
     }
 }

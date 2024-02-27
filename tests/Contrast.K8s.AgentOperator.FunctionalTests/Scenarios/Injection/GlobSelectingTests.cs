@@ -9,49 +9,48 @@ using k8s.Models;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection
+namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection;
+
+public class GlobSelectingTests : IClassFixture<TestingContext>
 {
-    public class GlobSelectingTests : IClassFixture<TestingContext>
+    private const string ScenarioName = "glob-selecting";
+
+    private readonly TestingContext _context;
+
+    public GlobSelectingTests(TestingContext context, ITestOutputHelper outputHelper)
     {
-        private const string ScenarioName = "glob-selecting";
+        _context = context;
+        _context.RegisterOutput(outputHelper);
+    }
 
-        private readonly TestingContext _context;
+    [Fact]
+    public async Task When_label_contains_glob_syntax_then_glob_should_be_used()
+    {
+        var client = await _context.GetClient();
 
-        public GlobSelectingTests(TestingContext context, ITestOutputHelper outputHelper)
+        // Act
+        var result = await client.GetInjectedPodByPrefix(ScenarioName);
+
+        // Assert
+        result.Annotations().Should().ContainKey("agents.contrastsecurity.com/is-injected").WhoseValue.Should().Be("True");
+    }
+
+    [Fact]
+    public async Task When_image_contains_glob_syntax_then_glob_should_be_used()
+    {
+        var client = await _context.GetClient();
+
+        // Act
+        var result = await client.GetInjectedPodByPrefix(ScenarioName);
+
+        // Assert
+        using (new AssertionScope())
         {
-            _context = context;
-            _context.RegisterOutput(outputHelper);
-        }
+            var nonInjectionContainer = result.Spec.Containers.Should().ContainSingle(x => x.Name == "ignore").Subject;
+            nonInjectionContainer.Env.Should().BeNull();
 
-        [Fact]
-        public async Task When_label_contains_glob_syntax_then_glob_should_be_used()
-        {
-            var client = await _context.GetClient();
-
-            // Act
-            var result = await client.GetInjectedPodByPrefix(ScenarioName);
-
-            // Assert
-            result.Annotations().Should().ContainKey("agents.contrastsecurity.com/is-injected").WhoseValue.Should().Be("True");
-        }
-
-        [Fact]
-        public async Task When_image_contains_glob_syntax_then_glob_should_be_used()
-        {
-            var client = await _context.GetClient();
-
-            // Act
-            var result = await client.GetInjectedPodByPrefix(ScenarioName);
-
-            // Assert
-            using (new AssertionScope())
-            {
-                var nonInjectionContainer = result.Spec.Containers.Should().ContainSingle(x => x.Name == "ignore").Subject;
-                nonInjectionContainer.Env.Should().BeNull();
-
-                var injectionContainer = result.Spec.Containers.Should().ContainSingle(x => x.Name == "busybox").Subject;
-                injectionContainer.Env.Should().Contain(x => x.Name == "CONTRAST__API__URL");
-            }
+            var injectionContainer = result.Spec.Containers.Should().ContainSingle(x => x.Name == "busybox").Subject;
+            injectionContainer.Env.Should().Contain(x => x.Name == "CONTRAST__API__URL");
         }
     }
 }

@@ -9,80 +9,79 @@ using Contrast.K8s.AgentOperator.Options;
 using Nito.AsyncEx;
 using NLog;
 
-namespace Contrast.K8s.AgentOperator.Core.Reactions.Merging
+namespace Contrast.K8s.AgentOperator.Core.Reactions.Merging;
+
+public class MergingStateProvider
 {
-    public class MergingStateProvider
+    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
+    private readonly TimeSpan _mergeInterval;
+    private readonly AsyncLock _lock = new();
+
+    private MergeState? _state;
+
+    public MergingStateProvider(OperatorOptions options)
     {
-        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        _mergeInterval = TimeSpan.FromSeconds(options.EventQueueMergeWindowSeconds);
+    }
 
-        private readonly TimeSpan _mergeInterval;
-        private readonly AsyncLock _lock = new();
-
-        private MergeState? _state;
-
-        public MergingStateProvider(OperatorOptions options)
+    public async ValueTask<DeferredStateModified?> GetNextEvent(bool isTick, CancellationToken cancellationToken = default)
+    {
+        using (await _lock.LockAsync(cancellationToken))
         {
-            _mergeInterval = TimeSpan.FromSeconds(options.EventQueueMergeWindowSeconds);
-        }
-
-        public async ValueTask<DeferredStateModified?> GetNextEvent(bool isTick, CancellationToken cancellationToken = default)
-        {
-            using (await _lock.LockAsync(cancellationToken))
+            if (_state == null)
             {
-                if (_state == null)
+                if (isTick)
                 {
-                    if (isTick)
-                    {
-                        return null;
-                    }
-
-                    var mergeUntil = DateTimeOffset.Now + _mergeInterval;
-                    Logger.Info($"Merging state modified events until '{mergeUntil}'.");
-
-                    // Not merging, start merging...
-                    _state = new MergeState(mergeUntil);
-
-                    return DeferredStateModified.FirstMerged;
-                }
-
-                if (_state.MergeUntil > DateTimeOffset.Now)
-                {
-                    // Is merging.
-                    if (!isTick)
-                    {
-                        _state.IncrementMerged();
-                    }
-
                     return null;
                 }
 
-                // Merging expired.
-                var state = _state;
-                _state = null;
-                if (state.Merged > 0)
+                var mergeUntil = DateTimeOffset.Now + _mergeInterval;
+                Logger.Info($"Merging state modified events until '{mergeUntil}'.");
+
+                // Not merging, start merging...
+                _state = new MergeState(mergeUntil);
+
+                return DeferredStateModified.FirstMerged;
+            }
+
+            if (_state.MergeUntil > DateTimeOffset.Now)
+            {
+                // Is merging.
+                if (!isTick)
                 {
-                    Logger.Trace($"Flushing state modified, {state.Merged} events were merged.");
-                    return new DeferredStateModified(state.Merged);
+                    _state.IncrementMerged();
                 }
 
                 return null;
             }
+
+            // Merging expired.
+            var state = _state;
+            _state = null;
+            if (state.Merged > 0)
+            {
+                Logger.Trace($"Flushing state modified, {state.Merged} events were merged.");
+                return new DeferredStateModified(state.Merged);
+            }
+
+            return null;
+        }
+    }
+
+    private class MergeState
+    {
+        public DateTimeOffset MergeUntil { get; }
+        public int Merged { get; private set; }
+
+        public MergeState(DateTimeOffset mergeUntil)
+        {
+            MergeUntil = mergeUntil;
         }
 
-        private class MergeState
+        public void IncrementMerged()
         {
-            public DateTimeOffset MergeUntil { get; }
-            public int Merged { get; private set; }
-
-            public MergeState(DateTimeOffset mergeUntil)
-            {
-                MergeUntil = mergeUntil;
-            }
-
-            public void IncrementMerged()
-            {
-                Merged++;
-            }
+            Merged++;
         }
     }
 }

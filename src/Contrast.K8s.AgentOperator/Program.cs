@@ -16,63 +16,62 @@ using NLog;
 using NLog.Extensions.Logging;
 using NLog.Web;
 
-namespace Contrast.K8s.AgentOperator
+namespace Contrast.K8s.AgentOperator;
+
+public class Program
 {
-    public class Program
+    public static async Task<int> Main(string[] args)
     {
-        public static async Task<int> Main(string[] args)
+        var logger = LogManager.Setup()
+                               .LoadConfigurationFromAppSettings()
+                               .GetCurrentClassLogger();
+
+        try
         {
-            var logger = LogManager.Setup()
-                                   .LoadConfigurationFromAppSettings()
-                                   .GetCurrentClassLogger();
+            logger.Info($"Starting the Contrast Security Agent Operator {OperatorVersion.Version}.");
 
-            try
-            {
-                logger.Info($"Starting the Contrast Security Agent Operator {OperatorVersion.Version}.");
-
-                return await CreateHostBuilder(args)
-                             .Build()
-                             .RunOperatorAsync(args);
-            }
-            catch (HttpOperationException e)
-            {
-                logger.Error(e, $"Fatal error during application startup. (Content: '{e.Response.Content}')");
-                throw;
-            }
-            catch (Exception e)
-            {
-                logger.Error(e, "Fatal error during application startup.");
-                throw;
-            }
-            finally
-            {
-                // Ensure to flush and stop internal timers/threads before application-exit (Avoid segmentation fault on Linux)
-                LogManager.Shutdown();
-            }
+            return await CreateHostBuilder(args)
+                         .Build()
+                         .RunOperatorAsync(args);
         }
-
-        private static IHostBuilder CreateHostBuilder(string[] args)
+        catch (HttpOperationException e)
         {
-            return Host.CreateDefaultBuilder(args)
-                       .ConfigureLogging(builder =>
+            logger.Error(e, $"Fatal error during application startup. (Content: '{e.Response.Content}')");
+            throw;
+        }
+        catch (Exception e)
+        {
+            logger.Error(e, "Fatal error during application startup.");
+            throw;
+        }
+        finally
+        {
+            // Ensure to flush and stop internal timers/threads before application-exit (Avoid segmentation fault on Linux)
+            LogManager.Shutdown();
+        }
+    }
+
+    private static IHostBuilder CreateHostBuilder(string[] args)
+    {
+        return Host.CreateDefaultBuilder(args)
+                   .ConfigureLogging(builder =>
+                   {
+                       builder.ClearProviders();
+                       builder.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace);
+                       builder.AddNLog();
+                   })
+                   .UseServiceProviderFactory(new AutofacServiceProviderFactory())
+                   .ConfigureWebHostDefaults(builder =>
+                   {
+                       builder.UseStartup<Startup>();
+                       builder.UseKestrel(options =>
                        {
-                           builder.ClearProviders();
-                           builder.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace);
-                           builder.AddNLog();
-                       })
-                       .UseServiceProviderFactory(new AutofacServiceProviderFactory())
-                       .ConfigureWebHostDefaults(builder =>
-                       {
-                           builder.UseStartup<Startup>();
-                           builder.UseKestrel(options =>
+                           options.ConfigureHttpsDefaults(adapterOptions =>
                            {
-                               options.ConfigureHttpsDefaults(adapterOptions =>
-                               {
-                                   var selector = options.ApplicationServices.GetRequiredService<IKestrelCertificateSelector>();
-                                   adapterOptions.ServerCertificateSelector += (_, s) => selector.SelectCertificate(s);
-                               });
+                               var selector = options.ApplicationServices.GetRequiredService<IKestrelCertificateSelector>();
+                               adapterOptions.ServerCertificateSelector += (_, s) => selector.SelectCertificate(s);
                            });
                        });
-        }
+                   });
     }
 }

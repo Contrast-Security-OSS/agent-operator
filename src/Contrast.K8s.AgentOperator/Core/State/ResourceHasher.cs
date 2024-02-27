@@ -7,55 +7,54 @@ using System.Text;
 using Contrast.K8s.AgentOperator.Core.Kube;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
 
-namespace Contrast.K8s.AgentOperator.Core.State
+namespace Contrast.K8s.AgentOperator.Core.State;
+
+public interface IResourceHasher
 {
-    public interface IResourceHasher
+    string GetHash(AgentInjectorResource injector,
+                   AgentConnectionResource connection,
+                   AgentConfigurationResource? configuration,
+                   IEnumerable<SecretResource> secretResources);
+}
+
+public class ResourceHasher : IResourceHasher
+{
+    private readonly KubernetesJsonSerializer _jsonSerializer;
+
+    public ResourceHasher(KubernetesJsonSerializer jsonSerializer)
     {
-        string GetHash(AgentInjectorResource injector,
-                       AgentConnectionResource connection,
-                       AgentConfigurationResource? configuration,
-                       IEnumerable<SecretResource> secretResources);
+        _jsonSerializer = jsonSerializer;
     }
 
-    public class ResourceHasher : IResourceHasher
+    public string GetHash(AgentInjectorResource injector,
+                          AgentConnectionResource connection,
+                          AgentConfigurationResource? configuration,
+                          IEnumerable<SecretResource> secretResources)
     {
-        private readonly KubernetesJsonSerializer _jsonSerializer;
+        return GetHashImpl(injector, connection, configuration, secretResources);
+    }
 
-        public ResourceHasher(KubernetesJsonSerializer jsonSerializer)
+    private string GetHashImpl(params object?[] objects)
+    {
+        var builder = new StringBuilder();
+        foreach (var o in objects)
         {
-            _jsonSerializer = jsonSerializer;
+            builder.Append(GetHashImpl(o));
         }
 
-        public string GetHash(AgentInjectorResource injector,
-                              AgentConnectionResource connection,
-                              AgentConfigurationResource? configuration,
-                              IEnumerable<SecretResource> secretResources)
-        {
-            return GetHashImpl(injector, connection, configuration, secretResources);
-        }
+        return Sha256(builder.ToString());
+    }
 
-        private string GetHashImpl(params object?[] objects)
-        {
-            var builder = new StringBuilder();
-            foreach (var o in objects)
-            {
-                builder.Append(GetHashImpl(o));
-            }
+    private string GetHashImpl(object? o)
+    {
+        var json = _jsonSerializer.SerializeObject(o ?? "<null>");
+        return Sha256(json);
+    }
 
-            return Sha256(builder.ToString());
-        }
-
-        private string GetHashImpl(object? o)
-        {
-            var json = _jsonSerializer.SerializeObject(o ?? "<null>");
-            return Sha256(json);
-        }
-
-        private static string Sha256(string text)
-        {
-            using var sha256 = SHA256.Create();
-            var bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(text));
-            return HexConverter.ToLowerHex(bytes);
-        }
+    private static string Sha256(string text)
+    {
+        using var sha256 = SHA256.Create();
+        var bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(text));
+        return HexConverter.ToLowerHex(bytes);
     }
 }

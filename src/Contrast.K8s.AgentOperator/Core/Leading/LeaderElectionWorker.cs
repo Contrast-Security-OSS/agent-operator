@@ -8,31 +8,30 @@ using JetBrains.Annotations;
 using KubeOps.Operator.Leadership;
 using Microsoft.Extensions.Hosting;
 
-namespace Contrast.K8s.AgentOperator.Core.Leading
+namespace Contrast.K8s.AgentOperator.Core.Leading;
+
+[UsedImplicitly]
+public class LeaderElectionWorker : BackgroundService
 {
-    [UsedImplicitly]
-    public class LeaderElectionWorker : BackgroundService
+    private readonly ILeaderElectionState _leaderElectionState;
+    private readonly ILeaderElection _leaderElection;
+
+    public LeaderElectionWorker(ILeaderElectionState leaderElectionState, ILeaderElection leaderElection)
     {
-        private readonly ILeaderElectionState _leaderElectionState;
-        private readonly ILeaderElection _leaderElection;
+        _leaderElectionState = leaderElectionState;
+        _leaderElection = leaderElection;
+    }
 
-        public LeaderElectionWorker(ILeaderElectionState leaderElectionState, ILeaderElection leaderElection)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        using (_leaderElection.LeadershipChange.Subscribe(OnNext))
         {
-            _leaderElectionState = leaderElectionState;
-            _leaderElection = leaderElection;
+            await Task.Delay(Timeout.Infinite, stoppingToken);
         }
+    }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            using (_leaderElection.LeadershipChange.Subscribe(OnNext))
-            {
-                await Task.Delay(Timeout.Infinite, stoppingToken);
-            }
-        }
-
-        private async void OnNext(LeaderState state)
-        {
-            await _leaderElectionState.SetLeaderState(state);
-        }
+    private async void OnNext(LeaderState state)
+    {
+        await _leaderElectionState.SetLeaderState(state);
     }
 }

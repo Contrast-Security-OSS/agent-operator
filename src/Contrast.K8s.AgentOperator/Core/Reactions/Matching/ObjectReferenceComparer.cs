@@ -4,20 +4,19 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
-namespace Contrast.K8s.AgentOperator.Core.Reactions.Matching
+namespace Contrast.K8s.AgentOperator.Core.Reactions.Matching;
+
+public class ObjectReferenceComparer<T> : IEqualityComparer<T> where T : class
 {
-    public class ObjectReferenceComparer<T> : IEqualityComparer<T> where T : class
+    public static ObjectReferenceComparer<T> Default { get; } = new();
+
+    public bool Equals(T? x, T? y)
     {
-        public static ObjectReferenceComparer<T> Default { get; } = new();
+        return ReferenceEquals(x, y);
+    }
 
-        public bool Equals(T? x, T? y)
-        {
-            return ReferenceEquals(x, y);
-        }
-
-        public int GetHashCode(T obj)
-        {
-            return RuntimeHelpers.GetHashCode(obj);
-        }
+    public int GetHashCode(T obj)
+    {
+        return RuntimeHelpers.GetHashCode(obj);
     }
 }

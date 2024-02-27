@@ -8,40 +8,39 @@ using Contrast.K8s.AgentOperator.Core.State;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Interfaces;
 
-namespace Contrast.K8s.AgentOperator.Core.Reactions.Matching
+namespace Contrast.K8s.AgentOperator.Core.Reactions.Matching;
+
+public class AgentInjectorMatcher
 {
-    public class AgentInjectorMatcher
+    private readonly IGlobMatcher _globMatcher;
+
+    public AgentInjectorMatcher(IGlobMatcher globMatcher)
     {
-        private readonly IGlobMatcher _globMatcher;
+        _globMatcher = globMatcher;
+    }
 
-        public AgentInjectorMatcher(IGlobMatcher globMatcher)
-        {
-            _globMatcher = globMatcher;
-        }
+    public IEnumerable<ResourceIdentityPair<AgentInjectorResource>> GetMatchingInjectors(
+        IEnumerable<ResourceIdentityPair<AgentInjectorResource>> readyInjectors,
+        ResourceIdentityPair<IResourceWithPodTemplate> target)
+    {
+        return readyInjectors.Where(injector => InjectorMatchesTarget(injector, target));
+    }
 
-        public IEnumerable<ResourceIdentityPair<AgentInjectorResource>> GetMatchingInjectors(
-            IEnumerable<ResourceIdentityPair<AgentInjectorResource>> readyInjectors,
-            ResourceIdentityPair<IResourceWithPodTemplate> target)
-        {
-            return readyInjectors.Where(injector => InjectorMatchesTarget(injector, target));
-        }
+    private bool InjectorMatchesTarget(ResourceIdentityPair<AgentInjectorResource> injector,
+                                       ResourceIdentityPair<IResourceWithPodTemplate> target)
+    {
+        var (_, labelPatterns, namespaces) = injector.Resource.Selector;
 
-        private bool InjectorMatchesTarget(ResourceIdentityPair<AgentInjectorResource> injector,
-                                           ResourceIdentityPair<IResourceWithPodTemplate> target)
-        {
-            var (_, labelPatterns, namespaces) = injector.Resource.Selector;
+        var matchesNamespace = namespaces.Contains(target.Identity.Namespace, StringComparer.OrdinalIgnoreCase);
+        var matchesLabel = !labelPatterns.Any() || labelPatterns.All(x => MatchesLabel(target.Resource, x.Key, x.Value));
+        return matchesNamespace && matchesLabel;
+    }
 
-            var matchesNamespace = namespaces.Contains(target.Identity.Namespace, StringComparer.OrdinalIgnoreCase);
-            var matchesLabel = !labelPatterns.Any() || labelPatterns.All(x => MatchesLabel(target.Resource, x.Key, x.Value));
-            return matchesNamespace && matchesLabel;
-        }
-
-        private bool MatchesLabel<T>(T targetResource, string key, string labelPattern) where T : IResourceWithPodTemplate
-        {
-            return targetResource.Labels.Any(
-                label => string.Equals(key, label.Name, StringComparison.OrdinalIgnoreCase)
-                         && _globMatcher.Matches(labelPattern, label.Value)
-            );
-        }
+    private bool MatchesLabel<T>(T targetResource, string key, string labelPattern) where T : IResourceWithPodTemplate
+    {
+        return targetResource.Labels.Any(
+            label => string.Equals(key, label.Name, StringComparison.OrdinalIgnoreCase)
+                     && _globMatcher.Matches(labelPattern, label.Value)
+        );
     }
 }

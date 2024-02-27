@@ -10,32 +10,31 @@ using JetBrains.Annotations;
 using MediatR;
 using NLog;
 
-namespace Contrast.K8s.AgentOperator.Core.Chaining
+namespace Contrast.K8s.AgentOperator.Core.Chaining;
+
+[UsedImplicitly]
+public class DynaKubeHandler : INotificationHandler<EntityReconciled<V1Beta1DynaKube>>
 {
-    [UsedImplicitly]
-    public class DynaKubeHandler : INotificationHandler<EntityReconciled<V1Beta1DynaKube>>
+    private readonly InjectorOptions _injectorOptions;
+    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
+    public DynaKubeHandler(InjectorOptions injectorOptions)
     {
-        private readonly InjectorOptions _injectorOptions;
-        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        _injectorOptions = injectorOptions;
+    }
 
-        public DynaKubeHandler(InjectorOptions injectorOptions)
+    public Task Handle(EntityReconciled<V1Beta1DynaKube> notification, CancellationToken cancellationToken)
+    {
+        if (!_injectorOptions.EnableEarlyChaining)
         {
-            _injectorOptions = injectorOptions;
-        }
-
-        public Task Handle(EntityReconciled<V1Beta1DynaKube> notification, CancellationToken cancellationToken)
-        {
-            if (!_injectorOptions.EnableEarlyChaining)
+            var oneAgentSpec = notification.Entity.Spec.OneAgent;
+            if (oneAgentSpec?.ClassicFullStack != null)
             {
-                var oneAgentSpec = notification.Entity.Spec.OneAgent;
-                if (oneAgentSpec?.ClassicFullStack != null)
-                {
-                    Logger.Warn("Dynatrace Operator is present and in classicFullStack mode. "
-                                + "Please set the environment variable 'CONTRAST_ENABLE_EARLY_CHAINING=true' on the operator and restart the affected pods.");
-                }
+                Logger.Warn("Dynatrace Operator is present and in classicFullStack mode. "
+                            + "Please set the environment variable 'CONTRAST_ENABLE_EARLY_CHAINING=true' on the operator and restart the affected pods.");
             }
-
-            return Task.CompletedTask;
         }
+
+        return Task.CompletedTask;
     }
 }

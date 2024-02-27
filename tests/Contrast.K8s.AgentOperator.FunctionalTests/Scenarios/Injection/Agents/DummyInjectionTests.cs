@@ -7,31 +7,30 @@ using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection.Agents
+namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection.Agents;
+
+public class DummyInjectionTests : IClassFixture<TestingContext>
 {
-    public class DummyInjectionTests : IClassFixture<TestingContext>
+    private const string ScenarioName = "injection-dummy";
+
+    private readonly TestingContext _context;
+
+    public DummyInjectionTests(TestingContext context, ITestOutputHelper outputHelper)
     {
-        private const string ScenarioName = "injection-dummy";
+        _context = context;
+        _context.RegisterOutput(outputHelper);
+    }
 
-        private readonly TestingContext _context;
+    [Fact]
+    public async Task When_injected_then_pod_should_have_agent_injection_init_image()
+    {
+        var client = await _context.GetClient();
 
-        public DummyInjectionTests(TestingContext context, ITestOutputHelper outputHelper)
-        {
-            _context = context;
-            _context.RegisterOutput(outputHelper);
-        }
+        // Act
+        var result = await client.GetInjectedPodByPrefix(ScenarioName);
 
-        [Fact]
-        public async Task When_injected_then_pod_should_have_agent_injection_init_image()
-        {
-            var client = await _context.GetClient();
-
-            // Act
-            var result = await client.GetInjectedPodByPrefix(ScenarioName);
-
-            // Assert
-            result.Spec.InitContainers.Should().ContainSingle(x => x.Name == "contrast-init")
-                  .Which.Image.Should().Be("docker.io/library/busybox:latest");
-        }
+        // Assert
+        result.Spec.InitContainers.Should().ContainSingle(x => x.Name == "contrast-init")
+              .Which.Image.Should().Be("docker.io/library/busybox:latest");
     }
 }
