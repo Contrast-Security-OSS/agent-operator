@@ -130,7 +130,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: imranismail/setup-kustomize@v2
-      - uses: azure/setup-helm@v3
+      - uses: azure/setup-helm@v4
         with:
           version: v3.10.1
           token: ${{ secrets.GITHUB_TOKEN }}
