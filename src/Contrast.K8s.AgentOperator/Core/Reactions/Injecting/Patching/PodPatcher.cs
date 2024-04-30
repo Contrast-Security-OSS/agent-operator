@@ -143,8 +143,12 @@ public class PodPatcher : IPodPatcher
         foreach (System.Text.RegularExpressions.Match match in matches)
         {
             string labelName = match.Groups[1].Value;
-            string labelValue = pod.Metadata.Labels[labelName];
-            value = value.Replace("%labels."+labelName+"%", labelValue);
+            if (pod.Metadata.Labels.ContainsKey(labelName))
+            {
+                string labelValue = pod.Metadata.Labels[labelName];
+                value = value.Replace("%labels."+labelName+"%", labelValue);
+            }
+
         }
 
         //annotations
@@ -153,8 +157,11 @@ public class PodPatcher : IPodPatcher
         foreach (System.Text.RegularExpressions.Match match in matchesAnnotations)
         {
             string annotationName = match.Groups[1].Value;
-            string annotationValue = pod.Metadata.Annotations[annotationName];
-            value = value.Replace("%annotations."+annotationName+"%", annotationValue);
+            if(pod.Metadata.Annotations.ContainsKey(annotationName))
+            {
+                string annotationValue = pod.Metadata.Annotations[annotationName];
+                value = value.Replace("%annotations."+annotationName+"%", annotationValue);
+            }
         }
         return value;
     }
