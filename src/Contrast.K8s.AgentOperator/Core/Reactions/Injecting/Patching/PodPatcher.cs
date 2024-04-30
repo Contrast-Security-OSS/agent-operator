@@ -114,7 +114,7 @@ public class PodPatcher : IPodPatcher
             var writableVolumeMount = new V1VolumeMount(context.WritableMountPath, writableVolume.Name, readOnlyProperty: false);
             container.VolumeMounts.AddOrUpdate(writableVolumeMount.Name, writableVolumeMount);
 
-            var genericPatches = GenerateEnvVars(context, pod);
+            var genericPatches = GenerateEnvVars(context, pod, container);
             var agentPatches = agentPatcher?.GenerateEnvVars(context) ?? Array.Empty<V1EnvVar>();
 
             foreach (var envVar in genericPatches.Concat(agentPatches))
@@ -132,10 +132,10 @@ public class PodPatcher : IPodPatcher
         }
     }
 
-    private string GetVarsFromCluster(string value, V1Pod pod, PatchingContext context)
+    private string GetVarsFromCluster(string value, V1Pod pod, PatchingContext context, V1Container container)
     {
         value = value.Replace("%namespace%", context.WorkloadNamespace);
-        value = value.Replace("%image%", pod.Spec.Containers[0].Image);
+        value = value.Replace("%image%", container.Image);
 
         //labels
         string pattern = @"%labels.(.*?)%";
@@ -293,7 +293,7 @@ public class PodPatcher : IPodPatcher
         }
     }
 
-    private IEnumerable<V1EnvVar> GenerateEnvVars(PatchingContext context, V1Pod pod)
+    private IEnumerable<V1EnvVar> GenerateEnvVars(PatchingContext context, V1Pod pod, V1Container container)
     {
         var (workloadName, workloadNamespace, _, connection, configuration, agentMountPath, writableMountPath) = context;
 
@@ -333,7 +333,7 @@ public class PodPatcher : IPodPatcher
                     //if value contains % then call a new function called getVarsFromCluster
                     if (value.Contains("%"))
                     {
-                        yield return new V1EnvVar($"CONTRAST__{key.Replace(".", "__").ToUpperInvariant()}", GetVarsFromCluster(value, pod, context));
+                        yield return new V1EnvVar($"CONTRAST__{key.Replace(".", "__").ToUpperInvariant()}", GetVarsFromCluster(value, pod, context, container));
                     }
                     else
                     {
