@@ -158,8 +158,6 @@ public class PodPatcher : IPodPatcher
             string annotationValue = pod.Metadata.Annotations[annotationName];
             value = value.Replace("%annotations."+annotationName+"%", annotationValue);
         }
-
-        
         return value;
     }
 
@@ -334,10 +332,6 @@ public class PodPatcher : IPodPatcher
                         yield return new V1EnvVar($"CONTRAST__{key.Replace(".", "__").ToUpperInvariant()}", value);
                     }
                 }
-
-
-
-            
             }
         }
 
