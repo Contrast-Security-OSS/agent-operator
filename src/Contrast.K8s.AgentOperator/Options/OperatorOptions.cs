@@ -13,4 +13,6 @@ public record OperatorOptions(string Namespace,
                               bool RunInitContainersAsNonRoot,
                               bool SuppressSeccompProfile,
                               decimal ChaosRatio,
+                              (string cpuRequest, string memoryRequest) initRequests,
+                              (string cpuLimit, string memoryLimit) initLimits,
                               string FieldManagerName = "agents.contrastsecurity.com");

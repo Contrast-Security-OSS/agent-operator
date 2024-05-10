@@ -186,14 +186,14 @@ public class PodPatcher : IPodPatcher
         securityContent.Capabilities.Drop ??= MergeDropCapabilities(containerSecurityContext);
 
         // https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-requests-and-limits-of-pod-and-container
-        const string cpuLimit = "100m";
-        const string memoryLimit = "64Mi";
+        var (cpuRequest, memoryRequest) = _operatorOptions.initRequests;
+        var (cpuLimit, memoryLimit) = _operatorOptions.initLimits;
 
         var resources = new V1ResourceRequirements();
 
         resources.Requests ??= new Dictionary<string, ResourceQuantity>(StringComparer.Ordinal);
-        resources.Requests.TryAdd("cpu", new ResourceQuantity(cpuLimit));
-        resources.Requests.TryAdd("memory", new ResourceQuantity(memoryLimit));
+        resources.Requests.TryAdd("cpu", new ResourceQuantity(cpuRequest));
+        resources.Requests.TryAdd("memory", new ResourceQuantity(memoryRequest));
 
         resources.Limits ??= new Dictionary<string, ResourceQuantity>(StringComparer.Ordinal);
         resources.Limits.TryAdd("cpu", new ResourceQuantity(cpuLimit));
