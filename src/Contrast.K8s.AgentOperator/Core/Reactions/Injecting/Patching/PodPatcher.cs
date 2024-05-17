@@ -27,13 +27,15 @@ public class PodPatcher : IPodPatcher
     private readonly IGlobMatcher _globMatcher;
     private readonly IClusterIdState _clusterIdState;
     private readonly OperatorOptions _operatorOptions;
+    private readonly InitContainerOptions _initOptions;
 
-    public PodPatcher(Func<IEnumerable<IAgentPatcher>> patchersFactory, IGlobMatcher globMatcher, IClusterIdState clusterIdState, OperatorOptions operatorOptions)
+    public PodPatcher(Func<IEnumerable<IAgentPatcher>> patchersFactory, IGlobMatcher globMatcher, IClusterIdState clusterIdState, OperatorOptions operatorOptions, InitContainerOptions initOptions)
     {
         _patchersFactory = patchersFactory;
         _globMatcher = globMatcher;
         _clusterIdState = clusterIdState;
         _operatorOptions = operatorOptions;
+        _initOptions = initOptions;
     }
 
     public ValueTask Patch(PatchingContext context, V1Pod pod, CancellationToken cancellationToken = default)
@@ -186,16 +188,15 @@ public class PodPatcher : IPodPatcher
         securityContent.Capabilities.Drop ??= MergeDropCapabilities(containerSecurityContext);
 
         // https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-requests-and-limits-of-pod-and-container
-        var initOptions = _operatorOptions.InitContainerOptions;
         var resources = new V1ResourceRequirements();
 
         resources.Requests ??= new Dictionary<string, ResourceQuantity>(StringComparer.Ordinal);
-        resources.Requests.TryAdd("cpu", new ResourceQuantity(initOptions.CpuRequest));
-        resources.Requests.TryAdd("memory", new ResourceQuantity(initOptions.MemoryRequest));
+        resources.Requests.TryAdd("cpu", new ResourceQuantity(_initOptions.CpuRequest));
+        resources.Requests.TryAdd("memory", new ResourceQuantity(_initOptions.MemoryRequest));
 
         resources.Limits ??= new Dictionary<string, ResourceQuantity>(StringComparer.Ordinal);
-        resources.Limits.TryAdd("cpu", new ResourceQuantity(initOptions.CpuLimit));
-        resources.Limits.TryAdd("memory", new ResourceQuantity(initOptions.MemoryLimit));
+        resources.Limits.TryAdd("cpu", new ResourceQuantity(_initOptions.CpuLimit));
+        resources.Limits.TryAdd("memory", new ResourceQuantity(_initOptions.MemoryLimit));
 
         var initContainer = new V1Container("contrast-init")
         {
