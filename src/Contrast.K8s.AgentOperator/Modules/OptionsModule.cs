@@ -91,6 +91,21 @@ public class OptionsModule : Module
                 chaosPercent = parsedChaosPercent;
             }
 
+            return new OperatorOptions(
+                @namespace,
+                settleDuration,
+                eventQueueSize,
+                fullMode,
+                eventQueueMergeWindowSeconds,
+                runInitContainersAsNonRoot,
+                suppressSeccompProfile,
+                chaosPercent / 100m);
+        }).SingleInstance();
+
+        builder.Register(context =>
+        {
+            var logger = context.Resolve<IOptionsLogger>();
+
             var cpuRequest = "100m";
             var cpuLimit = "100m";
             if (GetEnvironmentVariableAsString("CONTRAST_INITCONTAINER_CPU_REQUEST", out var cpuRequestStr))
@@ -119,17 +134,7 @@ public class OptionsModule : Module
                 memoryLimit = memoryLimitStr;
             }
 
-            return new OperatorOptions(
-                @namespace,
-                settleDuration,
-                eventQueueSize,
-                fullMode,
-                eventQueueMergeWindowSeconds,
-                runInitContainersAsNonRoot,
-                suppressSeccompProfile,
-                chaosPercent / 100m,
-                new InitContainerOptions(cpuRequest, cpuLimit, memoryRequest, memoryLimit)
-            );
+            return new InitContainerOptions(cpuRequest, cpuLimit, memoryRequest, memoryLimit);
         }).SingleInstance();
 
         builder.Register(context =>
