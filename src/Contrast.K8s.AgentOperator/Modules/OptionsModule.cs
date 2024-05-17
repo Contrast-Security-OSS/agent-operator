@@ -91,32 +91,32 @@ public class OptionsModule : Module
                 chaosPercent = parsedChaosPercent;
             }
 
-            var @cpuRequest = "100m";
-            var @cpuLimit = "100m";
+            var cpuRequest = "100m";
+            var cpuLimit = "100m";
             if (GetEnvironmentVariableAsString("CONTRAST_INITCONTAINER_CPU_REQUEST", out var cpuRequestStr))
             {
-                logger.LogOptionValue("initcontainer-cpu-request", @cpuRequest, cpuRequestStr);
-                @cpuRequest = cpuRequestStr;
+                logger.LogOptionValue("initcontainer-cpu-request", cpuRequest, cpuRequestStr);
+                cpuRequest = cpuRequestStr;
             }
 
             if (GetEnvironmentVariableAsString("CONTRAST_INITCONTAINER_CPU_LIMIT", out var cpuLimitStr))
             {
-                logger.LogOptionValue("initcontainer-cpu-limit", @cpuLimit, cpuLimitStr);
-                @cpuLimit = cpuLimitStr;
+                logger.LogOptionValue("initcontainer-cpu-limit", cpuLimit, cpuLimitStr);
+                cpuLimit = cpuLimitStr;
             }
 
-            var @memoryLimit = "64Mi";
-            var @memoryRequest = "64Mi";
+            var memoryLimit = "64Mi";
+            var memoryRequest = "64Mi";
             if (GetEnvironmentVariableAsString("CONTRAST_INITCONTAINER_MEMORY_REQUEST", out var memoryRequestStr))
             {
-                logger.LogOptionValue("initcontainer-memory-request", @memoryRequest, memoryRequestStr);
-                @memoryRequest = memoryRequestStr;
+                logger.LogOptionValue("initcontainer-memory-request", memoryRequest, memoryRequestStr);
+                memoryRequest = memoryRequestStr;
             }
 
             if (GetEnvironmentVariableAsString("CONTRAST_INITCONTAINER_MEMORY_LIMIT", out var memoryLimitStr))
             {
-                logger.LogOptionValue("initcontainer-memory-limit", @memoryLimit, memoryLimitStr);
-                @memoryLimit = memoryLimitStr;
+                logger.LogOptionValue("initcontainer-memory-limit", memoryLimit, memoryLimitStr);
+                memoryLimit = memoryLimitStr;
             }
 
             return new OperatorOptions(
@@ -128,8 +128,7 @@ public class OptionsModule : Module
                 runInitContainersAsNonRoot,
                 suppressSeccompProfile,
                 chaosPercent / 100m,
-                (cpuRequest, memoryRequest),
-                (cpuLimit, memoryLimit)
+                new InitContainerOptions(cpuRequest, cpuLimit, memoryRequest, memoryLimit)
             );
         }).SingleInstance();
 
