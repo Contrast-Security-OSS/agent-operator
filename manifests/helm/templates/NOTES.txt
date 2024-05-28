@@ -1,0 +1,41 @@
+{{ .Chart.Name }} version {{ .Chart.Version }} deployed!
+
+{{- if .Values.agentInjectors.enabled }}
+✅ {{ len .Values.agentInjectors.injectors }} {{ len .Values.agentInjectors.injectors | plural "injector" "injectors" }} {{ len .Values.agentInjectors.injectors | plural "has" "have" }} been deployed to {{ len .Values.agentInjectors.namespaces | plural "namespace" "namespaces" }}: {{ join ", " .Values.agentInjectors.namespaces}}
+  To use with your workloads:
+
+  {{- range $injector := $.Values.agentInjectors.injectors }}
+
+  {{ $injector.name }} ({{ $injector.language }}{{- if $injector.imageVersion }}/v{{$injector.imageVersion}}{{- end }}):
+    {{- if or $injector.selector $injector.images }}
+    {{ $selector := $injector.selector | default dict -}}
+    {{- if $selector.labels }}⎈ kubectl label deployment/<your_deployment_name> {{- range $index, $label := $selector.labels }} {{ $label.name }}={{ $label.value }}{{- end -}}
+    {{- else -}}
+    ℹ️  No label requirement
+    {{- end }}
+    {{- if $selector.images }}
+    ℹ️  Applicable only for images named {{ join "|" $selector.images }}
+    {{- end }}
+    {{- else }}
+    🪄  Applies to all workloads
+    {{- end }}
+    {{- if eq $injector.enabled false }}
+    ⚠️  Injector is disabled
+    {{- end }}
+  {{- end }}
+{{- else}}
+⚠️  agentInjectors.enabled was false, so no injectors deployed. Enable this for easier deployment via this chart, or refer to documentation here to manually create them: https://docs.contrastsecurity.com/en/agent-operator-configuration.html#agentinjector
+{{- end }}
+
+{{ if .Values.clusterDefaults.enabled }}
+✅ Cluster agent defaults deployed
+{{- else }}
+⚠️  clusterDefaults.enabled was false, so no agent connections deployed. Enable this and provide agent credentials for easier deployment via this chart, or refer to documentation here to manually create them: https://docs.contrastsecurity.com/en/agent-operator-configuration.html#clusteragentconnection or https://docs.contrastsecurity.com/en/agent-operator-configuration.html#agentconnection
+{{- end }}
+
+👀 To watch the operator logs:
+    ⎈ kubectl logs -f -l app.kubernetes.io/part-of=contrast-agent-operator --namespace {{ .Values.namespace }}
+
+📄 More documentation: https://docs.contrastsecurity.com/en/agent-operator.html
+
+🙋 Get support: https://support.contrastsecurity.com / support@contrastsecurity.com
