@@ -71,7 +71,7 @@ jobs:
             type=raw,value=pr-artifact,enable=${{ github.event_name == 'pull_request' }}
             type=raw,value=dispatch-artifact,enable=${{ github.event_name == 'workflow_dispatch' }}
             type=raw,value=release-artifact,enable=${{ needs.generate-version.outputs.version != '0.0.1' }}
-      - uses: docker/build-push-action@v5
+      - uses: docker/build-push-action@v6
         id: build
         with:
           file: Dockerfile
