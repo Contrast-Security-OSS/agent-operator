@@ -17,6 +17,8 @@ imageCredentials:
   email:
 
 operator:
+  # If enabled, deploy the operator. Disable if you want to deploy only configuration resources (injectors, cluster defaults).
+  enabled: true
   # The default registry to use, defaults to docker.io/contrast.
   defaultRegistry: contrast
   # The settle duration in seconds.
