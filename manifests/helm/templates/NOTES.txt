@@ -1,4 +1,4 @@
-{{ .Chart.Name }} version {{ .Chart.Version }} deployed!
+{{ .Chart.Name }} chart version {{ .Chart.Version }} deployed!
 
 {{- if .Values.agentInjectors.enabled }}
 ✅ {{ len .Values.agentInjectors.injectors }} {{ len .Values.agentInjectors.injectors | plural "injector" "injectors" }} {{ len .Values.agentInjectors.injectors | plural "has" "have" }} been deployed to {{ len .Values.agentInjectors.namespaces | plural "namespace" "namespaces" }}: {{ join ", " .Values.agentInjectors.namespaces}}
@@ -32,9 +32,12 @@
 {{- else }}
 ⚠️  clusterDefaults.enabled was false, so no agent connections deployed. Enable this and provide agent credentials for easier deployment via this chart, or refer to documentation here to manually create them: https://docs.contrastsecurity.com/en/agent-operator-configuration.html#clusteragentconnection or https://docs.contrastsecurity.com/en/agent-operator-configuration.html#agentconnection
 {{- end }}
-
+{{ if .Values.operator.enabled }}
 👀 To watch the operator logs:
     ⎈ kubectl logs -f -l app.kubernetes.io/part-of=contrast-agent-operator --namespace {{ .Values.namespace }}
+{{- else }}
+⚠️ operator.enabled was false, Contrast operator was not included in this deployment.
+{{- end }}
 
 📄 More documentation: https://docs.contrastsecurity.com/en/agent-operator.html
 
