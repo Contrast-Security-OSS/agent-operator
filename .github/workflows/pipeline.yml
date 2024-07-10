@@ -440,18 +440,18 @@ jobs:
                 "runId": "${{ github.run_id }}",
                 "artifactName": "helm-chart"
             }
-      - name: Create Sentry Release
-        uses: getsentry/action-release@v1
-        with:
-          environment: production
-          ignore_empty: true
-          # BUILD_VERSION is the semantic version, but the operator will send the .NET version i.e. X.X.X.X.
-          version: agent-operator@${{ env.BUILD_VERSION }}.0
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_ORG: sentry
-          SENTRY_PROJECT: agent-operator
-          SENTRY_URL: https://sentry.prod.dotnet.contsec.com
+      # - name: Create Sentry Release
+      #   uses: getsentry/action-release@v1
+      #   with:
+      #     environment: production
+      #     ignore_empty: true
+      #     # BUILD_VERSION is the semantic version, but the operator will send the .NET version i.e. X.X.X.X.
+      #     version: agent-operator@${{ env.BUILD_VERSION }}.0
+      #   env:
+      #     SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      #     SENTRY_ORG: sentry
+      #     SENTRY_PROJECT: agent-operator
+      #     SENTRY_URL: https://sentry.prod.dotnet.contsec.com
       - uses: act10ns/slack@v2
         with:
           status: ${{ job.status }}
