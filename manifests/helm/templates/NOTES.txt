@@ -29,6 +29,15 @@
 
 {{ if .Values.clusterDefaults.enabled }}
 ✅ Cluster agent defaults deployed
+{{- if .Values.clusterDefaults.existingSecret }}
+🔐 Agent credentials will be retrieved from a secret named {{ .Values.namespace }}/{{ .Values.clusterDefaults.existingSecret }}
+  The secret can be created with a command like the following:
+    ⎈ kubectl create secret generic {{ .Values.clusterDefaults.existingSecret }} --namespace {{ .Values.namespace }} \
+       --from-literal=apiKey=YOUR_API_KEY --from-literal=serviceKey=YOUR_AGENT_SERVICE_KEY --from-literal=userName=YOUR_AGENT_USERNAME
+  ⚠️  Injection will not work until this secret is created.
+
+  Refer to documentation on how to find agent keys: https://docs.contrastsecurity.com/en/find-the-agent-keys.html
+{{- end }}
 {{- else }}
 ⚠️  clusterDefaults.enabled was false, so no agent connections deployed. Enable this and provide agent credentials for easier deployment via this chart, or refer to documentation here to manually create them: https://docs.contrastsecurity.com/en/agent-operator-configuration.html#clusteragentconnection or https://docs.contrastsecurity.com/en/agent-operator-configuration.html#agentconnection
 {{- end }}
