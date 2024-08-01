@@ -59,12 +59,16 @@ clusterDefaults:
   enabled: false
   # Required. The Contrast UI instance to use. Defaults at the general SAAS instance.
   url: https://app.contrastsecurity.com/Contrast
-  # Required. The API Key from the Contrast UI.
+  # Name of a secret to retrieve the cluster-wide connection details from.
+  # The secret should contain keys named apiKey, serviceKey and userName.
+  # Leave blank if you want the chart to create a secret using the subsequent apiKeyValue, serviceKeyValue and userNameValue values.
+  existingSecret: 
+  # Required if existingSecret is not set. The API Key from the Contrast UI.
   apiKeyValue:
-  # Required. The Service Key from the Contrast UI.
-  serviceKeyValue:
+  # Required if existingSecret is not set. The Service Key from the Contrast UI.
+  serviceKeyValue if existingSecret is not set:
   # Required. The User Name from the Contrast UI.
-  userNameValue:
+  userNameValue if existingSecret is not set:
   # Optional. Any custom configuration to use. Must be in the format of the standard YAML file.
   yaml: |-
     enable: true
