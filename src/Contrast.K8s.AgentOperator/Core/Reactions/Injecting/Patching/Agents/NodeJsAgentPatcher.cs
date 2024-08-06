@@ -17,5 +17,6 @@ public class NodeJsAgentPatcher : IAgentPatcher
         yield return new V1EnvVar("NODE_OPTIONS", $"--require {context.AgentMountPath}/node_modules/@contrast/agent");
         yield return new V1EnvVar("CONTRAST__AGENT__LOGGER__PATH", $"{context.WritableMountPath}/logs/contrast_agent.log");
         yield return new V1EnvVar("CONTRAST__AGENT__SECURITY_LOGGER__PATH", $"{context.WritableMountPath}/logs/contrast_agent_cef.log");
+        yield return new V1EnvVar("CONTRAST_INSTALL_SOURCE", "kubernetes-operator");
     }
 }

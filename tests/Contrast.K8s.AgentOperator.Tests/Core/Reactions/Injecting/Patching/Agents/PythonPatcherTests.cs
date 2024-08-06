@@ -25,7 +25,8 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting.Patching.Age
             {
                 "PYTHONPATH",
                 "__CONTRAST_USING_RUNNER",
-                "CONTRAST__AGENT__LOGGER__PATH"
+                "CONTRAST__AGENT__LOGGER__PATH",
+                "CONTRAST_INSTALL_SOURCE",
             };
 
             // Act
@@ -46,7 +47,8 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting.Patching.Age
                 "PYTHONPATH",
                 "CONTRAST__AGENT__PYTHON__REWRITE",
                 "__CONTRAST_USING_RUNNER",
-                "CONTRAST__AGENT__LOGGER__PATH"
+                "CONTRAST__AGENT__LOGGER__PATH",
+                "CONTRAST_INSTALL_SOURCE",
             };
 
             // Act
