@@ -29,6 +29,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting.Patching.Age
                 "CORECLR_PROFILER_PATH",
                 "CORECLR_ENABLE_PROFILING",
                 "CONTRAST_SOURCE",
+                "CONTRAST_INSTALL_SOURCE",
                 "CONTRAST_CORECLR_INSTALL_DIRECTORY",
                 "CONTRAST_CORECLR_DATA_DIRECTORY",
                 "CONTRAST_CORECLR_LOGS_DIRECTORY",
@@ -52,6 +53,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting.Patching.Age
             {
                 "LD_PRELOAD",
                 "CONTRAST_SOURCE",
+                "CONTRAST_INSTALL_SOURCE",
                 "CONTRAST_CORECLR_INSTALL_DIRECTORY",
                 "CONTRAST_CORECLR_DATA_DIRECTORY",
                 "CONTRAST_CORECLR_LOGS_DIRECTORY",
