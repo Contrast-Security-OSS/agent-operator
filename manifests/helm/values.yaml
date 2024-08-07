@@ -66,9 +66,9 @@ clusterDefaults:
   # Required if existingSecret is not set. The API Key from the Contrast UI.
   apiKeyValue:
   # Required if existingSecret is not set. The Service Key from the Contrast UI.
-  serviceKeyValue if existingSecret is not set:
-  # Required. The User Name from the Contrast UI.
-  userNameValue if existingSecret is not set:
+  serviceKeyValue:
+  # Required if existingSecret is not set. The User Name from the Contrast UI.
+  userNameValue:
   # Optional. Any custom configuration to use. Must be in the format of the standard YAML file.
   yaml: |-
     enable: true
