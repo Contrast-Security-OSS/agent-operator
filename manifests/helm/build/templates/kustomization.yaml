@@ -1,5 +1,5 @@
 namespace: >-
-  {{ .Values.namespace }}
+  {{ if not .Values.createNamespace }}{{.Release.Namespace}}{{else}}{{.Values.namespace}}{{end}}
 
 bases:
   - ../../../install/all/operator
@@ -13,3 +13,4 @@ images:
 
 patchesStrategicMerge:
   - overlays/deployment.yaml
+  - overlays/namespace.yaml

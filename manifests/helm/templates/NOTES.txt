@@ -1,5 +1,9 @@
 {{ .Chart.Name }} chart version {{ .Chart.Version }} deployed!
 
+{{ if .Values.createNamespace }}
+⚠️   WARNING: Creating Namespaces via Helm Chart is deprecated and will be removed in a future release.
+     Pls use helm --create-namespace flag instead.️ {{ end }}
+
 {{- if .Values.agentInjectors.enabled }}
 ✅ {{ len .Values.agentInjectors.injectors }} {{ len .Values.agentInjectors.injectors | plural "injector" "injectors" }} {{ len .Values.agentInjectors.injectors | plural "has" "have" }} been deployed to {{ len .Values.agentInjectors.namespaces | plural "namespace" "namespaces" }}: {{ join ", " .Values.agentInjectors.namespaces}}
   To use with your workloads:

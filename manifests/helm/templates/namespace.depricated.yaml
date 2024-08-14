@@ -1,0 +1,10 @@
+## This resource is deprecated and will be removed in a future release.
+## Pls use helm --create-namespace flag instead.
+{{- if .Values.createNamespace }}
+kind: Namespace
+apiVersion: v1
+metadata:
+ name: {{ .Values.namespace }}
+ labels:
+   app.kubernetes.io/part-of: contrast-agent-operator
+{{- end -}}
