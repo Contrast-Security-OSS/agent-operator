@@ -74,11 +74,19 @@ public class MatchInjectorsHandler : INotificationHandler<DeferredStateModified>
 
         if (unusedInjectors.Any())
         {
-            Logger.Info(() =>
+            var unusedCount = unusedInjectors.Count;
+            if(unusedCount >= 25)
             {
-                var unusedInjectorsStr = string.Join(", ", unusedInjectors.Select(x => $"'{x.Identity}'"));
-                return $"A total of {unusedInjectors.Count} valid injectors do not match any known entities. (Unused injectors: [{unusedInjectorsStr}])";
-            });
+                Logger.Info(() => $"A total of {unusedCount} valid injectors do not match any known entities.");
+            }
+            else
+            {
+                Logger.Info(() =>
+                {
+                    var unusedInjectorsStr = string.Join(", ", unusedInjectors.Select(x => $"'{x.Identity}'"));
+                    return $"A total of {unusedCount} valid injectors do not match any known entities. (Unused injectors: [{unusedInjectorsStr}])";
+                });
+            }
         }
     }
 
