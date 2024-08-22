@@ -1,7 +1,7 @@
 # Contrast Security, Inc licenses this file to you under the Apache 2.0 License.
 # See the LICENSE file in the project root for more information.
 
-FROM mcr.microsoft.com/dotnet/aspnet:6.0.29 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:6.0.33-bookworm-slim AS base
 
 # To aid in debugging.
 RUN set -xe \
@@ -9,7 +9,7 @@ RUN set -xe \
     && apt-get install -y --no-install-recommends curl jq \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-FROM mcr.microsoft.com/dotnet/sdk:6.0.421 AS build
+FROM mcr.microsoft.com/dotnet/sdk:6.0.425-bookworm-slim AS build
 WORKDIR /source
 
 # Restore
@@ -52,6 +52,7 @@ USER 1000
 
 ENV ASPNETCORE_URLS=https://+:5001 \
     ASPNETCORE_ENVIRONMENT=Production \
-    ASPNETCORE_HOSTBUILDER__RELOADCONFIGONCHANGE=false
+    ASPNETCORE_HOSTBUILDER__RELOADCONFIGONCHANGE=false \
+    DOTNET_EnableDiagnostics=0
 
 ENTRYPOINT ["dotnet", "Contrast.K8s.AgentOperator.dll"]

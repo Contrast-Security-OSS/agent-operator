@@ -23,15 +23,16 @@ spec:
       url: >-
         {{ required "The key clusterDefaults.clusterDefaults must be set if clusterDefaults.enabled is true" .Values.clusterDefaults.url }}
       apiKey:
-        secretName: default-agent-connection-secret
+        secretName: {{ .Values.clusterDefaults.existingSecret | default "default-agent-connection-secret" }}
         secretKey: apiKey
       serviceKey:
-        secretName: default-agent-connection-secret
+        secretName: {{ .Values.clusterDefaults.existingSecret | default "default-agent-connection-secret" }}
         secretKey: serviceKey
       userName:
-        secretName: default-agent-connection-secret
+        secretName: {{ .Values.clusterDefaults.existingSecret | default "default-agent-connection-secret" }}
         secretKey: userName
 ---
+{{if not .Values.clusterDefaults.existingSecret }}
 apiVersion: v1
 kind: Secret
 metadata:
@@ -41,9 +42,10 @@ metadata:
 type: Opaque
 stringData:
   apiKey: >-
-    {{ required "The key clusterDefaults.apiKeyValue must be set if clusterDefaults.enabled is true" .Values.clusterDefaults.apiKeyValue }}
+    {{ required "The key clusterDefaults.apiKeyValue must be set if clusterDefaults.enabled is true and clusterDefaults.existingSecret is not set" .Values.clusterDefaults.apiKeyValue }}
   serviceKey: >-
-    {{ required "The key clusterDefaults.serviceKeyValue must be set if clusterDefaults.enabled is true" .Values.clusterDefaults.serviceKeyValue }}
+    {{ required "The key clusterDefaults.serviceKeyValue must be set if clusterDefaults.enabled is true and clusterDefaults.existingSecret is not set" .Values.clusterDefaults.serviceKeyValue }}
   userName: >-
-    {{ required "The key clusterDefaults.userNameValue must be set if clusterDefaults.enabled is true" .Values.clusterDefaults.userNameValue }}
+    {{ required "The key clusterDefaults.userNameValue must be set if clusterDefaults.enabled is true and clusterDefaults.existingSecret is not set" .Values.clusterDefaults.userNameValue }}
+{{ end }}
 {{ end }}

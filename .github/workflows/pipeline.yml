@@ -71,7 +71,7 @@ jobs:
             type=raw,value=pr-artifact,enable=${{ github.event_name == 'pull_request' }}
             type=raw,value=dispatch-artifact,enable=${{ github.event_name == 'workflow_dispatch' }}
             type=raw,value=release-artifact,enable=${{ needs.generate-version.outputs.version != '0.0.1' }}
-      - uses: docker/build-push-action@v5
+      - uses: docker/build-push-action@v6
         id: build
         with:
           file: Dockerfile
@@ -171,10 +171,11 @@ jobs:
     strategy:
       matrix:
         k3s-version:
-          - 1.28 # EOL: 2024-10-28
-          - 1.27 # EOL: 2024-06-28
-          - 1.26 # EOL: 2024-02-28
-          - 1.25 # EOL: 2023-10-28
+          - '1.30' # EOL: 2025-06-28
+          - '1.29' # EOL: 2025-02-28
+          - '1.28' # EOL: 2024-10-28
+          - '1.27' # EOL: 2024-06-28
+          - '1.26' # EOL: 2024-02-28
       fail-fast: false
     env:
       IMAGE: ghcr.io/contrast-security-oss/agent-operator/operator@${{ needs.build-image.outputs.digest }}
@@ -251,10 +252,11 @@ jobs:
           - manifests
           - helm-manifests
         k3s-version:
-          - 1.28 # EOL: 2024-10-28
-          - 1.27 # EOL: 2024-06-28
-          - 1.26 # EOL: 2024-02-28
-          - 1.25 # EOL: 2023-10-28
+          - '1.30' # EOL: 2025-06-28
+          - '1.29' # EOL: 2025-02-28
+          - '1.28' # EOL: 2024-10-28
+          - '1.27' # EOL: 2024-06-28
+          - '1.26' # EOL: 2024-02-28
       fail-fast: false
     steps:
       - name: Setup Pluto
@@ -440,18 +442,18 @@ jobs:
                 "runId": "${{ github.run_id }}",
                 "artifactName": "helm-chart"
             }
-      - name: Create Sentry Release
-        uses: getsentry/action-release@v1
-        with:
-          environment: production
-          ignore_empty: true
-          # BUILD_VERSION is the semantic version, but the operator will send the .NET version i.e. X.X.X.X.
-          version: agent-operator@${{ env.BUILD_VERSION }}.0
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_ORG: sentry
-          SENTRY_PROJECT: agent-operator
-          SENTRY_URL: https://sentry.prod.dotnet.contsec.com
+      # - name: Create Sentry Release
+      #   uses: getsentry/action-release@v1
+      #   with:
+      #     environment: production
+      #     ignore_empty: true
+      #     # BUILD_VERSION is the semantic version, but the operator will send the .NET version i.e. X.X.X.X.
+      #     version: agent-operator@${{ env.BUILD_VERSION }}.0
+      #   env:
+      #     SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      #     SENTRY_ORG: sentry
+      #     SENTRY_PROJECT: agent-operator
+      #     SENTRY_URL: https://sentry.prod.dotnet.contsec.com
       - uses: act10ns/slack@v2
         with:
           status: ${{ job.status }}
