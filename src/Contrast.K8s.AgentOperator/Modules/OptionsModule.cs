@@ -65,21 +65,11 @@ public class OptionsModule : Module
             }
 
             // Users may override this on a per AgentConfiguration bases via the InitContainer override field.
-            var runInitContainersAsNonRoot = true;
-            if (GetEnvironmentVariableAsBoolean("CONTRAST_RUN_INIT_CONTAINER_AS_NON_ROOT", out var parsedRunInitContainersAsNonRoot))
-            {
-                logger.LogOptionValue("run-init-container-as-non-root", runInitContainersAsNonRoot, parsedRunInitContainersAsNonRoot);
-                runInitContainersAsNonRoot = parsedRunInitContainersAsNonRoot;
-            }
+            var runInitContainersAsNonRoot = GetEnvironmentOptionFlag(logger, "CONTRAST_RUN_INIT_CONTAINER_AS_NON_ROOT", "run-init-container-as-non-root", true); ;
 
             // This is needed for OpenShift < 4.11 (Assumed per the change log, unable to test at the time of writing).
             // See: https://github.com/openshift/cluster-kube-apiserver-operator/issues/1325
-            var suppressSeccompProfile = false;
-            if (GetEnvironmentVariableAsBoolean("CONTRAST_SUPPRESS_SECCOMP_PROFILE", out var parsedSeccompProfile))
-            {
-                logger.LogOptionValue("suppress-seccomp-profile", suppressSeccompProfile, parsedSeccompProfile);
-                suppressSeccompProfile = parsedSeccompProfile;
-            }
+            var suppressSeccompProfile = GetEnvironmentOptionFlag(logger, "CONTRAST_SUPPRESS_SECCOMP_PROFILE", "suppress-seccomp-profile", false);
 
             // A value from 0-100 to denote how many options the operator should purposely fail in.
             // The goal is to test and correctly handle a non-perfect cluster.
@@ -90,6 +80,7 @@ public class OptionsModule : Module
                 logger.LogOptionValue("chaos-percent", chaosPercent, parsedChaosPercent);
                 chaosPercent = parsedChaosPercent;
             }
+
 
             return new OperatorOptions(
                 @namespace,
@@ -233,22 +224,22 @@ public class OptionsModule : Module
         {
             var logger = context.Resolve<IOptionsLogger>();
 
-            var enableEarlyChaining = false;
-            if (GetEnvironmentVariableAsBoolean("CONTRAST_ENABLE_EARLY_CHAINING", out var parsedChainingResult))
-            {
-                logger.LogOptionValue("enable-early-chaining", enableEarlyChaining, parsedChainingResult);
-                enableEarlyChaining = parsedChainingResult;
-            }
-
-            var enablePythonRewrite = true;
-            if (GetEnvironmentVariableAsBoolean("CONTRAST_ENABLE_PYTHON_REWRITE", out var parsedRewriteResult))
-            {
-                logger.LogOptionValue("enable-python-rewrite", enablePythonRewrite, parsedRewriteResult);
-                enablePythonRewrite = parsedRewriteResult;
-            }
+            var enableEarlyChaining = GetEnvironmentOptionFlag(logger, "CONTRAST_ENABLE_EARLY_CHAINING", "enable-early-chaining", false);
+            var enablePythonRewrite = GetEnvironmentOptionFlag(logger, "CONTRAST_ENABLE_PYTHON_REWRITE", "enable-python-rewrite", true);
 
             return new InjectorOptions(enableEarlyChaining, enablePythonRewrite);
         }).SingleInstance();
+    }
+
+    private static bool GetEnvironmentOptionFlag(IOptionsLogger logger, string variable, string optionName, bool defaultValue)
+    {
+        if (GetEnvironmentVariableAsBoolean(variable, out var value))
+        {
+            logger.LogOptionValue(optionName, defaultValue, value);
+            return value;
+        }
+
+        return defaultValue;
     }
 
     private static bool GetEnvironmentVariableAsString(string variable, [NotNullWhen(true)] out string? parsedResult)
