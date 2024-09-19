@@ -49,7 +49,7 @@ public class YamlVariablesTests : IClassFixture<TestingContext>
 
             //annotation
             var annotationKey = container.Env.Should().Contain(x => x.Name == "CONTRAST_VAR_ANNOTATION_TESTANNOTATION").Subject;
-            annotationKey.ValueFrom.FieldRef.Should().Be("metadata.labels['test-label']");
+            annotationKey.ValueFrom.FieldRef.Should().Be("metadata.labels['test-annotation']");
             container.Env.Should().Contain(x => x.Name == "CONTRAST__TEST__ANNOTATION")
                 .Which.Value.Should().Be("$(CONTRAST_VAR_ANNOTATION_TESTANNOTATION)");
 
