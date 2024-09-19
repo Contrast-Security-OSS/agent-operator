@@ -408,7 +408,7 @@ public class PodPatcher : IPodPatcher
                 }
                 else if (key.StartsWith("container", StringComparison.OrdinalIgnoreCase))
                 {
-                    var containerVar = GetContainerVariableReplacement(key, value, pod);
+                    var containerVar = ReplaceContainerVariable(key, value, pod);
                     if (containerVar != null)
                     {
                         value = containerVar;
@@ -429,7 +429,7 @@ public class PodPatcher : IPodPatcher
         }
     }
 
-    private string? GetContainerVariableReplacement(string key, string value, V1Pod pod)
+    private string? ReplaceContainerVariable(string key, string value, V1Pod pod)
     {
         var containerParts = key.Split('.');
         if (containerParts.Length != 3)
