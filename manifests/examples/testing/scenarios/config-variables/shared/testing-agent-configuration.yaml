@@ -10,7 +10,7 @@ spec:
     test:
       namespace: "%namespace%"
       label: "%labels.test-label%"
-      annotation: "%labels.test-annotation%"
+      annotation: "%annotations.test-annotation%"
       container_image: "%container.dotnet-test.image%"
       multiple: "%namespace%_%namespace%"
   enableYamlVariableReplacement: true
