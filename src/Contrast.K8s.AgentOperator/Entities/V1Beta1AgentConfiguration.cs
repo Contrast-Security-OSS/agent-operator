@@ -40,6 +40,12 @@ public class V1Beta1AgentConfiguration : CustomKubernetesEntity<V1Beta1AgentConf
         public bool? SuppressDefaultApplicationName { get; set; }
 
         /// <summary>
+        /// If true, parse and replace %variables% in spec.yaml section
+        /// Defaults to false.
+        /// </summary>
+        public bool? EnableYamlVariableReplacement { get; set; }
+
+        /// <summary>
         /// Optional spec to apply to the Contrast InitContainer.
         /// If not specified, reasonable defaults are used.
         /// </summary>

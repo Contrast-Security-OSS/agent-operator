@@ -26,3 +26,4 @@ resources:
   - ./type-deployment.yaml
   - ./type-statefulset.yaml
   - ./unmatched.yaml
+  - ./yaml-variables.yaml

@@ -1,0 +1,37 @@
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: AgentInjector
+metadata:
+  name: config-optional
+spec:
+  enabled: true
+  type: dummy
+  image:
+    pullPolicy: Never
+  selector:
+    labels:
+      - name: app
+        value: config-optional
+  connection:
+    name: testing-agent-connection
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: config-optional
+  labels:
+    app: config-optional
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: config-optional
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: config-optional
+    spec:
+      containers:
+        - image: k8s.gcr.io/pause:3.3
+          name: pause

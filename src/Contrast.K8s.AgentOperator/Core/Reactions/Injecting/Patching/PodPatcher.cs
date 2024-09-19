@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents;
@@ -29,7 +30,8 @@ public class PodPatcher : IPodPatcher
     private readonly OperatorOptions _operatorOptions;
     private readonly InitContainerOptions _initOptions;
 
-    public PodPatcher(Func<IEnumerable<IAgentPatcher>> patchersFactory, IGlobMatcher globMatcher, IClusterIdState clusterIdState, OperatorOptions operatorOptions, InitContainerOptions initOptions)
+    public PodPatcher(Func<IEnumerable<IAgentPatcher>> patchersFactory, IGlobMatcher globMatcher,
+        IClusterIdState clusterIdState, OperatorOptions operatorOptions, InitContainerOptions initOptions)
     {
         _patchersFactory = patchersFactory;
         _globMatcher = globMatcher;
@@ -68,7 +70,8 @@ public class PodPatcher : IPodPatcher
         // Pod annotations.
         pod.SetAnnotation(InjectionConstants.IsInjectedAttributeName, true.ToString());
         pod.SetAnnotation(InjectionConstants.InjectedOnAttributeName, DateTimeOffset.UtcNow.ToString("O"));
-        pod.SetAnnotation(InjectionConstants.InjectedByAttributeName, $"Contrast.K8s.AgentOperator/{OperatorVersion.Version}");
+        pod.SetAnnotation(InjectionConstants.InjectedByAttributeName,
+            $"Contrast.K8s.AgentOperator/{OperatorVersion.Version}");
         pod.SetAnnotation(InjectionConstants.InjectorTypeAttributeName, context.Injector.Type.ToString());
 
         // Volumes.
@@ -87,10 +90,11 @@ public class PodPatcher : IPodPatcher
 
         // Init Container.
         {
-            var podSecurityContext = (V1PodSecurityContext?) pod.Spec.SecurityContext;
+            var podSecurityContext = (V1PodSecurityContext?)pod.Spec.SecurityContext;
             var containerSecurityContext = pod.Spec.Containers.FirstOrDefault()?.SecurityContext;
 
-            var initContainer = CreateInitContainer(context, agentVolume, writableVolume, podSecurityContext, containerSecurityContext);
+            var initContainer = CreateInitContainer(context, agentVolume, writableVolume, podSecurityContext,
+                containerSecurityContext);
             pod.Spec.InitContainers ??= new List<V1Container>();
             pod.Spec.InitContainers.AddOrUpdate(initContainer.Name, initContainer);
         }
@@ -113,7 +117,8 @@ public class PodPatcher : IPodPatcher
             var agentVolumeMount = new V1VolumeMount(context.AgentMountPath, agentVolume.Name, readOnlyProperty: true);
             container.VolumeMounts.AddOrUpdate(agentVolumeMount.Name, agentVolumeMount);
 
-            var writableVolumeMount = new V1VolumeMount(context.WritableMountPath, writableVolume.Name, readOnlyProperty: false);
+            var writableVolumeMount =
+                new V1VolumeMount(context.WritableMountPath, writableVolume.Name, readOnlyProperty: false);
             container.VolumeMounts.AddOrUpdate(writableVolumeMount.Name, writableVolumeMount);
 
 
@@ -135,61 +140,11 @@ public class PodPatcher : IPodPatcher
         }
     }
 
-    private (string,  List<V1EnvVar>) GetVarsFromCluster(string value, V1Pod pod, PatchingContext context)
-    {
-        //init IEnumerable<V1EnvVar> to store additional env variables
-        List<V1EnvVar> additionalKeys = new List<V1EnvVar>();
-
-        
-        //Pattern matching for everything starting with % and ending with %
-        string pattern = @"%(.*?)%";
-        var matches = System.Text.RegularExpressions.Regex.Matches(value, pattern);
-        foreach (System.Text.RegularExpressions.Match match in matches)
-        {
-            string key = match.Groups[1].Value;
-            if (key.Contains("namespace"))
-            {
-                additionalKeys.Add(new V1EnvVar(
-                "POD_NAMESPACE",
-                valueFrom: new V1EnvVarSource(
-                    fieldRef: new V1ObjectFieldSelector("metadata.namespace")
-                )));
-                value = value.Replace("%namespace%", "$(POD_NAMESPACE)");
-            }
-            else if (key.Contains("labels"))
-            {
-                key = key.Replace("labels.", "");
-                string envVariableName = $"LABEL_{key.Replace("/", "").Replace("-", "").Replace(".", "").ToUpper()}";
-                additionalKeys.Add(new V1EnvVar(
-                        envVariableName,
-                        valueFrom: new V1EnvVarSource(
-                            fieldRef: new V1ObjectFieldSelector("metadata.labels['"+key+"']")
-                    )));
-
-                value = value.Replace("%labels."+key+"%", "$("+envVariableName+")");
-            }
-            else if (key.Contains("annotations"))
-            {
-                key = key.Replace("annotations.", "");
-                string envVariableName = $"ANNOTATIONS_{key.Replace("/", "").Replace("-", "").Replace(".", "").ToUpper()}";
-                additionalKeys.Add(new V1EnvVar(
-                        envVariableName,
-                        valueFrom: new V1EnvVarSource(
-                            fieldRef: new V1ObjectFieldSelector("metadata.annotations['"+key+"']")
-                    )));
-
-                value = value.Replace("%annotations."+key+"%", "$("+envVariableName+")");
-            }
-        }
-        return (value, additionalKeys);
-
-    }
-
     private V1Container CreateInitContainer(PatchingContext context,
-                                            V1Volume agentVolume,
-                                            V1Volume writableVolume,
-                                            V1PodSecurityContext? podSecurityContext,
-                                            V1SecurityContext? containerSecurityContext)
+        V1Volume agentVolume,
+        V1Volume writableVolume,
+        V1PodSecurityContext? podSecurityContext,
+        V1SecurityContext? containerSecurityContext)
     {
         const string initAgentMountPath = "/contrast-init/agent";
         const string initWritableMountPath = "/contrast-init/data";
@@ -221,13 +176,13 @@ public class PodPatcher : IPodPatcher
         // In OpenShift, there's a race condition around operator mutating webhooks and the build-in mutating webhook that applies security policies.
         // If a mutating webhook adds a sidecar/init container, security policies are not re-applied.
         // This is continuously brought up as an issue since at least 2019... since reinvocationPolicy was added to upstream.
-        if ((containerSecurityContext?.RunAsUser ?? podSecurityContext?.RunAsUser) is {} runAsUser)
+        if ((containerSecurityContext?.RunAsUser ?? podSecurityContext?.RunAsUser) is { } runAsUser)
         {
             // Run as the same user as the prime container.
             securityContent.RunAsUser ??= runAsUser;
         }
 
-        if ((containerSecurityContext?.RunAsGroup ?? podSecurityContext?.RunAsGroup) is {} runAsGroup)
+        if ((containerSecurityContext?.RunAsGroup ?? podSecurityContext?.RunAsGroup) is { } runAsGroup)
         {
             // Run as the same group as the prime container.
             securityContent.RunAsGroup ??= runAsGroup;
@@ -346,22 +301,24 @@ public class PodPatcher : IPodPatcher
                 if (!string.IsNullOrWhiteSpace(key)
                     && !string.IsNullOrWhiteSpace(value))
                 {
-
-                    // TODO: Add configuration to enable this part
-                    if (value.Contains("%"))
+                    if (configuration?.EnableYamlVariableReplacement == true && value.Contains('%'))
                     {
-                        (string newValue, List<V1EnvVar> additionalKeys) = GetVarsFromCluster(value, pod, context);
-                        foreach (var envVar in additionalKeys)
+                        var replacement = GetVariableReplacements(value, pod);
+                        if (replacement != null)
                         {
-                            yield return envVar;
-                        }
-                        yield return new V1EnvVar($"CONTRAST__{key.Replace(".", "__").ToUpperInvariant()}", newValue);
+                            foreach (var envVar in replacement.AdditionalEnvVars)
+                            {
+                                yield return envVar;
+                            }
 
+                            yield return new V1EnvVar($"CONTRAST__{key.Replace(".", "__").ToUpperInvariant()}",
+                                replacement.Value);
+                        }
                     }
                     else
                     {
                         yield return new V1EnvVar($"CONTRAST__{key.Replace(".", "__").ToUpperInvariant()}", value);
-                    }                
+                    }
                 }
             }
         }
@@ -383,5 +340,120 @@ public class PodPatcher : IPodPatcher
         {
             yield return new V1EnvVar("CONTRAST_CLUSTER_ID", clusterId.Guid.ToString("D"));
         }
+    }
+
+    private VariableReplacement? GetVariableReplacements(string value, V1Pod pod)
+    {
+        try
+        {
+            // Attempt to use the downwardApi for this data because it has the most up-to-date information
+            // because it is populated by k8s at pod startup, otherwise use the information the operator has
+            // though it may be out-of-date since the operator doesn't have a perfect picture of the cluster
+            // https://kubernetes.io/docs/concepts/workloads/pods/downward-api/
+
+            var additionalKeys = new List<V1EnvVar>();
+
+            //Pattern matching for everything starting with % and ending with %
+            const string pattern = "%(.*?)%";
+            var matches = Regex.Matches(value, pattern);
+            foreach (Match match in matches)
+            {
+                var key = match.Groups[1].Value;
+                if (key.Equals("namespace", StringComparison.OrdinalIgnoreCase))
+                {
+                    additionalKeys.Add(new V1EnvVar(
+                        "CONTRAST_VAR_POD_NAMESPACE",
+                        valueFrom: new V1EnvVarSource(
+                            fieldRef: new V1ObjectFieldSelector("metadata.namespace")
+                        )));
+                    value = value.Replace("%namespace%", "$(CONTRAST_VAR_POD_NAMESPACE)");
+                }
+                else if (key.StartsWith("labels", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (key.Length <= "labels.".Length)
+                    {
+                        Logger.Warn($"Invalid 'labels' variable in yaml: '{key}'");
+                        continue;
+                    }
+
+                    var labelKey = key.Substring("labels.".Length);
+                    var envKey = labelKey.Replace("/", "").Replace("-", "").Replace(".", "").ToUpper();
+                    var envVariableName = $"CONTRAST_VAR_LABEL_{envKey}";
+                    additionalKeys.Add(new V1EnvVar(
+                        envVariableName,
+                        valueFrom: new V1EnvVarSource(
+                            fieldRef: new V1ObjectFieldSelector($"metadata.labels['{labelKey}']")
+                        )));
+
+                    value = value.Replace($"%{key}%", $"$({envVariableName})");
+                }
+                else if (key.StartsWith("annotations", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (key.Length <= "annotations.".Length)
+                    {
+                        Logger.Warn($"Invalid 'annotations' variable in yaml: '{key}'");
+                        continue;
+                    }
+
+                    var annotationKey = key.Substring("annotations.".Length);
+                    var envKey = annotationKey.Replace("/", "").Replace("-", "").Replace(".", "").ToUpper();
+                    var envVariableName = $"CONTRAST_VAR_ANNOTATION_{envKey}";
+                    additionalKeys.Add(new V1EnvVar(
+                        envVariableName,
+                        valueFrom: new V1EnvVarSource(
+                            fieldRef: new V1ObjectFieldSelector($"metadata.annotations['{annotationKey}']")
+                        )));
+
+                    value = value.Replace($"%{key}%", $"$({envVariableName})");
+                }
+                else if (key.StartsWith("container", StringComparison.OrdinalIgnoreCase))
+                {
+                    var containerVar = GetContainerVariableReplacement(key, value, pod);
+                    if (containerVar != null)
+                    {
+                        value = containerVar;
+                    }
+                }
+                else
+                {
+                    Logger.Warn($"Unknown variable in yaml: '{key}'");
+                }
+            }
+
+            return new VariableReplacement(value, additionalKeys);
+        }
+        catch (Exception e)
+        {
+            Logger.Error($"Failed to parse '{value}' for variable replacement: {e}");
+            return null;
+        }
+    }
+
+    private string? GetContainerVariableReplacement(string key, string value, V1Pod pod)
+    {
+        var containerParts = key.Split('.');
+        if (containerParts.Length != 3)
+        {
+            Logger.Warn($"Invalid 'container' variable in yaml: '{key}'");
+            return null;
+        }
+
+        var containerName = containerParts[1];
+        var containerKey = containerParts[2];
+        var container = pod.Spec.Containers.SingleOrDefault(x =>
+            x.Name.Equals(containerName, StringComparison.OrdinalIgnoreCase));
+        if (container == null)
+        {
+            Logger.Warn($"Container name '{containerName}' not found for yaml variable: '{key}'");
+            return null;
+        }
+
+        if (containerKey.Equals("image", StringComparison.OrdinalIgnoreCase))
+        {
+            return value.Replace($"%{key}%", container.Image);
+        }
+
+        Logger.Warn($"Unknown 'container' variable in yaml: '{key}'");
+        return null;
     }
 }
