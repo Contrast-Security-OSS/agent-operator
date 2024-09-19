@@ -11,5 +11,6 @@ public record AgentConfigurationResource(
     IReadOnlyDictionary<string, string> YamlKeys,
     bool? SuppressDefaultServerName,
     bool? SuppressDefaultApplicationName,
+    bool? EnableYamlVariableReplacement,
     InitContainerOverrides? InitContainerOverrides
 ) : INamespacedResource, IMutableResource;

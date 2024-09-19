@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: yaml-variables
+  labels:
+    app: yaml-variables
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: yaml-variables
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: yaml-variables
+        test-label: "hello"
+      annotations:
+        test-annotation: "world"
+    spec:
+      containers:
+        - image: contrast/sample-app-aspnetcore:latest
+          name: dotnet-test
+          resources:
+            limits:
+              cpu: 100m
+              memory: 100Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsUser: 1001
+            runAsGroup: 1001
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault

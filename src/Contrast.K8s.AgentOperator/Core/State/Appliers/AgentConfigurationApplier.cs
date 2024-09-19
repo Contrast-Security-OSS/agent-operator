@@ -57,6 +57,7 @@ public class AgentConfigurationApplier : BaseApplier<V1Beta1AgentConfiguration, 
             yamlValues,
             entity.Spec.SuppressDefaultServerName,
             entity.Spec.SuppressDefaultApplicationName,
+            entity.Spec.EnableYamlVariableReplacement,
             overrides
         );
         return ValueTask.FromResult(resource);

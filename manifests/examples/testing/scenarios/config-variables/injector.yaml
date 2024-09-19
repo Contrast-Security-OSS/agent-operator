@@ -1,0 +1,17 @@
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: AgentInjector
+metadata:
+  name: yaml-variables
+spec:
+  enabled: true
+  type: dotnet-core
+  image:
+    pullPolicy: Never
+  selector:
+    labels:
+      - name: app
+        value: yaml-variables
+  connection:
+    name: testing-agent-connection
+  configuration:
+    name: testing-agent-configuration

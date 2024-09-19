@@ -1,0 +1,17 @@
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: AgentConfiguration
+metadata:
+  name: testing-agent-configuration
+spec:
+  yaml: |
+    enabled: false
+    foo:
+      bar: "foobar"
+    test:
+      namespace: "%namespace%"
+      label: "%labels.test-label%"
+      annotation: "%labels.test-annotation%"
+      container_image: "%container.dotnet-test.image%"
+      multiple: "%namespace%_%namespace%"
+  enableYamlVariableReplacement: true
+

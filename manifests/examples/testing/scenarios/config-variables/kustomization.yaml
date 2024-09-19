@@ -1,0 +1,8 @@
+namespace: testing-variables
+resources:
+  - ./shared/testing-agent-configuration.yaml
+  - ./shared/testing-agent-connection-secret.yaml
+  - ./shared/testing-agent-connection.yaml
+  - ./yaml-variables.yaml
+  - ./injector.yaml
+  - ./namespace.yaml
