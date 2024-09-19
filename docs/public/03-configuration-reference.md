@@ -44,12 +44,12 @@ Requires `spec.enableYamlVariableReplacement` to be set to `true`.
 
 Variables in the spec.yaml section are in the format `%variable%`.
 
-| Variable                           | Description                                       |
-| ---------------------------------- | ------------------------------------------------- |
-| `namespace`                        | The pod namespace                                 |
-| `labels.<label-name>`              | The label specified by `label-name`               |
-| `annotations.<annotation-name>`    | The annotation specified by `annotation-name`     |
-| `container.<container-name>.image` | The container image specified by `container-name` |
+| Variable                           | Description                                        |
+| ---------------------------------- | -------------------------------------------------- |
+| `namespace`                        | The pod namespace                                  |
+| `labels.<label-name>`              | The label specified by `<label-name>`              |
+| `annotations.<annotation-name>`    | The annotation specified by `<annotation-name>`    |
+| `container.<container-name>.image` | The container image specified by `<container-name>`|
 
 
 ## AgentConnection
