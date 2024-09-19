@@ -23,7 +23,7 @@ public class YamlVariablesTests : IClassFixture<TestingContext>
     }
 
     [Fact]
-    public async Task When_injected_then_pod_should_have_injection_annotations()
+    public async Task When_injected_then_pod_should_have_config_variables()
     {
         var client = await _context.GetClient(defaultNamespace: "testing-variables");
 
