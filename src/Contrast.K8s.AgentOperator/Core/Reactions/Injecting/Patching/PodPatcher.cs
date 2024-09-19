@@ -351,7 +351,7 @@ public class PodPatcher : IPodPatcher
             // though it may be out-of-date since the operator doesn't have a perfect picture of the cluster
             // https://kubernetes.io/docs/concepts/workloads/pods/downward-api/
 
-            var additionalKeys = new List<V1EnvVar>();
+            var additionalVars = new List<V1EnvVar>();
 
             //Pattern matching for everything starting with % and ending with %
             const string pattern = "%(.*?)%";
@@ -361,7 +361,7 @@ public class PodPatcher : IPodPatcher
                 var key = match.Groups[1].Value;
                 if (key.Equals("namespace", StringComparison.OrdinalIgnoreCase))
                 {
-                    additionalKeys.Add(new V1EnvVar(
+                    additionalVars.Add(new V1EnvVar(
                         "CONTRAST_VAR_POD_NAMESPACE",
                         valueFrom: new V1EnvVarSource(
                             fieldRef: new V1ObjectFieldSelector("metadata.namespace")
@@ -379,7 +379,7 @@ public class PodPatcher : IPodPatcher
                     var labelKey = key.Substring("labels.".Length);
                     var envKey = labelKey.Replace("/", "").Replace("-", "").Replace(".", "").ToUpper();
                     var envVariableName = $"CONTRAST_VAR_LABEL_{envKey}";
-                    additionalKeys.Add(new V1EnvVar(
+                    additionalVars.Add(new V1EnvVar(
                         envVariableName,
                         valueFrom: new V1EnvVarSource(
                             fieldRef: new V1ObjectFieldSelector($"metadata.labels['{labelKey}']")
@@ -398,7 +398,7 @@ public class PodPatcher : IPodPatcher
                     var annotationKey = key.Substring("annotations.".Length);
                     var envKey = annotationKey.Replace("/", "").Replace("-", "").Replace(".", "").ToUpper();
                     var envVariableName = $"CONTRAST_VAR_ANNOTATION_{envKey}";
-                    additionalKeys.Add(new V1EnvVar(
+                    additionalVars.Add(new V1EnvVar(
                         envVariableName,
                         valueFrom: new V1EnvVarSource(
                             fieldRef: new V1ObjectFieldSelector($"metadata.annotations['{annotationKey}']")
@@ -420,7 +420,7 @@ public class PodPatcher : IPodPatcher
                 }
             }
 
-            return new VariableReplacement(value, additionalKeys);
+            return new VariableReplacement(value, additionalVars);
         }
         catch (Exception e)
         {
