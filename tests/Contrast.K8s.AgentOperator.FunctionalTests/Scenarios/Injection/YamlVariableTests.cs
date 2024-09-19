@@ -37,25 +37,25 @@ public class YamlVariablesTests : IClassFixture<TestingContext>
 
             //namespace
             var namespaceKey = container.Env.Should().Contain(x => x.Name == "CONTRAST_VAR_POD_NAMESPACE").Subject;
-            namespaceKey.ValueFrom.FieldRef.Should().Be("metadata.namespace");
+            namespaceKey.ValueFrom.FieldRef.FieldPath.Should().Be("metadata.namespace");
             container.Env.Should().Contain(x => x.Name == "CONTRAST__TEST__NAMESPACE")
                 .Which.Value.Should().Be("$(CONTRAST_VAR_POD_NAMESPACE)");
 
             //label
             var labelKey = container.Env.Should().Contain(x => x.Name == "CONTRAST_VAR_LABEL_TESTLABEL").Subject;
-            labelKey.ValueFrom.FieldRef.Should().Be("metadata.labels['test-label']");
+            labelKey.ValueFrom.FieldRef.FieldPath.Should().Be("metadata.labels['test-label']");
             container.Env.Should().Contain(x => x.Name == "CONTRAST__TEST__LABEL")
                 .Which.Value.Should().Be("$(CONTRAST_VAR_LABEL_TESTLABEL)");
 
             //annotation
             var annotationKey = container.Env.Should().Contain(x => x.Name == "CONTRAST_VAR_ANNOTATION_TESTANNOTATION").Subject;
-            annotationKey.ValueFrom.FieldRef.Should().Be("metadata.labels['test-annotation']");
+            annotationKey.ValueFrom.FieldRef.FieldPath.Should().Be("metadata.annotations['test-annotation']");
             container.Env.Should().Contain(x => x.Name == "CONTRAST__TEST__ANNOTATION")
                 .Which.Value.Should().Be("$(CONTRAST_VAR_ANNOTATION_TESTANNOTATION)");
 
             //container image
             container.Env.Should().Contain(x => x.Name == "CONTRAST__TEST__CONTAINER_IMAGE")
-                .Which.Value.Should().Be("dotnet-test");
+                .Which.Value.Should().Be("contrast/sample-app-aspnetcore:latest");
 
             //multiple
             container.Env.Should().Contain(x => x.Name == "CONTRAST__TEST__MULTIPLE")
