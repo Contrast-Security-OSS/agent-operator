@@ -61,6 +61,7 @@ public class ClusterAgentConfigurationSyncingHandler
                 Yaml = yaml,
                 SuppressDefaultApplicationName = desiredResource.SuppressDefaultApplicationName,
                 SuppressDefaultServerName = desiredResource.SuppressDefaultServerName,
+                EnableYamlVariableReplacement = desiredResource.EnableYamlVariableReplacement,
                 InitContainer = initContainer
             }
         })!;

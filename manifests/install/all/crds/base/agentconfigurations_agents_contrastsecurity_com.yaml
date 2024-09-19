@@ -38,6 +38,12 @@ spec:
                   Defaults to false.
                 nullable: true
                 type: boolean
+              enableYamlVariableReplacement:
+                description: |-
+                  If true, parse and replace %variables% in spec.yaml section
+                  Defaults to false.
+                nullable: true
+                type: boolean
               initContainer:
                 description: |-
                   Optional spec to apply to the Contrast InitContainer.
