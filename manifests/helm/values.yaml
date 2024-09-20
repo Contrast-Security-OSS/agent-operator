@@ -75,7 +75,14 @@ clusterDefaults:
 
 agentInjectors:
   enabled: true
-  # Required. All injectors will be created in each specified namespace.
+  lookupNamespaces:
+    # If enabled, Helm will lookup namespaces and deploy AgentInjectors to any accessible namespaces.
+    deployToAllAccessibleNamespaces: false
+    # List of namespace patterns to exclude deploying AgentInjectors to only when looking up namespaces.
+    excludePatterns:
+      - gatekeeper*
+      - kube*
+  # Required if lookupNamespaces.deployToAllAccessibleNamespaces is not enabled. All injectors will be created in each specified namespace.
   namespaces:
     - default
   injectors:

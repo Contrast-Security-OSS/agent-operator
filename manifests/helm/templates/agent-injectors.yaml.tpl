@@ -1,5 +1,5 @@
 {{ if .Values.agentInjectors.enabled }}
-{{- range $namespace := .Values.agentInjectors.namespaces }}
+{{- range $namespace := include "contrast-agent-operator.filterInjectorNamespaces" . | fromJsonArray }}
 {{- range $injector := $.Values.agentInjectors.injectors }}
 ---
 apiVersion: agents.contrastsecurity.com/v1beta1
