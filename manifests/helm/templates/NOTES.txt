@@ -1,7 +1,8 @@
 {{ .Chart.Name }} chart version {{ .Chart.Version }} deployed!
 
 {{- if .Values.agentInjectors.enabled }}
-✅ {{ len .Values.agentInjectors.injectors }} {{ len .Values.agentInjectors.injectors | plural "injector" "injectors" }} {{ len .Values.agentInjectors.injectors | plural "has" "have" }} been deployed to {{ len .Values.agentInjectors.namespaces | plural "namespace" "namespaces" }}: {{ join ", " .Values.agentInjectors.namespaces}}
+{{- $namespaces := include "contrast-agent-operator.filterInjectorNamespaces" . | fromJsonArray }}
+✅ {{ len .Values.agentInjectors.injectors }} {{ len .Values.agentInjectors.injectors | plural "injector" "injectors" }} {{ len .Values.agentInjectors.injectors | plural "has" "have" }} been deployed to {{ len $namespaces | plural "namespace" "namespaces" }}: {{ join ", " $namespaces}}
   To use with your workloads:
 
   {{- range $injector := $.Values.agentInjectors.injectors }}
