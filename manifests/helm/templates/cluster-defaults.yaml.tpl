@@ -8,6 +8,9 @@ metadata:
 spec:
   template:
     spec:
+      enableYamlVariableReplacement: {{ .Values.clusterDefaults.enableYamlVariableReplacement | default false }}
+      suppressDefaultApplicationName: {{ .Values.clusterDefaults.suppressDefaultApplicationName | default false }}
+      suppressDefaultServerName: {{ .Values.clusterDefaults.suppressDefaultServerName | default false }}
       yaml: |-
 {{ .Values.clusterDefaults.yaml | indent 8 }}
 ---
