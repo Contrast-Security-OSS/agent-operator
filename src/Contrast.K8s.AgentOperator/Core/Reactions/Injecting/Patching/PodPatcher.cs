@@ -273,25 +273,49 @@ public class PodPatcher : IPodPatcher
         yield return new V1EnvVar("CONTRAST_MOUNT_AGENT_PATH", agentMountPath);
         yield return new V1EnvVar("CONTRAST_MOUNT_WRITABLE_PATH", writableMountPath);
 
-        yield return new V1EnvVar("CONTRAST__API__URL", connection.TeamServerUri);
-        yield return new V1EnvVar(
-            "CONTRAST__API__API_KEY",
-            valueFrom: new V1EnvVarSource(
-                secretKeyRef: new V1SecretKeySelector(connection.ApiKey.Key, connection.ApiKey.Name)
-            )
-        );
-        yield return new V1EnvVar(
-            "CONTRAST__API__SERVICE_KEY",
-            valueFrom: new V1EnvVarSource(
-                secretKeyRef: new V1SecretKeySelector(connection.ServiceKey.Key, connection.ServiceKey.Name)
-            )
-        );
-        yield return new V1EnvVar(
-            "CONTRAST__API__USER_NAME",
-            valueFrom: new V1EnvVarSource(
-                secretKeyRef: new V1SecretKeySelector(connection.UserName.Key, connection.UserName.Name)
-            )
-        );
+        // New auth method
+        if (connection.Token != null)
+        {
+            yield return new V1EnvVar(
+                "CONTRAST__API__TOKEN",
+                valueFrom: new V1EnvVarSource(
+                    secretKeyRef: new V1SecretKeySelector(connection.Token.Key, connection.Token.Name)
+                )
+            );
+        }
+
+        // Old auth method
+        if (connection.TeamServerUri != null)
+        {
+            yield return new V1EnvVar("CONTRAST__API__URL", connection.TeamServerUri);
+        }
+        if (connection.ApiKey != null)
+        {
+            yield return new V1EnvVar(
+                "CONTRAST__API__API_KEY",
+                valueFrom: new V1EnvVarSource(
+                    secretKeyRef: new V1SecretKeySelector(connection.ApiKey.Key, connection.ApiKey.Name)
+                )
+            );
+        }
+        if (connection.ServiceKey != null)
+        {
+            yield return new V1EnvVar(
+                "CONTRAST__API__SERVICE_KEY",
+                valueFrom: new V1EnvVarSource(
+                    secretKeyRef: new V1SecretKeySelector(connection.ServiceKey.Key, connection.ServiceKey.Name)
+                )
+            );
+        }
+        if (connection.UserName != null)
+        {
+            yield return new V1EnvVar(
+                "CONTRAST__API__USER_NAME",
+                valueFrom: new V1EnvVarSource(
+                    secretKeyRef: new V1SecretKeySelector(connection.UserName.Key, connection.UserName.Name)
+                )
+            );
+        }
 
 
         if (configuration?.YamlKeys is { } yamlKeys)

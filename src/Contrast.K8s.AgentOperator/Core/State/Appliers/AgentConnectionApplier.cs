@@ -27,7 +27,13 @@ public class AgentConnectionApplier : BaseApplier<V1Beta1AgentConnection, AgentC
     {
         var spec = entity.Spec;
 
-        var uri = "https://app-agents.contrastsecurity.com/Contrast";
+        string uri = null!;
+        if (spec.Token == null)
+        {
+            //Token is not set so set the default url (since the token could contain the URL and agents will prioritize the url env var over the one in the token )
+            uri = "https://app-agents.contrastsecurity.com/Contrast";
+        }
+
         if (spec.Url != null)
         {
             if (Uri.TryCreate(spec.Url, UriKind.Absolute, out _))
@@ -43,11 +49,36 @@ public class AgentConnectionApplier : BaseApplier<V1Beta1AgentConnection, AgentC
 
         var @namespace = entity.Namespace()!;
 
+        SecretReference? token = null;
+        if (spec.Token != null)
+        {
+            token = new SecretReference(@namespace, spec.Token.SecretName, spec.Token.SecretKey);
+        }
+
+        SecretReference? apiKey = null;
+        if (spec.ApiKey != null)
+        {
+            apiKey = new SecretReference(@namespace, spec.ApiKey.SecretName, spec.ApiKey.SecretKey);
+        }
+
+        SecretReference? serviceKey = null;
+        if (spec.ServiceKey != null)
+        {
+            serviceKey = new SecretReference(@namespace, spec.ServiceKey.SecretName, spec.ServiceKey.SecretKey);
+        }
+
+        SecretReference? username = null;
+        if (spec.UserName != null)
+        {
+            username = new SecretReference(@namespace, spec.UserName.SecretName, spec.UserName.SecretKey);
+        }
+
         var resource = new AgentConnectionResource(
+            token,
             uri,
-            new SecretReference(@namespace, spec.ApiKey.SecretName, spec.ApiKey.SecretKey),
-            new SecretReference(@namespace, spec.ServiceKey.SecretName, spec.ServiceKey.SecretKey),
-            new SecretReference(@namespace, spec.UserName.SecretName, spec.UserName.SecretKey)
+            apiKey,
+            serviceKey,
+            username
         );
         return ValueTask.FromResult(resource);
     }

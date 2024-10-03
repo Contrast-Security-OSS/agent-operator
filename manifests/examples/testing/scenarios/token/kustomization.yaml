@@ -1,0 +1,6 @@
+namespace: testing-token
+resources:
+  - ./operator-config.yaml
+  - ./oldauth-dummy.yaml
+  - ./token-dummy.yaml
+  - ./namespace.yaml

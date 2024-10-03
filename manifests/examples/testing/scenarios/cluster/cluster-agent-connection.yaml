@@ -6,6 +6,9 @@ metadata:
 spec:
   template:
     spec:
+      token:
+        secretName: cluster-agent-connection-secret
+        secretKey: token
       url: http://not-localhost
       apiKey:
         secretName: cluster-agent-connection-secret
