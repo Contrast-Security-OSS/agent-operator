@@ -53,6 +53,10 @@ public class ClusterDefaultTests : IClassFixture<TestingContext>
             // Of course, this won't be here if telemetry is disabled.
             //container.Env.Should().Contain(x => x.Name == "CONTRAST_CLUSTER_ID").Which.Value.Should().NotBeNull();
 
+            var token = container.Env.Should().Contain(x => x.Name == "CONTRAST__API__TOKEN").Subject;
+            token.ValueFrom.SecretKeyRef.Name.Should().Be("default-agent-connection-secret-cf80cd8aed");
+            token.ValueFrom.SecretKeyRef.Key.Should().Be("token");
+
             var apiKey = container.Env.Should().Contain(x => x.Name == "CONTRAST__API__API_KEY").Subject;
             apiKey.ValueFrom.SecretKeyRef.Name.Should().Be("default-agent-connection-secret-cf80cd8aed");
             apiKey.ValueFrom.SecretKeyRef.Key.Should().Be("api-key");

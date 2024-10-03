@@ -5,8 +5,10 @@ using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Comparing;
 using Contrast.K8s.AgentOperator.Core.State;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
+using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
 using Contrast.K8s.AgentOperator.Entities;
 using Contrast.K8s.AgentOperator.Options;
+using k8s;
 using k8s.Models;
 using KubeOps.KubernetesClient;
 
@@ -36,28 +38,52 @@ public class ClusterAgentConnectionSyncingHandler
                                                                              string targetName,
                                                                              string targetNamespace)
     {
+
+        var spec = new V1Beta1AgentConnection.AgentInjectorSpec
+        {
+            Url = desiredResource.TeamServerUri
+        };
+
+        if (desiredResource.Token != null)
+        {
+            spec.Token = new V1Beta1AgentConnection.SecretRef
+            {
+                SecretName = desiredResource.Token.Name,
+                SecretKey = desiredResource.Token.Key
+            };
+        }
+
+        if (desiredResource.ApiKey != null)
+        {
+            spec.ApiKey = new V1Beta1AgentConnection.SecretRef
+            {
+                SecretName = desiredResource.ApiKey.Name,
+                SecretKey = desiredResource.ApiKey.Key
+            };
+        }
+
+        if (desiredResource.ServiceKey != null)
+        {
+            spec.ServiceKey = new V1Beta1AgentConnection.SecretRef
+            {
+                SecretName = desiredResource.ServiceKey.Name,
+                SecretKey = desiredResource.ServiceKey.Key
+            };
+        }
+
+        if (desiredResource.UserName != null)
+        {
+            spec.UserName = new V1Beta1AgentConnection.SecretRef
+            {
+                SecretName = desiredResource.UserName.Name,
+                SecretKey = desiredResource.UserName.Key
+            };
+        }
+
         return ValueTask.FromResult(new V1Beta1AgentConnection
         {
             Metadata = new V1ObjectMeta(name: targetName, namespaceProperty: targetNamespace),
-            Spec = new V1Beta1AgentConnection.AgentInjectorSpec
-            {
-                Url = desiredResource.TeamServerUri,
-                UserName = new V1Beta1AgentConnection.SecretRef
-                {
-                    SecretName = desiredResource.UserName.Name,
-                    SecretKey = desiredResource.UserName.Key
-                },
-                ServiceKey = new V1Beta1AgentConnection.SecretRef
-                {
-                    SecretName = desiredResource.ServiceKey.Name,
-                    SecretKey = desiredResource.ServiceKey.Key
-                },
-                ApiKey = new V1Beta1AgentConnection.SecretRef
-                {
-                    SecretName = desiredResource.ApiKey.Name,
-                    SecretKey = desiredResource.ApiKey.Key
-                }
-            }
+            Spec = spec
         })!;
     }
 
@@ -71,26 +97,38 @@ public class ClusterAgentConnectionSyncingHandler
                                                                                  string targetNamespace)
     {
         var secretName = _clusterDefaults.GetDefaultAgentConnectionSecretName(targetNamespace);
+        var template = baseResource.Resource.Template;
+
+        SecretReference? token = null;
+        if (template.Token != null)
+        {
+            token = new SecretReference(targetNamespace, secretName, ClusterDefaultsConstants.DefaultTokenSecretKey);
+        }
+
+        SecretReference? apiKey = null;
+        if (template.ApiKey != null)
+        {
+            apiKey = new SecretReference(targetNamespace, secretName, ClusterDefaultsConstants.DefaultApiKeySecretKey);
+        }
+
+        SecretReference? serviceKey = null;
+        if (template.ServiceKey != null)
+        {
+            serviceKey = new SecretReference(targetNamespace, secretName, ClusterDefaultsConstants.DefaultServiceKeySecretKey);
+        }
+
+        SecretReference? username = null;
+        if (template.UserName != null)
+        {
+            username = new SecretReference(targetNamespace, secretName, ClusterDefaultsConstants.DefaultUsernameSecretKey);
+        }
+
         return ValueTask.FromResult(baseResource.Resource.Template with
         {
-            UserName = baseResource.Resource.Template.UserName with
-            {
-                Name = secretName,
-                Key = ClusterDefaultsConstants.DefaultUsernameSecretKey,
-                Namespace = targetNamespace
-            },
-            ServiceKey = baseResource.Resource.Template.ServiceKey with
-            {
-                Name = secretName,
-                Key = ClusterDefaultsConstants.DefaultServiceKeySecretKey,
-                Namespace = targetNamespace
-            },
-            ApiKey = baseResource.Resource.Template.ApiKey with
-            {
-                Name = secretName,
-                Key = ClusterDefaultsConstants.DefaultApiKeySecretKey,
-                Namespace = targetNamespace
-            }
+            Token = token,
+            ApiKey = apiKey,
+            ServiceKey = serviceKey,
+            UserName = username
         })!;
     }
 }

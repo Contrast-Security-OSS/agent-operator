@@ -84,38 +84,61 @@ public static class StateContainerExtensions
         var connection = await state.GetById<AgentConnectionResource>(name, @namespace, cancellationToken);
         if (connection != null)
         {
-            var hasApiKeySecret = await state.HasSecretKey(connection.ApiKey, cancellationToken);
-            if (!hasApiKeySecret)
+            //Check if token exists first, if it doesn't then validate the old auth values are there
+            if (connection.Token != null)
             {
-                readyContext.AddFailureReason(
-                    $"Secret '{connection.ApiKey.Namespace}/{connection.ApiKey.Name}' with key '{connection.ApiKey.Key}' could not be found.");
+                var hasTokenSecret = await state.HasSecretKey(connection.Token, cancellationToken);
+                if (!hasTokenSecret)
+                {
+                    readyContext.AddFailureReason(
+                        $"Secret '{connection.Token.Namespace}/{connection.Token.Name}' with key '{connection.Token.Key}' could not be found.");
+                }
+                else
+                {
+                    return connection;
+                }
             }
-
-            var hasServiceKeySecret = await state.HasSecretKey(connection.ServiceKey, cancellationToken);
-            if (!hasServiceKeySecret)
+            else
             {
-                readyContext.AddFailureReason(
-                    $"Secret '{connection.ServiceKey.Namespace}/{connection.ServiceKey.Name}' with key '{connection.ServiceKey.Key}' could not be found.");
-            }
+                var hasApiKeySecret = connection.ApiKey != null && await state.HasSecretKey(connection.ApiKey, cancellationToken);
+                if (!hasApiKeySecret)
+                {
+                    readyContext.AddFailureReason(
+                        connection.ApiKey == null
+                            ? $"Required {nameof(connection.ApiKey)} secret missing in AgentConnection '{@namespace}/{name}'."
+                            : $"Secret '{connection.ApiKey.Namespace}/{connection.ApiKey.Name}' with key '{connection.ApiKey.Key}' could not be found.");
+                }
 
-            var hasUserNameSecret = await state.HasSecretKey(connection.UserName, cancellationToken);
-            if (!hasUserNameSecret)
-            {
-                readyContext.AddFailureReason(
-                    $"Secret '{connection.UserName.Namespace}/{connection.UserName.Name}' with key '{connection.UserName.Key}' could not be found.");
-            }
+                var hasServiceKeySecret = connection.ServiceKey != null && await state.HasSecretKey(connection.ServiceKey, cancellationToken);
+                if (!hasServiceKeySecret)
+                {
+                    readyContext.AddFailureReason(
+                        connection.ServiceKey == null
+                            ? $"Required {nameof(connection.ServiceKey)} secret missing in AgentConnection '{@namespace}/{name}'."
+                            : $"Secret '{connection.ServiceKey.Namespace}/{connection.ServiceKey.Name}' with key '{connection.ServiceKey.Key}' could not be found.");
+                }
 
-            if (hasApiKeySecret
-                && hasServiceKeySecret
-                && hasUserNameSecret)
-            {
-                return connection;
+                var hasUserNameSecret = connection.UserName != null && await state.HasSecretKey(connection.UserName, cancellationToken);
+                if (!hasUserNameSecret)
+                {
+                    readyContext.AddFailureReason(
+                        connection.UserName == null
+                            ? $"Required {nameof(connection.UserName)} secret missing in AgentConnection '{@namespace}/{name}'."
+                            : $"Secret '{connection.UserName.Namespace}/{connection.UserName.Name}' with key '{connection.UserName.Key}' could not be found.");
+                }
+
+                if (hasApiKeySecret
+                    && hasServiceKeySecret
+                    && hasUserNameSecret)
+                {
+                    return connection;
+                }
             }
         }
         else
         {
             readyContext.AddFailureReason(isNamespaceDefault
-                ? "AgentConnection  was not specified, and no cluster default was found."
+                ? "AgentConnection was not specified, and no cluster default was found."
                 : $"AgentConnection '{@namespace}/{name}' could not be found.");
         }
 
@@ -146,14 +169,10 @@ public static class StateContainerExtensions
                 is { ConnectionReference: { } connectionRef } injector
             && await state.GetById<AgentConnectionResource>(connectionRef.Name, connectionRef.Namespace, cancellationToken)
                 is { } connection
-            && await state.GetSecret(connection.UserName, cancellationToken)
-                is { } userNameSecret
-            && await state.GetSecret(connection.ServiceKey, cancellationToken)
-                is { } serviceKeySecret
-            && await state.GetSecret(connection.ApiKey, cancellationToken)
-                is { } apiKeySecret
            )
         {
+            var secrets = new List<SecretResource>();
+
             var configuration = injector.ConfigurationReference is { } configurationRef
                 ? await state.GetById<AgentConfigurationResource>(configurationRef.Name, configurationRef.Namespace, cancellationToken)
                 : null;
@@ -162,16 +181,45 @@ public static class StateContainerExtensions
                 ? await state.GetSecret(imagePullSecretRef, cancellationToken)
                 : null;
 
-            var secrets = new List<SecretResource>
-            {
-                userNameSecret,
-                serviceKeySecret,
-                apiKeySecret
-            };
-
             if (imagePullSecret != null)
             {
                 secrets.Add(imagePullSecret);
+            }
+
+            var tokenSecret = connection.Token is { } tokenSecretRef
+                ? await state.GetSecret(tokenSecretRef, cancellationToken)
+                : null;
+
+            if (tokenSecret != null)
+            {
+                secrets.Add(tokenSecret);
+            }
+
+            var userNameSecret = connection.UserName is { } userNameSecretRef
+                ? await state.GetSecret(userNameSecretRef, cancellationToken)
+                : null;
+
+            if (userNameSecret != null)
+            {
+                secrets.Add(userNameSecret);
+            }
+
+            var serviceKeySecret = connection.UserName is { } serviceKeySecretRef
+                ? await state.GetSecret(serviceKeySecretRef, cancellationToken)
+                : null;
+
+            if (serviceKeySecret != null)
+            {
+                secrets.Add(serviceKeySecret);
+            }
+
+            var apiKeySecret = connection.UserName is { } apiKeySecretRef
+                ? await state.GetSecret(apiKeySecretRef, cancellationToken)
+                : null;
+
+            if (apiKeySecret != null)
+            {
+                secrets.Add(apiKeySecret);
             }
 
             return new InjectorBundle(injector, connection, configuration, secrets);
