@@ -22,6 +22,11 @@ public class V1Beta1AgentConnection : CustomKubernetesEntity<V1Beta1AgentConnect
     public class AgentInjectorSpec
     {
         /// <summary>
+        /// The Token to use for this connection.
+        /// </summary>
+        public SecretRef? Token { get; set; } = new();
+
+        /// <summary>
         /// The URL of the Contrast server.
         /// Defaults to 'https://app.contrastsecurity.com/Contrast'.
         /// </summary>
@@ -30,20 +35,17 @@ public class V1Beta1AgentConnection : CustomKubernetesEntity<V1Beta1AgentConnect
         /// <summary>
         /// The API Key to use for this connection.
         /// </summary>
-        [Required]
-        public SecretRef ApiKey { get; set; } = new();
+        public SecretRef? ApiKey { get; set; } = new();
 
         /// <summary>
         /// The Service Key to use for this connection.
         /// </summary>
-        [Required]
-        public SecretRef ServiceKey { get; set; } = new();
+        public SecretRef? ServiceKey { get; set; } = new();
 
         /// <summary>
-        /// The User Name to use for this connection.
+        /// The UserName to use for this connection.
         /// </summary>
-        [Required]
-        public SecretRef UserName { get; set; } = new();
+        public SecretRef? UserName { get; set; } = new();
     }
 
     public class SecretRef

@@ -1,0 +1,63 @@
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: AgentConnection
+metadata:
+  name: oldauth-agent-connection
+spec:
+  url: http://localhost
+  apiKey:
+    secretName: oldauth-agent-connection-secret
+    secretKey: apiKey
+  serviceKey:
+    secretName: oldauth-agent-connection-secret
+    secretKey: serviceKey
+  userName:
+    secretName: oldauth-agent-connection-secret
+    secretKey: userName
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: oldauth-agent-connection-secret
+type: Opaque
+stringData:
+  apiKey: apiKey
+  serviceKey: serviceKey
+  userName: userName
+---
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: AgentInjector
+metadata:
+  name: oldauth-dummy
+spec:
+  enabled: true
+  type: dummy
+  selector:
+    labels:
+      - name: app
+        value: oldauth-dummy
+  connection:
+    name: oldauth-agent-connection
+  configuration:
+    name: testing-agent-configuration
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oldauth-dummy
+  labels:
+    app: oldauth-dummy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oldauth-dummy
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: oldauth-dummy
+    spec:
+      containers:
+        - image: k8s.gcr.io/pause:3.3
+          name: pause

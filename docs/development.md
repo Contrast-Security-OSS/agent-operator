@@ -25,7 +25,7 @@ With Docker Desktop executing locally, the operator should automatically connect
 
 ### Development with Webhooks
 
-Webhooks or "push" features require the ability for the cluster to contact the running operator. If the operator is running outside of the cluster, this communication can become a problem.
+Webhooks or "push" features require the ability for the cluster to contact the running operator (like patching pods). If the operator is running outside of the cluster, this communication can become a problem.
 
 Using the "Bridge to Kubernetes", we can redirect requests to a cluster service to our local machine.
 

@@ -3,6 +3,9 @@ kind: AgentConnection
 metadata:
   name: testing-agent-connection
 spec:
+  token:
+    secretName: testing-agent-connection-secret
+    secretKey: token
   url: http://localhost
   apiKey:
     secretName: testing-agent-connection-secret

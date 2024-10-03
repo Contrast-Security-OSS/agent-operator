@@ -65,23 +65,44 @@ public class ClusterAgentConnectionSecretSyncingHandler
         var @namespace = baseResource.Identity.Namespace;
         var template = baseResource.Resource.Template;
 
-        var usernameHash = await GetCachedSecretDataHashByRef(template.UserName.Name, @namespace, template.UserName.Key);
-        var apiKeyHash = await GetCachedSecretDataHashByRef(template.ApiKey.Name, @namespace, template.ApiKey.Key);
-        var serviceKeyHash = await GetCachedSecretDataHashByRef(template.ServiceKey.Name, @namespace, template.ServiceKey.Key);
+        var secretKeyValues = new List<SecretKeyValue>();
 
-        if (usernameHash == null
-            || apiKeyHash == null
-            || serviceKeyHash == null)
+        if (template.Token != null)
         {
-            return null;
+            var tokenHash = await GetCachedSecretDataHashByRef(template.Token.Name, @namespace, template.Token.Key);
+            if (tokenHash != null)
+            {
+                secretKeyValues.Add(new SecretKeyValue(ClusterDefaultsConstants.DefaultTokenSecretKey, tokenHash));
+            }
         }
 
-        var secretKeyValues = new List<SecretKeyValue>
+        if (template.UserName != null)
         {
-            new(ClusterDefaultsConstants.DefaultUsernameSecretKey, usernameHash),
-            new(ClusterDefaultsConstants.DefaultApiKeySecretKey, apiKeyHash),
-            new(ClusterDefaultsConstants.DefaultServiceKeySecretKey, serviceKeyHash),
-        };
+            var usernameHash = await GetCachedSecretDataHashByRef(template.UserName.Name, @namespace, template.UserName.Key);
+            if (usernameHash != null)
+            {
+                secretKeyValues.Add(new SecretKeyValue(ClusterDefaultsConstants.DefaultUsernameSecretKey, usernameHash));
+            }
+        }
+
+        if (template.ApiKey != null)
+        {
+            var apiKeyHash = await GetCachedSecretDataHashByRef(template.ApiKey.Name, @namespace, template.ApiKey.Key);
+            if (apiKeyHash != null)
+            {
+                secretKeyValues.Add(new SecretKeyValue(ClusterDefaultsConstants.DefaultApiKeySecretKey, apiKeyHash));
+            }
+        }
+
+        if (template.ServiceKey != null)
+        {
+            var serviceKeyHash = await GetCachedSecretDataHashByRef(template.ServiceKey.Name, @namespace, template.ServiceKey.Key);
+            if (serviceKeyHash != null)
+            {
+                secretKeyValues.Add(new SecretKeyValue(ClusterDefaultsConstants.DefaultServiceKeySecretKey, serviceKeyHash));
+            }
+        }
+
         return new SecretResource(secretKeyValues.NormalizeSecrets());
     }
 
@@ -93,15 +114,42 @@ public class ClusterAgentConnectionSecretSyncingHandler
         var @namespace = baseResource.Identity.Namespace;
         var template = baseResource.Resource.Template;
 
-        var usernameData = await GetLiveSecretDataByRef(template.UserName.Name, @namespace, template.UserName.Key);
-        var apiKeyData = await GetLiveSecretDataByRef(template.ApiKey.Name, @namespace, template.ApiKey.Key);
-        var serviceKeyData = await GetLiveSecretDataByRef(template.ServiceKey.Name, @namespace, template.ServiceKey.Key);
+        var data = new Dictionary<string, byte[]>();
 
-        if (usernameData == null
-            || apiKeyData == null
-            || serviceKeyData == null)
+        if (template.Token != null)
         {
-            return null;
+            var tokenData = await GetLiveSecretDataByRef(template.Token.Name, @namespace, template.Token.Key);
+            if (tokenData != null)
+            {
+                data.Add(ClusterDefaultsConstants.DefaultTokenSecretKey, tokenData);
+            }
+        }
+
+        if (template.UserName != null)
+        {
+            var usernameData = await GetLiveSecretDataByRef(template.UserName.Name, @namespace, template.UserName.Key);
+            if (usernameData != null)
+            {
+                data.Add(ClusterDefaultsConstants.DefaultUsernameSecretKey, usernameData);
+            }
+        }
+
+        if (template.ApiKey != null)
+        {
+            var apiKeyData = await GetLiveSecretDataByRef(template.ApiKey.Name, @namespace, template.ApiKey.Key);
+            if (apiKeyData != null)
+            {
+                data.Add(ClusterDefaultsConstants.DefaultApiKeySecretKey, apiKeyData);
+            }
+        }
+
+        if (template.ServiceKey != null)
+        {
+            var serviceKeyData = await GetLiveSecretDataByRef(template.ServiceKey.Name, @namespace, template.ServiceKey.Key);
+            if (serviceKeyData != null)
+            {
+                data.Add(ClusterDefaultsConstants.DefaultServiceKeySecretKey, serviceKeyData);
+            }
         }
 
         return new V1Secret(
@@ -110,12 +158,7 @@ public class ClusterAgentConnectionSecretSyncingHandler
                 Name = targetName,
                 NamespaceProperty = targetNamespace
             },
-            data: new Dictionary<string, byte[]>
-            {
-                { ClusterDefaultsConstants.DefaultUsernameSecretKey, usernameData },
-                { ClusterDefaultsConstants.DefaultApiKeySecretKey, apiKeyData },
-                { ClusterDefaultsConstants.DefaultServiceKeySecretKey, serviceKeyData }
-            }
+            data: data
         );
     }
 

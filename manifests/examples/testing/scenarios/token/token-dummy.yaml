@@ -1,0 +1,54 @@
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: AgentConnection
+metadata:
+  name: token-agent-connection
+spec:
+  token:
+    secretName: token-agent-connection-secret
+    secretKey: token
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: token-agent-connection-secret
+type: Opaque
+stringData:
+  token: token
+---
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: AgentInjector
+metadata:
+  name: token-dummy
+spec:
+  enabled: true
+  type: dummy
+  selector:
+    labels:
+      - name: app
+        value: token-dummy
+  connection:
+    name: token-agent-connection
+  configuration:
+    name: testing-agent-configuration
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: token-dummy
+  labels:
+    app: token-dummy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: token-dummy
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: token-dummy
+    spec:
+      containers:
+        - image: k8s.gcr.io/pause:3.3
+          name: pause

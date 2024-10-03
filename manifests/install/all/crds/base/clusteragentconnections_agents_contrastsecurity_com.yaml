@@ -29,6 +29,24 @@ spec:
                   spec:
                     description: Specification of the kubernetes object.
                     properties:
+                      token:
+                        description: The Token to use for this connection.
+                        nullable: true
+                        properties:
+                          secretName:
+                            description: |-
+                              The name of the secret to reference. Must exist in the same namespace as the AgentConnection.
+                              Required.
+                            type: string
+                          secretKey:
+                            description: |-
+                              The key in the secret to access the value for. Must exist in the same namespace as the AgentConnection.
+                              Required.
+                            type: string
+                        required:
+                        - secretName
+                        - secretKey
+                        type: object
                       url:
                         description: |-
                           The URL of the Contrast server.
@@ -37,6 +55,7 @@ spec:
                         type: string
                       apiKey:
                         description: The API Key to use for this connection.
+                        nullable: true
                         properties:
                           secretName:
                             description: |-
@@ -54,6 +73,7 @@ spec:
                         type: object
                       serviceKey:
                         description: The Service Key to use for this connection.
+                        nullable: true
                         properties:
                           secretName:
                             description: |-
@@ -70,7 +90,8 @@ spec:
                         - secretKey
                         type: object
                       userName:
-                        description: The User Name to use for this connection.
+                        description: The UserName to use for this connection.
+                        nullable: true
                         properties:
                           secretName:
                             description: |-
@@ -86,10 +107,6 @@ spec:
                         - secretName
                         - secretKey
                         type: object
-                    required:
-                    - apiKey
-                    - serviceKey
-                    - userName
                     type: object
                   metadata:
                     description: The metadata of the kubernetes object.
