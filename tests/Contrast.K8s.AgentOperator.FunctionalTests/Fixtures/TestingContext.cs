@@ -3,8 +3,8 @@
 
 using System;
 using System.Threading.Tasks;
-using DotnetKubernetesClient;
 using k8s;
+using KubeOps.KubernetesClient;
 using Xunit.Abstractions;
 
 namespace Contrast.K8s.AgentOperator.FunctionalTests.Fixtures;

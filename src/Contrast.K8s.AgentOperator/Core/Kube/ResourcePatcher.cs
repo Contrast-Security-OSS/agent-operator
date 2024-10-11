@@ -7,12 +7,11 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Options;
-using DotnetKubernetesClient;
-using DotnetKubernetesClient.Entities;
 using JsonDiffPatch;
 using k8s;
 using k8s.Autorest;
 using k8s.Models;
+using KubeOps.KubernetesClient;
 using Newtonsoft.Json;
 using NLog;
 

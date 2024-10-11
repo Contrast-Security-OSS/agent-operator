@@ -26,7 +26,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
     <PackageReference Include="CertificateManager" Version="1.0.8" />
     <PackageReference Include="Autofac" Version="7.0.0" />
@@ -38,7 +37,6 @@
 
     <PackageReference Include="Glob" Version="1.1.9" />
     <PackageReference Include="MediatR" Version="12.0.1" />
-    <PackageReference Include="CompareNETObjects" Version="4.79.0" />
     <PackageReference Include="YamlDotNet" Version="13.0.1" />
 
     <PackageReference Include="JetBrains.Annotations" Version="2022.3.1" />
@@ -50,14 +48,11 @@
     </PackageReference>
 
     <PackageReference Include="Sigil" Version="5.0.0" />
+    <PackageReference Include="KubeOps" Version="7.5.0" />
 
-    <!--https://github.com/dotnet/runtime/issues/60393-->
+    <!--https://github.com/dotnet/runtime/issues/60393 (can remove after .NET 9)-->
     <PackageReference Include="HexMate" Version="0.0.3" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\vendor\dotnet-kubernetes-client\src\DotnetKubernetesClient\DotnetKubernetesClient.csproj" />
-    <ProjectReference Include="..\..\vendor\dotnet-operator-sdk\src\KubeOps\KubeOps.csproj" />
-  </ItemGroup>
 
 </Project>
