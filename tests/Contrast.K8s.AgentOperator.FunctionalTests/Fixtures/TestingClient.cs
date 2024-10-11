@@ -6,9 +6,9 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using DotnetKubernetesClient;
 using k8s;
 using k8s.Models;
+using KubeOps.KubernetesClient;
 using Xunit.Abstractions;
 
 namespace Contrast.K8s.AgentOperator.FunctionalTests.Fixtures;

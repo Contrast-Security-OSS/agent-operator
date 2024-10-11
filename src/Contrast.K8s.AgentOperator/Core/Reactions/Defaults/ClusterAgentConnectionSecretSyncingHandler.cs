@@ -10,8 +10,8 @@ using Contrast.K8s.AgentOperator.Core.State;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
 using Contrast.K8s.AgentOperator.Options;
-using DotnetKubernetesClient;
 using k8s.Models;
+using KubeOps.KubernetesClient;
 
 namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults;
 
