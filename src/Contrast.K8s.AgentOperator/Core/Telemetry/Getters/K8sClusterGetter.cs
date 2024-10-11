@@ -2,7 +2,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Threading.Tasks;
-using DotnetKubernetesClient;
+using KubeOps.KubernetesClient;
 
 namespace Contrast.K8s.AgentOperator.Core.Telemetry.Getters;
 

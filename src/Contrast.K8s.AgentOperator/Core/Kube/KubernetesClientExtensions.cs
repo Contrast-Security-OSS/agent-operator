@@ -3,19 +3,18 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using DotnetKubernetesClient;
-using DotnetKubernetesClient.Entities;
-using JsonDiffPatch;
 using k8s;
 using k8s.Models;
+using KubeOps.KubernetesClient;
 
 namespace Contrast.K8s.AgentOperator.Core.Kube;
 
 public static class KubernetesClientExtensions
 {
-    public static async ValueTask Patch<T>(this IKubernetesClient client, T resource, PatchDocument patchDocument, string fieldManager)
+    public static async ValueTask Patch<T>(this IKubernetesClient client, T resource, JsonNode patchDocument, string fieldManager)
         where T : IKubernetesObject<V1ObjectMeta>
     {
         var apiClient = client.ApiClient;
@@ -47,7 +46,7 @@ public static class KubernetesClientExtensions
         }
     }
 
-    public static async ValueTask PatchStatus<T>(this IKubernetesClient client, T resource, PatchDocument patchDocument, string fieldManager)
+    public static async ValueTask PatchStatus<T>(this IKubernetesClient client, T resource, JsonNode patchDocument, string fieldManager)
         where T : IKubernetesObject<V1ObjectMeta>
     {
         var apiClient = client.ApiClient;

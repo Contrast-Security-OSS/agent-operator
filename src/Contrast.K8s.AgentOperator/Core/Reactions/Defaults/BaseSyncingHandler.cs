@@ -12,10 +12,10 @@ using Contrast.K8s.AgentOperator.Core.Events;
 using Contrast.K8s.AgentOperator.Core.State;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Interfaces;
 using Contrast.K8s.AgentOperator.Options;
-using DotnetKubernetesClient;
 using k8s;
 using k8s.Autorest;
 using k8s.Models;
+using KubeOps.KubernetesClient;
 using MediatR;
 using NLog;
 

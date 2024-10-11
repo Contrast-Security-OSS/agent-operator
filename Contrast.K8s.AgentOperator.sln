@@ -7,13 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Contrast.K8s.AgentOperator"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Contrast.K8s.AgentOperator.Tests", "tests\Contrast.K8s.AgentOperator.Tests\Contrast.K8s.AgentOperator.Tests.csproj", "{E1EEA671-A656-4947-A0D4-A8BD4404BBCD}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "vendor", "vendor", "{A961D540-FE30-482A-8786-250181E429D7}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KubeOps", "vendor\dotnet-operator-sdk\src\KubeOps\KubeOps.csproj", "{BC941F05-9141-40E4-819A-C7A4A09B1E74}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotnetKubernetesClient", "vendor\dotnet-kubernetes-client\src\DotnetKubernetesClient\DotnetKubernetesClient.csproj", "{9359E781-59C0-4CAF-8DD4-516EB575E319}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contrast.K8s.AgentOperator.FunctionalTests", "tests\Contrast.K8s.AgentOperator.FunctionalTests\Contrast.K8s.AgentOperator.FunctionalTests.csproj", "{14EB0F7B-447C-4AC0-8834-57C207C5404D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Contrast.K8s.AgentOperator.FunctionalTests", "tests\Contrast.K8s.AgentOperator.FunctionalTests\Contrast.K8s.AgentOperator.FunctionalTests.csproj", "{14EB0F7B-447C-4AC0-8834-57C207C5404D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{3A23E9CC-CDC7-4529-981D-F1145B2C783C}"
 EndProject
@@ -33,14 +27,6 @@ Global
 		{E1EEA671-A656-4947-A0D4-A8BD4404BBCD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E1EEA671-A656-4947-A0D4-A8BD4404BBCD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E1EEA671-A656-4947-A0D4-A8BD4404BBCD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BC941F05-9141-40E4-819A-C7A4A09B1E74}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BC941F05-9141-40E4-819A-C7A4A09B1E74}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BC941F05-9141-40E4-819A-C7A4A09B1E74}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BC941F05-9141-40E4-819A-C7A4A09B1E74}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9359E781-59C0-4CAF-8DD4-516EB575E319}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9359E781-59C0-4CAF-8DD4-516EB575E319}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9359E781-59C0-4CAF-8DD4-516EB575E319}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9359E781-59C0-4CAF-8DD4-516EB575E319}.Release|Any CPU.Build.0 = Release|Any CPU
 		{14EB0F7B-447C-4AC0-8834-57C207C5404D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{14EB0F7B-447C-4AC0-8834-57C207C5404D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{14EB0F7B-447C-4AC0-8834-57C207C5404D}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -52,8 +38,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{913C1CDC-1294-4793-9347-46B44BC33281} = {3A23E9CC-CDC7-4529-981D-F1145B2C783C}
 		{E1EEA671-A656-4947-A0D4-A8BD4404BBCD} = {B6D148E8-FAAB-4C7E-B211-D118BD54DFBC}
-		{BC941F05-9141-40E4-819A-C7A4A09B1E74} = {A961D540-FE30-482A-8786-250181E429D7}
-		{9359E781-59C0-4CAF-8DD4-516EB575E319} = {A961D540-FE30-482A-8786-250181E429D7}
 		{14EB0F7B-447C-4AC0-8834-57C207C5404D} = {B6D148E8-FAAB-4C7E-B211-D118BD54DFBC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution

@@ -8,34 +8,34 @@ using KubeOps.Operator.Caching;
 
 namespace Contrast.K8s.AgentOperator.Core.Extensions;
 
-public class NoOpResourceCacheDecorator<TEntity> : IResourceCache<TEntity> where TEntity : IKubernetesObject<V1ObjectMeta>
-{
-    // ReSharper disable once UnusedParameter.Local
-    public NoOpResourceCacheDecorator(IResourceCache<TEntity> _)
-    {
-    }
+//public class NoOpResourceCacheDecorator<TEntity> : IResourceCache<TEntity> where TEntity : IKubernetesObject<V1ObjectMeta>
+//{
+//    // ReSharper disable once UnusedParameter.Local
+//    public NoOpResourceCacheDecorator(IResourceCache<TEntity> _)
+//    {
+//    }
 
-    public TEntity Get(string id)
-    {
-        throw new System.NotImplementedException();
-    }
+//    public TEntity Get(string id)
+//    {
+//        throw new System.NotImplementedException();
+//    }
 
-    public TEntity Upsert(TEntity resource, out CacheComparisonResult result)
-    {
-        // Always considered the object new/modified.
-        result = CacheComparisonResult.Other;
-        return resource;
-    }
+//    public TEntity Upsert(TEntity resource, out CacheComparisonResult result)
+//    {
+//        // Always considered the object new/modified.
+//        result = CacheComparisonResult.Other;
+//        return resource;
+//    }
 
-    public void Fill(IEnumerable<TEntity> resources)
-    {
-    }
+//    public void Fill(IEnumerable<TEntity> resources)
+//    {
+//    }
 
-    public void Remove(TEntity resource)
-    {
-    }
+//    public void Remove(TEntity resource)
+//    {
+//    }
 
-    public void Clear()
-    {
-    }
-}
+//    public void Clear()
+//    {
+//    }
+//}
