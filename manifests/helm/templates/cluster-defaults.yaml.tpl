@@ -4,7 +4,7 @@ kind: ClusterAgentConfiguration
 metadata:
   name: default-agent-configuration
   namespace: >-
-    {{ .Values.namespace }}
+    {{ if not .Values.createNamespace }}{{.Release.Namespace}}{{else}}{{.Values.namespace}}{{end}}
 spec:
   template:
     spec:
@@ -19,7 +19,7 @@ kind: ClusterAgentConnection
 metadata:
   name: default-agent-connection
   namespace: >-
-    {{ .Values.namespace }}
+    {{ if not .Values.createNamespace }}{{.Release.Namespace}}{{else}}{{.Values.namespace}}{{end}}
 spec:
   template:
     spec:
@@ -41,7 +41,7 @@ kind: Secret
 metadata:
   name: default-agent-connection-secret
   namespace: >-
-    {{ .Values.namespace }}
+    {{ if not .Values.createNamespace }}{{.Release.Namespace}}{{else}}{{.Values.namespace}}{{end}}
 type: Opaque
 stringData:
   apiKey: >-

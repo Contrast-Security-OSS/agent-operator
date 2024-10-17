@@ -1,5 +1,6 @@
-# Release.Namespace is ignored. The operator must be created in a separate namespace.
+# Specifing a namespace here is depricated and will be removed in a future release. Please use helm --namespace / --create-namespace instead.
 namespace: contrast-agent-operator
+createNamespace: true
 image:
   registry: contrast
   repository: agent-operator
@@ -62,7 +63,7 @@ clusterDefaults:
   # Name of a secret to retrieve the cluster-wide connection details from.
   # The secret should contain keys named apiKey, serviceKey and userName.
   # Leave blank if you want the chart to create a secret using the subsequent apiKeyValue, serviceKeyValue and userNameValue values.
-  existingSecret: 
+  existingSecret:
   # Required if existingSecret is not set. The API Key from the Contrast UI.
   apiKeyValue:
   # Required if existingSecret is not set. The Service Key from the Contrast UI.
