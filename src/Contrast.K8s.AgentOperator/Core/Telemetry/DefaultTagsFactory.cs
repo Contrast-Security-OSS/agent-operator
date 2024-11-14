@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Contrast.K8s.AgentOperator.Core.Leading;
 using Contrast.K8s.AgentOperator.Core.Telemetry.Getters;
 using Contrast.K8s.AgentOperator.Options;
 
@@ -18,27 +19,36 @@ public class DefaultTagsFactory
     private readonly TelemetryOptions _telemetryOptions;
     private readonly MachineIdGetter _machineIdGetter;
     private readonly K8sClusterGetter _cluster;
+    private readonly ILeaderElectionState _leaderElectionState;
 
     public DefaultTagsFactory(IsPublicTelemetryBuildGetter isPublicTelemetryBuildGetter,
                               TelemetryState telemetryState,
                               TelemetryOptions telemetryOptions,
                               MachineIdGetter machineIdGetter,
-                              K8sClusterGetter cluster)
+                              K8sClusterGetter cluster,
+                              ILeaderElectionState leaderElectionState)
     {
         _isPublicTelemetryBuildGetter = isPublicTelemetryBuildGetter;
         _telemetryState = telemetryState;
         _telemetryOptions = telemetryOptions;
         _machineIdGetter = machineIdGetter;
         _cluster = cluster;
+        _leaderElectionState = leaderElectionState;
     }
 
     public async Task<IReadOnlyDictionary<string, string>> GetDefaultTags()
     {
         var defaultTags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
+            { "IsLeader", _leaderElectionState.IsLeader().ToString() },
             { "Operator.IsPublicBuild", _isPublicTelemetryBuildGetter.IsPublicBuild().ToString() },
             { "Operator.Version", _telemetryState.OperatorVersion }
         };
+
+        if (!string.IsNullOrWhiteSpace(_telemetryOptions.InstallSource))
+        {
+            defaultTags.Add("Operator.InstallSource", _telemetryOptions.InstallSource);
+        }
 
         if (await _cluster.GetClusterInfo() is { } clusterInfo)
         {
@@ -51,11 +61,6 @@ public class DefaultTagsFactory
             defaultTags.Add("Cluster.Major", clusterInfo.Major);
             defaultTags.Add("Cluster.Minor", clusterInfo.Minor);
             defaultTags.Add("Cluster.Platform", clusterInfo.Platform);
-        }
-
-        if (!string.IsNullOrWhiteSpace(_telemetryOptions.InstallSource))
-        {
-            defaultTags.Add("Operator.InstallSource", _telemetryOptions.InstallSource);
         }
 
         return defaultTags;
