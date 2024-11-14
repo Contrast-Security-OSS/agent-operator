@@ -1,6 +1,7 @@
 ﻿// Contrast Security, Inc licenses this file to you under the Apache 2.0 License.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Telemetry;
@@ -25,10 +26,23 @@ public class MetricsController : Controller
     public async Task<IActionResult> GetMetrics(CancellationToken cancellationToken = default)
     {
         var report = await _reportGenerator.Generate(cancellationToken);
-        return Ok(report.Values);
+
+        // Combine the Values and Tags from the report into a single output
+        var output = new Dictionary<string, object>();
+
+        foreach (var value in report.Values)
+        {
+            output.Add(value.Key, value.Value);
+        }
+
+        foreach (var tag in report.ExtraTags)
+        {
+            output.Add(tag.Key, tag.Value);
+        }
+
+        return Ok(output);
     }
 
-    
     [HttpGet("tags")]
     public async Task<IActionResult> GetTags(CancellationToken cancellationToken = default)
     {

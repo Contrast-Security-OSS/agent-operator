@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Contrast.K8s.AgentOperator.Core.Leading;
 using Contrast.K8s.AgentOperator.Core.State;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
 using Contrast.K8s.AgentOperator.Core.Telemetry.Counters;
@@ -17,12 +18,18 @@ public class StatusReportGenerator
 {
     private readonly TelemetryState _telemetryState;
     private readonly IStateContainer _clusterState;
+    private readonly ILeaderElectionState _leaderElectionState;
     private readonly PerformanceCounterContainer _performanceCounterContainer;
 
-    public StatusReportGenerator(TelemetryState telemetryState, IStateContainer clusterState, PerformanceCounterContainer performanceCounterContainer)
+    public StatusReportGenerator(
+        TelemetryState telemetryState,
+        IStateContainer clusterState,
+        ILeaderElectionState leaderElectionState,
+        PerformanceCounterContainer performanceCounterContainer)
     {
         _telemetryState = telemetryState;
         _clusterState = clusterState;
+        _leaderElectionState = leaderElectionState;
         _performanceCounterContainer = performanceCounterContainer;
     }
 
@@ -52,7 +59,8 @@ public class StatusReportGenerator
 
         return new TelemetryMeasurement("status-report")
         {
-            Values = values
+            Values = values,
+            ExtraTags = GetExtraTags()
         };
     }
 
@@ -118,5 +126,13 @@ public class StatusReportGenerator
         }
 
         return metrics;
+    }
+
+    private Dictionary<string, string> GetExtraTags()
+    {
+        return new Dictionary<string, string>
+        {
+            { "IsLeader", _leaderElectionState.IsLeader().ToString() }
+        };
     }
 }
