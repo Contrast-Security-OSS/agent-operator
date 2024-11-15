@@ -40,9 +40,9 @@ public class DefaultTagsFactory
     {
         var defaultTags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            { "IsLeader", _leaderElectionState.IsLeader().ToString() },
             { "Operator.IsPublicBuild", _isPublicTelemetryBuildGetter.IsPublicBuild().ToString() },
-            { "Operator.Version", _telemetryState.OperatorVersion }
+            { "Operator.Version", _telemetryState.OperatorVersion },
+            { "Operator.IsLeader", _leaderElectionState.IsLeader().ToString() }
         };
 
         if (!string.IsNullOrWhiteSpace(_telemetryOptions.InstallSource))
