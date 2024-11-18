@@ -7,7 +7,6 @@ using Autofac.Extensions.DependencyInjection;
 using Contrast.K8s.AgentOperator.Core;
 using Contrast.K8s.AgentOperator.Core.Tls;
 using k8s.Autorest;
-using KubeOps.Operator;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -20,7 +19,7 @@ namespace Contrast.K8s.AgentOperator;
 
 public class Program
 {
-    public static async Task<int> Main(string[] args)
+    public static async Task Main(string[] args)
     {
         var logger = LogManager.Setup()
                                .LoadConfigurationFromAppSettings()
@@ -30,9 +29,9 @@ public class Program
         {
             logger.Info($"Starting the Contrast Security Agent Operator {OperatorVersion.Version}.");
 
-            return await CreateHostBuilder(args)
+            await CreateHostBuilder(args)
                          .Build()
-                         .RunOperatorAsync(args);
+                         .RunAsync();
         }
         catch (HttpOperationException e)
         {

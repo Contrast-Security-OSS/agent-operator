@@ -40,7 +40,7 @@ public class ClusterIdWriter : IClusterIdWriter
     {
         try
         {
-            var clusterIdSecret = await _client.Get<V1Secret>(_options.ClusterIdSecretName, _options.ClusterIdSecretNamespace);
+            var clusterIdSecret = await _client.GetAsync<V1Secret>(_options.ClusterIdSecretName, _options.ClusterIdSecretNamespace);
 
             return ParseClusterId(clusterIdSecret);
         }
@@ -91,7 +91,7 @@ public class ClusterIdWriter : IClusterIdWriter
         var json = KubernetesJson.Serialize(clusterId);
         var bytes = Encoding.UTF8.GetBytes(json);
 
-        await _client.Save(new V1Secret
+        await _client.SaveAsync(new V1Secret
         {
             Metadata = new V1ObjectMeta(
                 name: _options.ClusterIdSecretName,

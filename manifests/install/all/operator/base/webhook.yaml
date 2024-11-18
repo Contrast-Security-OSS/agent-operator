@@ -20,6 +20,6 @@ webhooks:
       service:
         name: contrast-agent-operator
         namespace: contrast-agent-operator
-        path: /v1/pods/podmutationwebhook/mutate
+        path: /mutate/v1pod
     admissionReviewVersions: [ "v1" ]
     sideEffects: None

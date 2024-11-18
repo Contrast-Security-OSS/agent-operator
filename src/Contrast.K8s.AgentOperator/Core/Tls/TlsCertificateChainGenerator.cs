@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using CertificateManager;
 using CertificateManager.Models;
 using Contrast.K8s.AgentOperator.Options;

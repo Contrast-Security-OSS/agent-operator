@@ -3,22 +3,16 @@
 
 using Contrast.K8s.AgentOperator.Core.Kube;
 using k8s.Models;
-using KubeOps.Operator.Entities;
-using KubeOps.Operator.Entities.Annotations;
-using KubeOps.Operator.Rbac;
+using KubeOps.Abstractions.Entities;
+using KubeOps.Abstractions.Entities.Attributes;
+using KubeOps.Abstractions.Rbac;
 
 namespace Contrast.K8s.AgentOperator.Entities;
 
 [KubernetesEntity(Group = "agents.contrastsecurity.com", ApiVersion = "v1beta1", Kind = "AgentConnection", PluralName = "agentconnections")]
 [EntityRbac(typeof(V1Beta1AgentConnection), Verbs = VerbConstants.FullControl)]
-public class V1Beta1AgentConnection : CustomKubernetesEntity<V1Beta1AgentConnection.AgentInjectorSpec>
+public partial class V1Beta1AgentConnection : CustomKubernetesEntity<V1Beta1AgentConnection.AgentInjectorSpec>
 {
-    public V1Beta1AgentConnection()
-    {
-        Kind = "AgentConnection";
-        ApiVersion = "agents.contrastsecurity.com/v1beta1";
-    }
-
     public class AgentInjectorSpec
     {
         /// <summary>

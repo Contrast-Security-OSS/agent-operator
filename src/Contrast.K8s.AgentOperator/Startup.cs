@@ -2,10 +2,12 @@
 // See the LICENSE file in the project root for more information.
 
 using Autofac;
-using Contrast.K8s.AgentOperator.Autofac;
 using Contrast.K8s.AgentOperator.Core;
+using Contrast.K8s.AgentOperator.Extensions;
+using JetBrains.Annotations;
 using KubeOps.Operator;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -24,22 +26,18 @@ public class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         services.AddKubernetesOperator(settings =>
-                {
-                    // We handle leadership ourselves.
-                    settings.OnlyWatchEventsWhenLeader = false;
+        {
+            settings.EnableLeaderElection = true;
+        }).RegisterEntities();
 
-                    // This controls how often we perform a full state re-sync.
-                    // So best to keep this high, especially for larger clusters.
-                    settings.WatcherHttpTimeout = 60 * 10;
-                })
-                .AddReadinessCheck<ReadinessCheck>();
+        services.AddHealthChecks()
+            .AddCheck<ReadinessCheck>(nameof(ReadinessCheck), tags: new[] { "readiness" });
+
         services.AddCertificateManager();
         services.AddControllers();
-
-        // Not actually used, but hot-reload uses it?
-        services.AddRazorPages();
     }
 
+    [UsedImplicitly]
     public void ConfigureContainer(ContainerBuilder builder)
     {
         var assembly = typeof(Startup).Assembly;
@@ -55,9 +53,14 @@ public class Startup
             app.UseDeveloperExceptionPage();
         }
 
-        app.UseKubernetesOperator();
-
         app.UseRouting();
-        app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapControllers();
+            endpoints.MapHealthChecks("/health",
+                new HealthCheckOptions { Predicate = reg => reg.Tags.Contains("liveness") });
+            endpoints.MapHealthChecks("/ready",
+                new HealthCheckOptions { Predicate = reg => reg.Tags.Contains("readiness") });
+        });
     }
 }

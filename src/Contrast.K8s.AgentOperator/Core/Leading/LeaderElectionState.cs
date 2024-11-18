@@ -5,7 +5,7 @@ using System;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Events;
 using k8s.Autorest;
-using KubeOps.Operator.Leadership;
+using k8s.LeaderElection;
 using MediatR;
 using NLog;
 
@@ -14,7 +14,6 @@ namespace Contrast.K8s.AgentOperator.Core.Leading;
 public interface ILeaderElectionState
 {
     bool IsLeader();
-    ValueTask SetLeaderState(LeaderState state);
 }
 
 public class LeaderElectionState : ILeaderElectionState
@@ -22,39 +21,49 @@ public class LeaderElectionState : ILeaderElectionState
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     private readonly IMediator _mediator;
-    private LeaderState _state = LeaderState.None;
+    private readonly LeaderElector _elector;
 
-    public LeaderElectionState(IMediator mediator)
+    public LeaderElectionState(IMediator mediator, LeaderElector elector)
     {
         _mediator = mediator;
+        _elector = elector;
+
+        elector.OnStartedLeading += StartedLeading;
+        elector.OnStoppedLeading += StoppedLeading;
+    }
+
+    private async void StartedLeading()
+    {
+        Logger.Info("This instance leadership state has changed to leader.");
+
+        await LeadershipChange();
+    }
+
+    private async void StoppedLeading()
+    {
+        Logger.Info("This instance leadership state has changed to non-leader.");
+
+        await LeadershipChange();
+    }
+
+    private async Task LeadershipChange()
+    {
+        try
+        {
+            await _mediator.Publish(new LeaderStateChanged(IsLeader()));
+        }
+        catch (HttpOperationException e)
+        {
+            Logger.Warn(e, $"An error occurred. Response body: '{e.Response.Content}'.");
+        }
+        catch (Exception e)
+        {
+            Logger.Warn(e);
+        }
     }
 
     public bool IsLeader()
     {
-        return _state == LeaderState.Leader;
-    }
-
-    public async ValueTask SetLeaderState(LeaderState state)
-    {
-        var lastState = _state;
-        if (lastState != state)
-        {
-            _state = state;
-
-            Logger.Info($"This instance leadership state has changed '{lastState}' -> '{state}'.");
-
-            try
-            {
-                await _mediator.Publish(new LeaderStateChanged(IsLeader()));
-            }
-            catch (HttpOperationException e)
-            {
-                Logger.Warn(e, $"An error occurred. Response body: '{e.Response.Content}'.");
-            }
-            catch (Exception e)
-            {
-                Logger.Warn(e);
-            }
-        }
+        return _elector.IsLeader();
     }
 }

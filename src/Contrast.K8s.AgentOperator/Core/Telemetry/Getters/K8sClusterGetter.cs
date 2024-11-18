@@ -2,6 +2,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Threading.Tasks;
+using k8s;
 using KubeOps.KubernetesClient;
 
 namespace Contrast.K8s.AgentOperator.Core.Telemetry.Getters;
@@ -26,7 +27,7 @@ public class K8sClusterGetter
     {
         try
         {
-            var result = await _kubernetesClient.GetServerVersion();
+            var result = await _kubernetesClient.ApiClient.Version.GetCodeAsync();
             return new ClusterInfo(
                 result.BuildDate ?? "<unknown>",
                 result.Compiler ?? "<unknown>",

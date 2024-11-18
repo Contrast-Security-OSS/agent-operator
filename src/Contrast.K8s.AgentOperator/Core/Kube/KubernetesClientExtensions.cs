@@ -19,11 +19,11 @@ public static class KubernetesClientExtensions
     {
         var apiClient = client.ApiClient;
         var crd = resource.CreateResourceDefinition();
-        var crPatch = new V1Patch(patchDocument.ToString(), V1Patch.PatchType.JsonPatch);
+        var crPatch = new V1Patch(patchDocument.ToJsonString(), V1Patch.PatchType.JsonPatch);
 
         if (string.IsNullOrWhiteSpace(resource.Metadata.NamespaceProperty))
         {
-            using var result = await apiClient.PatchClusterCustomObjectWithHttpMessagesAsync(
+            using var result = await apiClient.CustomObjects.PatchClusterCustomObjectWithHttpMessagesAsync(
                 crPatch,
                 crd.Group,
                 crd.Version,
@@ -34,7 +34,7 @@ public static class KubernetesClientExtensions
         }
         else
         {
-            using var result = await apiClient.PatchNamespacedCustomObjectWithHttpMessagesAsync(
+            using var result = await apiClient.CustomObjects.PatchNamespacedCustomObjectWithHttpMessagesAsync(
                 crPatch,
                 crd.Group,
                 crd.Version,
@@ -55,7 +55,7 @@ public static class KubernetesClientExtensions
 
         if (string.IsNullOrWhiteSpace(resource.Metadata.NamespaceProperty))
         {
-            using var result = await apiClient.PatchClusterCustomObjectStatusWithHttpMessagesAsync(
+            using var result = await apiClient.CustomObjects.PatchClusterCustomObjectStatusWithHttpMessagesAsync(
                 crPatch,
                 crd.Group,
                 crd.Version,
@@ -66,7 +66,7 @@ public static class KubernetesClientExtensions
         }
         else
         {
-            using var result = await apiClient.PatchNamespacedCustomObjectStatusWithHttpMessagesAsync(
+            using var result = await apiClient.CustomObjects.PatchNamespacedCustomObjectStatusWithHttpMessagesAsync(
                 crPatch,
                 crd.Group,
                 crd.Version,
@@ -119,7 +119,7 @@ public static class KubernetesClientExtensions
 
         if (string.IsNullOrWhiteSpace(@namespace))
         {
-            using var result = await apiClient.PatchClusterCustomObjectStatusWithHttpMessagesAsync(
+            using var result = await apiClient.CustomObjects.PatchClusterCustomObjectStatusWithHttpMessagesAsync(
                 crPatch,
                 crd.Group,
                 crd.Version,
@@ -130,7 +130,7 @@ public static class KubernetesClientExtensions
         }
         else
         {
-            using var result = await apiClient.PatchNamespacedCustomObjectStatusWithHttpMessagesAsync(
+            using var result = await apiClient.CustomObjects.PatchNamespacedCustomObjectStatusWithHttpMessagesAsync(
                 crPatch,
                 crd.Group,
                 crd.Version,

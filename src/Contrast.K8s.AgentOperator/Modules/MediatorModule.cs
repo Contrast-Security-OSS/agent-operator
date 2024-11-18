@@ -3,7 +3,7 @@
 
 using Autofac;
 using Autofac.Features.Variance;
-using Contrast.K8s.AgentOperator.Autofac;
+using Contrast.K8s.AgentOperator.Extensions;
 using JetBrains.Annotations;
 using MediatR;
 

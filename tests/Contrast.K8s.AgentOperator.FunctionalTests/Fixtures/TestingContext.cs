@@ -25,7 +25,7 @@ public class TestingContext : IDisposable
 
     public async Task<TestingClient> GetClient(string defaultNamespace = "testing")
     {
-        var result = await Client.GetServerVersion();
+        var result = await Client.ApiClient.Version.GetCodeAsync();
         _outputHelper?.WriteLine($"Working with K8s version {result.GitVersion}.");
 
         return new TestingClient(Client, _outputHelper, new TestingClientOptions(defaultNamespace, TimeSpan.FromMinutes(5)));
