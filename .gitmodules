@@ -1,6 +1,0 @@
-[submodule "vendor/dotnet-operator-sdk"]
-	path = vendor/dotnet-operator-sdk
-	url = https://github.com/Contrast-Security-OSS/dotnet-operator-sdk.git
-[submodule "vendor/dotnet-kubernetes-client"]
-	path = vendor/dotnet-kubernetes-client
-	url = https://github.com/buehler/dotnet-kubernetes-client.git
