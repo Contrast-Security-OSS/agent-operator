@@ -35,6 +35,9 @@ public class Startup
 
         services.AddCertificateManager();
         services.AddControllers();
+
+        // Not actually used, but hot-reload uses it?
+        services.AddRazorPages();
     }
 
     [UsedImplicitly]
