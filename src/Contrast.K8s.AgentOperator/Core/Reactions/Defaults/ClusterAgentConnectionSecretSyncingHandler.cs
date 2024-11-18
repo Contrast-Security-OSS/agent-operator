@@ -147,7 +147,7 @@ public class ClusterAgentConnectionSecretSyncingHandler
 
     private async ValueTask<byte[]?> GetLiveSecretDataByRef(string name, string @namespace, string key)
     {
-        var liveSecret = await _kubernetesClient.Get<V1Secret>(name, @namespace);
+        var liveSecret = await _kubernetesClient.GetAsync<V1Secret>(name, @namespace);
         if (liveSecret?.Data != null)
         {
             if (liveSecret.Data.TryGetValue(key, out var value)

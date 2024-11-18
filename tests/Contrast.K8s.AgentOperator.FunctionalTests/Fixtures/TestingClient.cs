@@ -35,7 +35,7 @@ public class TestingClient
         using var source = new CancellationTokenSource(_options.WaitDuration);
         while (!source.IsCancellationRequested)
         {
-            var result = await _client.Get<T>(name, @namespace);
+            var result = await _client.GetAsync<T>(name, @namespace, source.Token);
             if (result != null)
             {
                 return result;
@@ -55,7 +55,7 @@ public class TestingClient
         using var source = new CancellationTokenSource(_options.WaitDuration);
         while (!source.IsCancellationRequested)
         {
-            var results = await _client.List<T>(@namespace);
+            var results = await _client.ListAsync<T>(@namespace, cancellationToken: source.Token);
             var normalizedPrefix = Regex.Escape(name);
 
             var result = results.SingleOrDefault(x => Regex.IsMatch(x.Name(), @"^(" + normalizedPrefix + @")-[a-z0-9\-]+$"));

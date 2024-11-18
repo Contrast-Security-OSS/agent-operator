@@ -2,7 +2,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Autofac;
-using Contrast.K8s.AgentOperator.Autofac;
+using Contrast.K8s.AgentOperator.Extensions;
 using FluentAssertions;
 using Xunit;
 

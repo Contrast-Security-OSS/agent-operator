@@ -52,6 +52,7 @@ public class StatusReportGenerator
             values.Add(key, value);
         }
 
+        //https://learn.microsoft.com/en-us/dotnet/core/diagnostics/available-counters
         foreach (var (key, value) in await GetPerformanceStatistics())
         {
             values.Add(key, value);
