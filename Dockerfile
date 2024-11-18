@@ -1,7 +1,7 @@
 # Contrast Security, Inc licenses this file to you under the Apache 2.0 License.
 # See the LICENSE file in the project root for more information.
 
-FROM mcr.microsoft.com/dotnet/aspnet:6.0.35-bookworm-slim AS base
+FROM mcr.microsoft.com/dotnet/aspnet:8.0.11-bookworm-slim AS base
 
 # To aid in debugging.
 RUN set -xe \
@@ -9,7 +9,7 @@ RUN set -xe \
     && apt-get install -y --no-install-recommends curl jq \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-FROM mcr.microsoft.com/dotnet/sdk:6.0.428-1-bookworm-slim AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0.404-bookworm-slim AS build
 WORKDIR /source
 
 # Restore

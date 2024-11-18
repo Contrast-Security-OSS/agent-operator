@@ -129,7 +129,7 @@ public abstract class BaseSyncingHandler<TClusterResource, TTargetResource, TEnt
                 entity.SetAnnotation(annotation.Key, annotation.Value);
             }
 
-            await _kubernetesClient.Save(entity);
+            await _kubernetesClient.SaveAsync(entity, cancellationToken);
 
             // Only mark this entity as dirty after saving, in-case the object was never created.
             await _state.MarkAsDirty<TTargetResource>(targetName, targetNamespace, cancellationToken);
@@ -155,7 +155,7 @@ public abstract class BaseSyncingHandler<TClusterResource, TTargetResource, TEnt
         var stopwatch = Stopwatch.StartNew();
         try
         {
-            await _kubernetesClient.Delete<TEntity>(targetName, targetNamespace);
+            await _kubernetesClient.DeleteAsync<TEntity>(targetName, targetNamespace, cancellationToken);
             Logger.Info($"Deleted {EntityName} '{targetNamespace}/{targetName}' after {stopwatch.ElapsedMilliseconds}ms.");
         }
         catch (HttpOperationException e)

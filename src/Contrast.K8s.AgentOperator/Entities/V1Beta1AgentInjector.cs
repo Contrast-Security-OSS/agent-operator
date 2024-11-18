@@ -5,15 +5,15 @@ using System;
 using System.Collections.Generic;
 using Contrast.K8s.AgentOperator.Core.Kube;
 using k8s.Models;
-using KubeOps.Operator.Entities;
-using KubeOps.Operator.Entities.Annotations;
-using KubeOps.Operator.Rbac;
+using KubeOps.Abstractions.Entities;
+using KubeOps.Abstractions.Entities.Attributes;
+using KubeOps.Abstractions.Rbac;
 
 namespace Contrast.K8s.AgentOperator.Entities;
 
 [KubernetesEntity(Group = "agents.contrastsecurity.com", ApiVersion = "v1beta1", Kind = "AgentInjector", PluralName = "agentinjectors")]
 [EntityRbac(typeof(V1Beta1AgentInjector), Verbs = VerbConstants.FullControl)]
-public class V1Beta1AgentInjector : CustomKubernetesEntity<V1Beta1AgentInjector.AgentInjectorSpec>
+public partial class V1Beta1AgentInjector : CustomKubernetesEntity<V1Beta1AgentInjector.AgentInjectorSpec>
 {
     public class AgentInjectorSpec
     {

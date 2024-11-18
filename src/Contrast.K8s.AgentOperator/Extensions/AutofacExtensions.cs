@@ -9,7 +9,7 @@ using Autofac.Builder;
 using Autofac.Features.ResolveAnything;
 using Autofac.Features.Scanning;
 
-namespace Contrast.K8s.AgentOperator.Autofac;
+namespace Contrast.K8s.AgentOperator.Extensions;
 
 public static class AutofacExtensions
 {

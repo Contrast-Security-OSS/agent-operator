@@ -132,7 +132,7 @@ spec:
 - The referenced AgentConnection and AgentConfiguration must exist in the same namespace as the AgentInjector.
 - If using a custom registry, both the Pod being injected and the operator must have access, either through the default pull secret, or custom pull secrets.
 - Agent version `latest` is recommended when using the agent in pre-production environments.
-- The AgentInjector supports selecting Deployment, StatefulSet, DaemonSet, and DeploymentConfig (on OpenShift) workloads. Injecting pods directly is not supported.
+- The AgentInjector supports selecting Deployment, StatefulSet, DaemonSet, Rollout (Argo), and DeploymentConfig (on OpenShift) workloads. Injecting pods directly is not supported.
 - If the selected workload creates many containers in a single Pod, `spec.selector.images` can be used to filter which containers are injected.
 
 **labelSelector**

@@ -40,7 +40,7 @@ public class KubeWebHookConfigurationWriter : IKubeWebHookConfigurationWriter
 
     public async ValueTask<V1Secret?> FetchCurrentCertificate()
     {
-        var existingSecret = await _kubernetesClient.Get<V1Secret>(_tlsStorageOptions.SecretName, _tlsStorageOptions.SecretNamespace);
+        var existingSecret = await _kubernetesClient.GetAsync<V1Secret>(_tlsStorageOptions.SecretName, _tlsStorageOptions.SecretNamespace);
         return existingSecret;
     }
 
@@ -71,7 +71,7 @@ public class KubeWebHookConfigurationWriter : IKubeWebHookConfigurationWriter
             }
         };
 
-        await _kubernetesClient.Save(secret);
+        await _kubernetesClient.SaveAsync(secret);
     }
 
     private async ValueTask UpdateWebHookConfiguration(TlsCertificateChainExport chainExport)

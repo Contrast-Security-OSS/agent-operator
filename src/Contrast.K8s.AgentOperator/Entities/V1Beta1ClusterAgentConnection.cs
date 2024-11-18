@@ -5,15 +5,15 @@ using System;
 using System.Collections.Generic;
 using Contrast.K8s.AgentOperator.Core.Kube;
 using k8s.Models;
-using KubeOps.Operator.Entities;
-using KubeOps.Operator.Entities.Annotations;
-using KubeOps.Operator.Rbac;
+using KubeOps.Abstractions.Entities;
+using KubeOps.Abstractions.Entities.Attributes;
+using KubeOps.Abstractions.Rbac;
 
 namespace Contrast.K8s.AgentOperator.Entities;
 
 [KubernetesEntity(Group = "agents.contrastsecurity.com", ApiVersion = "v1beta1", Kind = "ClusterAgentConnection", PluralName = "clusteragentconnections")]
 [EntityRbac(typeof(V1Beta1ClusterAgentConnection), Verbs = VerbConstants.ReadOnly)]
-public class V1Beta1ClusterAgentConnection : CustomKubernetesEntity<V1Beta1ClusterAgentConnection.ClusterAgentConnectionSpec>
+public partial class V1Beta1ClusterAgentConnection : CustomKubernetesEntity<V1Beta1ClusterAgentConnection.ClusterAgentConnectionSpec>
 {
     public class ClusterAgentConnectionSpec
     {

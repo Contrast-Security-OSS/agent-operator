@@ -3,14 +3,16 @@
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using JetBrains.Annotations;
+using Contrast.K8s.AgentOperator.Core.Kube;
 using k8s.Models;
-using KubeOps.Operator.Entities;
+using KubeOps.Abstractions.Entities;
+using KubeOps.Abstractions.Rbac;
 
 namespace Contrast.K8s.AgentOperator.Entities.OpenShift;
 
-[KubernetesEntity(Group = "apps.openshift.io", ApiVersion = "v1", Kind = "DeploymentConfig", PluralName = "deploymentconfigs"), UsedImplicitly]
-public class V1DeploymentConfig : CustomKubernetesEntity<V1DeploymentConfig.DeploymentConfigSpec>
+[KubernetesEntity(Group = "apps.openshift.io", ApiVersion = "v1", Kind = "DeploymentConfig", PluralName = "deploymentconfigs")]
+[EntityRbac(typeof(V1DeploymentConfig), Verbs = VerbConstants.ReadAndPatch)]
+public partial class V1DeploymentConfig : CustomKubernetesEntity<V1DeploymentConfig.DeploymentConfigSpec>
 {
     /// <summary>
     /// DeploymentConfigSpec represents the desired state of the deployment.

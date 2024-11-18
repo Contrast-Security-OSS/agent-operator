@@ -8,10 +8,10 @@ using AutoFixture;
 using Contrast.K8s.AgentOperator.Core.Kube;
 using Contrast.K8s.AgentOperator.Core.Tls;
 using Contrast.K8s.AgentOperator.Options;
-using DotnetKubernetesClient;
 using FluentAssertions;
 using FluentAssertions.Execution;
 using k8s.Models;
+using KubeOps.KubernetesClient;
 using NSubstitute;
 using Xunit;
 
@@ -28,7 +28,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Tls
             var secretFake = AutoFixture.Create<V1Secret>();
 
             var kubernetesClientMock = Substitute.For<IKubernetesClient>();
-            kubernetesClientMock.Get<V1Secret>(tlsStorageOptionsFake.SecretName, tlsStorageOptionsFake.SecretNamespace).Returns(secretFake);
+            kubernetesClientMock.GetAsync<V1Secret>(tlsStorageOptionsFake.SecretName, tlsStorageOptionsFake.SecretNamespace).Returns(secretFake);
 
             var writer = CreateGraph(tlsStorageOptionsFake, kubernetesClient: kubernetesClientMock);
 
@@ -47,7 +47,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Tls
 
             var kubernetesClientMock = Substitute.For<IKubernetesClient>();
             V1Secret? savedSecret = null;
-            kubernetesClientMock.When(x => x.Save(Arg.Any<V1Secret>())).Do(info => savedSecret = info.Arg<V1Secret>());
+            kubernetesClientMock.When(x => x.SaveAsync(Arg.Any<V1Secret>())).Do(info => savedSecret = info.Arg<V1Secret>());
 
             var writer = CreateGraph(storageOptionsFake, kubernetesClient: kubernetesClientMock);
 
