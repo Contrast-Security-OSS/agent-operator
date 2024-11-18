@@ -19,8 +19,8 @@
         <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.1" />
         <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
         <PackageReference Include="CertificateManager" Version="1.0.9" />
-        <PackageReference Include="Autofac" Version="7.0.0" />
-        <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="8.0.0" />
+        <PackageReference Include="Autofac" Version="8.1.1" />
+        <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="10.0.0" />
         <PackageReference Include="Nito.AsyncEx" Version="5.1.2" />
 
         <PackageReference Include="NLog" Version="5.3.4" />
