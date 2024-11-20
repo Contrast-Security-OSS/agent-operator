@@ -17,17 +17,11 @@ public partial class V1Beta1ClusterAgentConnection : CustomKubernetesEntity<V1Be
 {
     public class ClusterAgentConnectionSpec
     {
-        /// <summary>
-        /// The default AgentConnection to apply to the namespaces selected by 'spec.namespaces'.
-        /// Required.
-        /// </summary>
         [Required]
+        [Description("The default AgentConnection to apply to the namespaces selected by 'spec.namespaces'. Required.")]
         public V1Beta1AgentConnection? Template { get; set; }
 
-        /// <summary>
-        /// The namespaces to apply this AgentConnection template to. Glob syntax is supported.
-        /// Optional, defaults to selecting all namespaces.
-        /// </summary>
+        [Description("The namespaces to apply this AgentConnection template to. Glob syntax is supported. Optional, defaults to selecting all namespaces.")]
         public IReadOnlyCollection<string> Namespaces { get; set; } = Array.Empty<string>();
     }
 }

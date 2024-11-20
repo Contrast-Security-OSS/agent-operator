@@ -11,24 +11,17 @@ using KubeOps.Abstractions.Rbac;
 
 namespace Contrast.K8s.AgentOperator.Entities;
 
-[KubernetesEntity(Group = "agents.contrastsecurity.com", ApiVersion = "v1beta1", Kind = "ClusterAgentConfiguration",
-    PluralName = "clusteragentconfigurations")]
+[KubernetesEntity(Group = "agents.contrastsecurity.com", ApiVersion = "v1beta1", Kind = "ClusterAgentConfiguration", PluralName = "clusteragentconfigurations")]
 [EntityRbac(typeof(V1Beta1ClusterAgentConfiguration), Verbs = VerbConstants.ReadOnly)]
 public partial class V1Beta1ClusterAgentConfiguration : CustomKubernetesEntity<V1Beta1ClusterAgentConfiguration.ClusterAgentConfigurationSpec>
 {
     public class ClusterAgentConfigurationSpec
     {
-        /// <summary>
-        /// The default AgentConfiguration to apply to the namespaces selected by 'spec.namespaces'.
-        /// Required.
-        /// </summary>
         [Required]
+        [Description("The default AgentConfiguration to apply to the namespaces selected by 'spec.namespaces'. Required.")]
         public V1Beta1AgentConfiguration? Template { get; set; }
 
-        /// <summary>
-        /// The namespaces to apply this AgentConfiguration template to. Glob syntax is supported.
-        /// Optional, defaults to selecting all namespaces.
-        /// </summary>
+        [Description("The namespaces to apply this AgentConfiguration template to. Glob syntax is supported. Optional, defaults to selecting all namespaces.")]
         public IReadOnlyCollection<string> Namespaces { get; set; } = Array.Empty<string>();
     }
 }

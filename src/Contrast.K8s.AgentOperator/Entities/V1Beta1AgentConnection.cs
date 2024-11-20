@@ -15,45 +15,30 @@ public partial class V1Beta1AgentConnection : CustomKubernetesEntity<V1Beta1Agen
 {
     public class AgentInjectorSpec
     {
-        /// <summary>
-        /// The URL of the Contrast server.
-        /// Defaults to 'https://app.contrastsecurity.com/Contrast'.
-        /// </summary>
+        [Description("The URL of the Contrast server. Defaults to 'https://app.contrastsecurity.com/Contrast'.")]
         public string? Url { get; set; }
 
-        /// <summary>
-        /// The API Key to use for this connection.
-        /// </summary>
         [Required]
+        [Description("The API Key to use for this connection.")]
         public SecretRef ApiKey { get; set; } = new();
 
-        /// <summary>
-        /// The Service Key to use for this connection.
-        /// </summary>
         [Required]
+        [Description("The Service Key to use for this connection.")]
         public SecretRef ServiceKey { get; set; } = new();
 
-        /// <summary>
-        /// The User Name to use for this connection.
-        /// </summary>
         [Required]
+        [Description("The User Name to use for this connection.")]
         public SecretRef UserName { get; set; } = new();
     }
 
     public class SecretRef
     {
-        /// <summary>
-        /// The name of the secret to reference. Must exist in the same namespace as the AgentConnection.
-        /// Required.
-        /// </summary>
         [Required]
+        [Description("The name of the secret to reference. Must exist in the same namespace as the AgentConnection. Required.")]
         public string SecretName { get; set; } = null!;
 
-        /// <summary>
-        /// The key in the secret to access the value for. Must exist in the same namespace as the AgentConnection.
-        /// Required.
-        /// </summary>
         [Required]
+        [Description("The key in the secret to access the value for. Must exist in the same namespace as the AgentConnection. Required.")]
         public string SecretKey { get; set; } = null!;
     }
 }
