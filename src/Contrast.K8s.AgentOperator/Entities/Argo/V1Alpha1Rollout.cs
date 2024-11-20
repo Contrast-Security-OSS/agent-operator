@@ -4,10 +4,12 @@
 using Contrast.K8s.AgentOperator.Core.Kube;
 using k8s.Models;
 using KubeOps.Abstractions.Entities;
+using KubeOps.Abstractions.Entities.Attributes;
 using KubeOps.Abstractions.Rbac;
 
 namespace Contrast.K8s.AgentOperator.Entities.Argo;
 
+[Ignore] //Don't generate a CRD for this
 [KubernetesEntity(Group = "argoproj.io", ApiVersion = "v1alpha1", Kind = "Rollout", PluralName = "rollouts")]
 [EntityRbac(typeof(V1Alpha1Rollout), Verbs = VerbConstants.ReadAndPatch)]
 public partial class V1Alpha1Rollout : CustomKubernetesEntity<V1Alpha1Rollout.RolloutSpec>

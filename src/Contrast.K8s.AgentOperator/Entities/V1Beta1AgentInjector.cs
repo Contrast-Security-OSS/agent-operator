@@ -17,122 +17,75 @@ public partial class V1Beta1AgentInjector : CustomKubernetesEntity<V1Beta1AgentI
 {
     public class AgentInjectorSpec
     {
-        /// <summary>
-        /// Is this agent injector enabled.
-        /// Defaults to 'true'.
-        /// </summary>
+        [Description("Enable this agent injector. Defaults to 'true'.")]
         public bool Enabled { get; set; } = true;
 
-        /// <summary>
-        /// The version of the agent to inject. The literal 'latest' will inject the latest version. Partial version matches are supported, e.g. '2' will select the version '2.1.0'.
-        /// Defaults to 'latest'.
-        /// </summary>
         [Pattern(RegexConstants.InjectorVersionRegex)]
+        [Description("The version of the agent to inject. The literal 'latest' will inject the latest version. Partial version matches are supported, e.g. '2' will select the version '2.1.0'. Defaults to 'latest'.")]
         public string? Version { get; set; }
 
-        /// <summary>
-        /// The type of agent to inject. Can be one of ['dotnet-core', 'java', 'nodejs', 'nodejs-esm', 'php', 'python'].
-        /// Required.
-        /// </summary>
         [Required, Pattern(RegexConstants.AgentTypeRegex)]
+        [Description("The type of agent to inject. Can be one of ['dotnet-core', 'java', 'nodejs', 'nodejs-esm', 'php', 'python']. Required.")]
         public string Type { get; set; } = null!;
 
-        /// <summary>
-        /// Overrides the default agent images.
-        /// </summary>
+        [Description("Overrides the default agent images.")]
         public AgentInjectorImageSpec Image { get; set; } = new();
 
-        /// <summary>
-        /// Select which Deployment/StatefulSet/DaemonSet pods are eligible for agent injection.
-        /// Under OpenShift, DeploymentConfig is also supported.
-        /// </summary>
+        [Description("Select which Deployment/StatefulSet/DaemonSet/Rollout pods are eligible for agent injection. Under OpenShift, DeploymentConfig is also supported.")]
         public AgentInjectorSelectorSpec Selector { get; set; } = new();
 
-        /// <summary>
-        /// The connection the injected agent will use to communicate with Contrast.
-        /// </summary>
+        [Description("The connection the injected agent will use to communicate with Contrast.")]
         public AgentInjectorConnectionSpec? Connection { get; set; } = new();
 
-        /// <summary>
-        /// The configuration the injected agent will use.
-        /// </summary>
+        [Description("The configuration the injected agent will use.")]
         public AgentInjectorConfigurationSpec? Configuration { get; set; } = new();
     }
 
     public class AgentInjectorImageSpec
     {
-        /// <summary>
-        /// The fully qualified name of the registry to pull agent images from. This registry must be accessible by the pods being injected and the operator.
-        /// Defaults to the official Contrast container image registry.
-        /// </summary>
+        [Description("The fully qualified name of the registry to pull agent images from. This registry must be accessible by the pods being injected and the operator. Defaults to the official Contrast container image registry.")]
         public string? Registry { get; set; }
 
-        /// <summary>
-        /// The name of the injector image to use.
-        /// The default depends on the value of spec.type.
-        /// </summary>
+        [Description("The name of the injector image to use. The default depends on the value of spec.type.")]
         public string? Name { get; set; }
 
-        /// <summary>
-        /// The name of a pull secret to append to the pod's imagePullSecrets list.
-        /// </summary>
+        [Description("The name of a pull secret to append to the pod's imagePullSecrets list.")]
         public string? PullSecretName { get; set; }
 
-        /// <summary>
-        /// The pull policy to use when fetching Contrast images. See Kubernetes imagePullPolicy for more information.
-        /// Defaults to "Always".
-        /// </summary>
         [Pattern(RegexConstants.PullPolicyRegex)]
+        [Description("The pull policy to use when fetching Contrast images. See Kubernetes imagePullPolicy for more information. Defaults to 'Always'.")]
         public string? PullPolicy { get; set; } = "Always";
     }
 
     public class AgentInjectorSelectorSpec
     {
-        /// <summary>
-        /// Container images to inject the agent into. Glob patterns are supported.
-        /// If empty (the default), selects all containers in Pod.
-        /// </summary>
+        [Description("Container images to inject the agent into. Glob patterns are supported. If empty (the default), selects all containers in Pod.")]
         public IReadOnlyCollection<string> Images { get; set; } = Array.Empty<string>();
 
-        /// <summary>
-        /// Deployment/StatefulSet/DaemonSet/DeploymentConfig labels whose pods are eligible for agent injection.
-        /// If empty (the default), selects all workloads in namespace.
-        /// </summary>
+        [Description("Deployment/StatefulSet/DaemonSet/DeploymentConfig labels whose pods are eligible for agent injection. If empty (the default), selects all workloads in namespace.")]
         public IReadOnlyCollection<LabelSelectorSpec> Labels { get; set; } = Array.Empty<LabelSelectorSpec>();
     }
 
     public class LabelSelectorSpec
     {
-        /// <summary>
-        /// The name of the label to match.
-        /// Required.
-        /// </summary>
         [Required]
+        [Description("The name of the label to match. Required.")]
         public string Name { get; set; } = null!;
 
-        /// <summary>
-        /// The value of the label to match. Glob patterns are supported.
-        /// Required.
-        /// </summary>
         [Required]
+        [Description("The value of the label to match. Glob patterns are supported. Required.")]
         public string Value { get; set; } = null!;
     }
 
     public class AgentInjectorConnectionSpec
     {
-        /// <summary>
-        /// The name of AgentConnection resource. Must exist within the same namespace.
-        /// Defaults to the AgentConnection specified by a ClusterAgentConnection.
-        /// </summary>
+        [Description("The name of AgentConnection resource. Must exist within the same namespace. Defaults to the AgentConnection specified by a ClusterAgentConnection.")]
         public string? Name { get; set; }
     }
 
     public class AgentInjectorConfigurationSpec
     {
-        /// <summary>
-        /// The name of a AgentConfiguration resource. Must exist within the same namespace.
-        /// Defaults to the AgentConfiguration specified by a ClusterAgentConfiguration.
-        /// </summary>
+        [Description("The name of a AgentConfiguration resource. Must exist within the same namespace. Defaults to the AgentConfiguration specified by a ClusterAgentConfiguration.")]
         public string? Name { get; set; }
     }
 }
