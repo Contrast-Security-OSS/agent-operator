@@ -41,7 +41,7 @@ public class ClusterAgentConfigurationSyncingHandler
         foreach (var yamlKey in desiredResource.YamlKeys)
         {
             // Hard code the new line for Linux.
-            builder.Append(yamlKey.Key).Append(": ").Append(yamlKey.Value).Append('\n');
+            builder.Append(yamlKey.Key).Append(": '").Append(yamlKey.Value).Append("'\n");
         }
 
         var yaml = builder.ToString();
