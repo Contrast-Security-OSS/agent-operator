@@ -84,6 +84,24 @@ public class ClusterDefaultTests : IClassFixture<TestingContext>
     }
 
     [Fact]
+    public async Task When_injected_then_pod_should_use_generated_valid_configuration()
+    {
+        var client = await _context.GetClient();
+
+        // Act
+        var result = await client.GetInjectedPodByPrefix(ScenarioName);
+
+        // Assert
+        using (new AssertionScope())
+        {
+            var container = result.Spec.Containers.Single();
+
+            //Test that the namespaced AgentConfiguration contains valid yaml (% unquoted in yaml means its a directive line)
+            container.Env.Should().Contain(x => x.Name == "CONTRAST__SPECIAL").Which.Value.Should().Be("%specialyaml");
+        }
+    }
+
+    [Fact]
     public async Task When_init_container_overrides_exist_then_the_overrides_should_be_merged_and_applied()
     {
         var client = await _context.GetClient();

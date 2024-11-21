@@ -10,6 +10,7 @@ spec:
         enabled: false
         foo:
           bar: "foobar"
+        special: "%specialyaml"
       initContainer:
         securityContext:
           runAsUser: 499
