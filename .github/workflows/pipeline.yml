@@ -171,11 +171,11 @@ jobs:
     strategy:
       matrix:
         k3s-version:
+          - '1.31' # EOL: 2025-10-28
           - '1.30' # EOL: 2025-06-28
           - '1.29' # EOL: 2025-02-28
           - '1.28' # EOL: 2024-10-28
           - '1.27' # EOL: 2024-06-28
-          - '1.26' # EOL: 2024-02-28
       fail-fast: false
     env:
       IMAGE: ghcr.io/contrast-security-oss/agent-operator/operator@${{ needs.build-image.outputs.digest }}
@@ -252,11 +252,11 @@ jobs:
           - manifests
           - helm-manifests
         k3s-version:
+          - '1.31' # EOL: 2025-10-28
           - '1.30' # EOL: 2025-06-28
           - '1.29' # EOL: 2025-02-28
           - '1.28' # EOL: 2024-10-28
           - '1.27' # EOL: 2024-06-28
-          - '1.26' # EOL: 2024-02-28
       fail-fast: false
     steps:
       - name: Setup Pluto
