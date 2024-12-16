@@ -1,0 +1,8 @@
+$patch: delete
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: contrast-agent-operator
+  labels:
+    app.kubernetes.io/part-of: contrast-agent-operator
+
