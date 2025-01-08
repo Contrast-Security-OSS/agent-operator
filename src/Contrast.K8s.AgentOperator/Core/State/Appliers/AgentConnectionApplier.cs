@@ -27,7 +27,7 @@ public class AgentConnectionApplier : BaseApplier<V1Beta1AgentConnection, AgentC
     {
         var spec = entity.Spec;
 
-        var uri = "https://app.contrastsecurity.com/Contrast";
+        var uri = "https://app-agents.contrastsecurity.com/Contrast";
         if (spec.Url != null)
         {
             if (Uri.TryCreate(spec.Url, UriKind.Absolute, out _))
