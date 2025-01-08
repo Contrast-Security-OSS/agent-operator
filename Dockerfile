@@ -18,11 +18,6 @@ COPY tests/Contrast.K8s.AgentOperator.Tests/Contrast.K8s.AgentOperator.Tests.csp
 COPY tests/Contrast.K8s.AgentOperator.FunctionalTests/Contrast.K8s.AgentOperator.FunctionalTests.csproj /source/tests/Contrast.K8s.AgentOperator.FunctionalTests/
 COPY Contrast.K8s.AgentOperator.sln /source/
 
-COPY vendor/dotnet-operator-sdk/src/KubeOps/KubeOps.csproj /source/vendor/dotnet-operator-sdk/src/KubeOps/
-COPY vendor/dotnet-operator-sdk/config/Common.targets /source/vendor/dotnet-operator-sdk/config/
-
-COPY vendor/dotnet-kubernetes-client/src/DotnetKubernetesClient/DotnetKubernetesClient.csproj /source/vendor/dotnet-kubernetes-client/src/DotnetKubernetesClient/
-
 RUN dotnet restore
 
 # Build
