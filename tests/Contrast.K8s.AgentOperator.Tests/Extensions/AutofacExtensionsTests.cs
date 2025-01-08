@@ -6,7 +6,7 @@ using Contrast.K8s.AgentOperator.Extensions;
 using FluentAssertions;
 using Xunit;
 
-namespace Contrast.K8s.AgentOperator.Tests.Autofac
+namespace Contrast.K8s.AgentOperator.Tests.Extensions
 {
     public class AutofacExtensionsTests
     {

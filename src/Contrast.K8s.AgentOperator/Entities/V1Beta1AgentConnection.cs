@@ -15,7 +15,7 @@ public partial class V1Beta1AgentConnection : CustomKubernetesEntity<V1Beta1Agen
 {
     public class AgentInjectorSpec
     {
-        [Description("The URL of the Contrast server. Defaults to 'https://app.contrastsecurity.com/Contrast'.")]
+        [Description("The URL of the Contrast server. Defaults to 'https://app-agents.contrastsecurity.com/Contrast'.")]
         public string? Url { get; set; }
 
         [Required]
