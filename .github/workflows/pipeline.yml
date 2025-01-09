@@ -17,6 +17,7 @@ jobs:
     outputs:
       version: ${{ steps.generate-version.outputs.version }}
       is-public-build: ${{ steps.generate-version.outputs.is-public-build }}
+      is-release: ${{ steps.generate-version.outputs.is-release }}
     steps:
       - name: Detect Version
         id: generate-version
@@ -26,15 +27,26 @@ jobs:
           {
               $version = ($ref -split '/v' | Select-Object -Last 1)
               $isPublicBuild = $true
+              if ($ref.EndsWith('-pre'))
+              {
+                  $isRelease = $false
+              }
+              else 
+              {
+                  $isRelease = $true
+              }
           }
           else
           {
               $version = "0.0.1"
               $isPublicBuild = $false
+              $isRelease = $false
           }
           Write-Host "Detected version: '$version'."
+          Write-Host "Is Release: '$isRelease'."
           "version=$version" >> $env:GITHUB_OUTPUT
           "is-public-build=$isPublicBuild" >> $env:GITHUB_OUTPUT
+          "is-release=$isRelease" >> $env:GITHUB_OUTPUT
         shell: pwsh
   build-image:
     runs-on: ubuntu-latest
@@ -343,9 +355,9 @@ jobs:
           images: ${{ env.IMAGE_NAME }}
           tags: |
             type=semver,pattern={{version}},value=${{ env.BUILD_VERSION }}
-            type=semver,pattern={{major}}.{{minor}},value=${{ env.BUILD_VERSION }}
-            type=semver,pattern={{major}},value=${{ env.BUILD_VERSION }}
-            type=raw,latest
+            type=semver,pattern={{major}}.{{minor}},value=${{ env.BUILD_VERSION }},enable=${{ needs.generate-version.outputs.is-release == 'true' }}
+            type=semver,pattern={{major}},value=${{ env.BUILD_VERSION }},enable=${{ needs.generate-version.outputs.is-release == 'true' }}
+            type=raw,latest,enable=${{ needs.generate-version.outputs.is-release == 'true' }}
       - name: Tag for Release
         uses: akhilerm/tag-push-action@v2.2.0
         with:
@@ -400,9 +412,9 @@ jobs:
             ghcr.io/contrast-security-oss/agent-operator/operator
           tags: |
             type=semver,pattern={{version}},value=${{ env.BUILD_VERSION }}
-            type=semver,pattern={{major}}.{{minor}},value=${{ env.BUILD_VERSION }}
-            type=semver,pattern={{major}},value=${{ env.BUILD_VERSION }}
-            type=raw,latest
+            type=semver,pattern={{major}}.{{minor}},value=${{ env.BUILD_VERSION }},enable=${{ needs.generate-version.outputs.is-release == 'true' }}
+            type=semver,pattern={{major}},value=${{ env.BUILD_VERSION }},enable=${{ needs.generate-version.outputs.is-release == 'true' }}
+            type=raw,latest,enable=${{ needs.generate-version.outputs.is-release == 'true' }}
       - name: Tag for Release
         uses: akhilerm/tag-push-action@v2.2.0
         with:
