@@ -18,35 +18,25 @@ spec:
       openAPIV3Schema:
         properties:
           spec:
-            description: Specification of the kubernetes object.
             properties:
               template:
-                description: |-
-                  The default AgentConnection to apply to the namespaces selected by 'spec.namespaces'.
-                  Required.
+                description: The default AgentConnection to apply to the namespaces selected by 'spec.namespaces'. Required.
                 nullable: true
                 properties:
                   spec:
-                    description: Specification of the kubernetes object.
                     properties:
                       url:
-                        description: |-
-                          The URL of the Contrast server.
-                          Defaults to 'https://app.contrastsecurity.com/Contrast'.
+                        description: The URL of the Contrast server. Defaults to 'https://app-agents.contrastsecurity.com/Contrast'.
                         nullable: true
                         type: string
                       apiKey:
                         description: The API Key to use for this connection.
                         properties:
                           secretName:
-                            description: |-
-                              The name of the secret to reference. Must exist in the same namespace as the AgentConnection.
-                              Required.
+                            description: The name of the secret to reference. Must exist in the same namespace as the AgentConnection. Required.
                             type: string
                           secretKey:
-                            description: |-
-                              The key in the secret to access the value for. Must exist in the same namespace as the AgentConnection.
-                              Required.
+                            description: The key in the secret to access the value for. Must exist in the same namespace as the AgentConnection. Required.
                             type: string
                         required:
                         - secretName
@@ -56,14 +46,10 @@ spec:
                         description: The Service Key to use for this connection.
                         properties:
                           secretName:
-                            description: |-
-                              The name of the secret to reference. Must exist in the same namespace as the AgentConnection.
-                              Required.
+                            description: The name of the secret to reference. Must exist in the same namespace as the AgentConnection. Required.
                             type: string
                           secretKey:
-                            description: |-
-                              The key in the secret to access the value for. Must exist in the same namespace as the AgentConnection.
-                              Required.
+                            description: The key in the secret to access the value for. Must exist in the same namespace as the AgentConnection. Required.
                             type: string
                         required:
                         - secretName
@@ -73,14 +59,10 @@ spec:
                         description: The User Name to use for this connection.
                         properties:
                           secretName:
-                            description: |-
-                              The name of the secret to reference. Must exist in the same namespace as the AgentConnection.
-                              Required.
+                            description: The name of the secret to reference. Must exist in the same namespace as the AgentConnection. Required.
                             type: string
                           secretKey:
-                            description: |-
-                              The key in the secret to access the value for. Must exist in the same namespace as the AgentConnection.
-                              Required.
+                            description: The key in the secret to access the value for. Must exist in the same namespace as the AgentConnection. Required.
                             type: string
                         required:
                         - secretName
@@ -92,7 +74,6 @@ spec:
                     - userName
                     type: object
                   metadata:
-                    description: The metadata of the kubernetes object.
                     type: object
                   apiVersion:
                     type: string
@@ -100,9 +81,7 @@ spec:
                     type: string
                 type: object
               namespaces:
-                description: |-
-                  The namespaces to apply this AgentConnection template to. Glob syntax is supported.
-                  Optional, defaults to selecting all namespaces.
+                description: The namespaces to apply this AgentConnection template to. Glob syntax is supported. Optional, defaults to selecting all namespaces.
                 items:
                   type: string
                 type: array

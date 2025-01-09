@@ -8,40 +8,15 @@ $output = [System.IO.Path]::GetFullPath(".\generated\")
 Write-Host "Project: $project"
 Write-Host "Output: $output"
 
-dotnet build $project
-
-Write-Host "Generating crd."
-Remove-Item -Recurse $output\crd\ -ErrorAction Ignore
-dotnet run --no-build --project $project -- generator crd -o $output\crd\
-
-# Write-Host "Generating docker."
-# Remove-Item -Recurse $output\docker\ -ErrorAction Ignore
-# dotnet run --no-build --project $project -- generator docker -o $output\docker\
-
-# Write-Host "Generating installer."
-# Remove-Item -Recurse $output\installer\ -ErrorAction Ignore
-# dotnet run --no-build --project $project -- generator installer -o $output\installer\
-
-# Write-Host "Generating operator."
-# Remove-Item -Recurse $output\operator\ -ErrorAction Ignore
-# dotnet run --no-build --project $project -- generator operator -o $output\operator\
-
-Write-Host "Generating rbac."
-Remove-Item -Recurse $output\rbac\ -ErrorAction Ignore
-dotnet run --no-build --project $project -- generator rbac -o $output\rbac\
+dotnet kubeops generate operator contrast-agent-operator $project --out $output
 
 @(
-    # "$($output)operator\ca-key.pem"
-    # "$($output)operator\ca.csr"
-    # "$($output)operator\ca.pem"
-    # "$($output)operator\kustomization.yaml"
-    "$($output)crd\deploymentconfigs_apps_openshift_io.yaml"
-    "$($output)crd\dynakubes_dynatrace_com.yaml"
-    "$($output)crd\rollouts_argoproj_io.yaml"
-    "$($output)crd\kustomization.yaml"
+    "$($output)*.pem"
+    "$($output)Dockerfile"
+    "$($output)kustomization.yaml"
 ) | ForEach-Object {
-    Write-Host "Cleaning up bad object $_"
+    Write-Host "Cleaning up object $_"
     Remove-Item $_
 }
 
-Write-Host "Done. Make sure to copy these generated manifests into the install folder."
+Write-Host "Done. Compare with manifests in install folder and merge changes."
