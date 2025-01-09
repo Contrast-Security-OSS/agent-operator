@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoFixture;
-using DotnetKubernetesClient;
 using k8s.Models;
+using KubeOps.KubernetesClient;
 using Punchclock;
 
 namespace Contrast.K8s.AgentOperator.Performance.ClusterFaker
@@ -49,7 +49,7 @@ namespace Contrast.K8s.AgentOperator.Performance.ClusterFaker
         private async Task UpNamespace(Options.UpOptions options, int namespaceIndex)
         {
             var namespaceName = $"{NamespacePrefix}-{namespaceIndex:D3}";
-            await _client.Save(new V1Namespace
+            await _client.SaveAsync(new V1Namespace
             {
                 Metadata = new V1ObjectMeta(name: namespaceName)
             });
@@ -62,7 +62,7 @@ namespace Contrast.K8s.AgentOperator.Performance.ClusterFaker
                                   + $"deployment {deploymentIndex}/{options.DeploymentsPerNamespaceCount})"
                                   + "...");
 
-                await _client.Save(new V1Deployment
+                await _client.SaveAsync(new V1Deployment
                 {
                     Metadata = new V1ObjectMeta(name: deploymentName, namespaceProperty: namespaceName)
                     {
@@ -111,7 +111,7 @@ namespace Contrast.K8s.AgentOperator.Performance.ClusterFaker
                                   + $"secret {secretIndex}/{options.SecretsPerNamespaceCount})"
                                   + "...");
 
-                await _client.Save(new V1Secret
+                await _client.SaveAsync(new V1Secret
                 {
                     Metadata = new V1ObjectMeta(name: secretName, namespaceProperty: namespaceName)
                     {
@@ -126,7 +126,7 @@ namespace Contrast.K8s.AgentOperator.Performance.ClusterFaker
         {
             Console.WriteLine($"Executing 'Down' with options '{options}'.");
 
-            var namespaces = await _client.List<V1Namespace>();
+            var namespaces = await _client.ListAsync<V1Namespace>();
             IReadOnlyList<V1Namespace> namespacesToDelete = namespaces.Where(x => x.Name().StartsWith($"{NamespacePrefix}-"))
                                                                       .ToList();
 
@@ -134,7 +134,7 @@ namespace Contrast.K8s.AgentOperator.Performance.ClusterFaker
             {
                 var ns = namespacesToDelete[i];
                 Console.WriteLine($"Deleting '{ns.Name()}' ({i + 1}/{namespacesToDelete.Count})...");
-                await _client.Delete(ns);
+                await _client.DeleteAsync(ns);
             }
 
             return 0;
