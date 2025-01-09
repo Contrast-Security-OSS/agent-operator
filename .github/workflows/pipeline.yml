@@ -421,7 +421,6 @@ jobs:
           src: ghcr.io/contrast-security-oss/agent-operator/operator@${{ needs.build-image.outputs.digest }}
           dst: |
             ${{ steps.dockerhub-meta.outputs.tags }}
-            ${{ steps.quay-meta.outputs.tags }}
       - uses: actions/download-artifact@v4
         id: download-artifacts
         with:
@@ -442,8 +441,10 @@ jobs:
           artifacts: ${{ steps.download-artifacts.outputs.download-path }}/*.yaml
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
+          prerelease: ${{ needs.generate-version.outputs.is-release == 'false' }} # pre-releases will have is-release false
       - name: Publish Helm Chart
         uses: peter-evans/repository-dispatch@v3
+        if: ${{ needs.generate-version.outputs.is-release == 'true' }}
         with:
           token: ${{ secrets.GH_PR_WRITE_PAT }}
           repository: Contrast-Security-OSS/helm-charts
@@ -467,6 +468,7 @@ jobs:
       #     SENTRY_PROJECT: agent-operator
       #     SENTRY_URL: https://sentry.prod.dotnet.contsec.com
       - uses: act10ns/slack@v2
+        if: ${{ needs.generate-version.outputs.is-release == 'true' }}
         with:
           status: ${{ job.status }}
           message: |-
