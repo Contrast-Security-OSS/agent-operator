@@ -18,39 +18,28 @@ spec:
       openAPIV3Schema:
         properties:
           spec:
-            description: Specification of the kubernetes object.
             properties:
               enabled:
-                description: |-
-                  Is this agent injector enabled.
-                  Defaults to 'true'.
+                description: Enable this agent injector. Defaults to 'true'.
                 type: boolean
               version:
-                description: |-
-                  The version of the agent to inject. The literal 'latest' will inject the latest version. Partial version matches are supported, e.g. '2' will select the version '2.1.0'.
-                  Defaults to 'latest'.
+                description: The version of the agent to inject. The literal 'latest' will inject the latest version. Partial version matches are supported, e.g. '2' will select the version '2.1.0'. Defaults to 'latest'.
                 nullable: true
                 pattern: ^(latest|(\d+(\.\d+){0,3}(-.+)?))$
                 type: string
               type:
-                description: |-
-                  The type of agent to inject. Can be one of ['dotnet-core', 'java', 'nodejs', 'nodejs-esm', 'php', 'python'].
-                  Required.
+                description: The type of agent to inject. Can be one of ['dotnet-core', 'java', 'nodejs', 'nodejs-esm', 'php', 'python']. Required.
                 pattern: ^(dotnet-core|dotnet|java|node|nodejs|node-esm|nodejs-esm|node-protect|nodejs-protect|php|personal-home-page|python|dummy)$
                 type: string
               image:
                 description: Overrides the default agent images.
                 properties:
                   registry:
-                    description: |-
-                      The fully qualified name of the registry to pull agent images from. This registry must be accessible by the pods being injected and the operator.
-                      Defaults to the official Contrast container image registry.
+                    description: The fully qualified name of the registry to pull agent images from. This registry must be accessible by the pods being injected and the operator. Defaults to the official Contrast container image registry.
                     nullable: true
                     type: string
                   name:
-                    description: |-
-                      The name of the injector image to use.
-                      The default depends on the value of spec.type.
+                    description: The name of the injector image to use. The default depends on the value of spec.type.
                     nullable: true
                     type: string
                   pullSecretName:
@@ -58,40 +47,28 @@ spec:
                     nullable: true
                     type: string
                   pullPolicy:
-                    description: |-
-                      The pull policy to use when fetching Contrast images. See Kubernetes imagePullPolicy for more information.
-                      Defaults to "Always".
+                    description: The pull policy to use when fetching Contrast images. See Kubernetes imagePullPolicy for more information. Defaults to 'Always'.
                     nullable: true
                     pattern: ^(Always|IfNotPresent|Never)$
                     type: string
                 type: object
               selector:
-                description: |-
-                  Select which Deployment/StatefulSet/DaemonSet pods are eligible for agent injection.
-                  Under OpenShift, DeploymentConfig is also supported.
+                description: Select which Deployment/StatefulSet/DaemonSet/Rollout pods are eligible for agent injection. Under OpenShift, DeploymentConfig is also supported.
                 properties:
                   images:
-                    description: |-
-                      Container images to inject the agent into. Glob patterns are supported.
-                      If empty (the default), selects all containers in Pod.
+                    description: Container images to inject the agent into. Glob patterns are supported. If empty (the default), selects all containers in Pod.
                     items:
                       type: string
                     type: array
                   labels:
-                    description: |-
-                      Deployment/StatefulSet/DaemonSet/DeploymentConfig labels whose pods are eligible for agent injection.
-                      If empty (the default), selects all workloads in namespace.
+                    description: Deployment/StatefulSet/DaemonSet/DeploymentConfig labels whose pods are eligible for agent injection. If empty (the default), selects all workloads in namespace.
                     items:
                       properties:
                         name:
-                          description: |-
-                            The name of the label to match.
-                            Required.
+                          description: The name of the label to match. Required.
                           type: string
                         value:
-                          description: |-
-                            The value of the label to match. Glob patterns are supported.
-                            Required.
+                          description: The value of the label to match. Glob patterns are supported. Required.
                           type: string
                       required:
                       - name
@@ -104,9 +81,7 @@ spec:
                 nullable: true
                 properties:
                   name:
-                    description: |-
-                      The name of AgentConnection resource. Must exist within the same namespace.
-                      Defaults to the AgentConnection specified by a ClusterAgentConnection.
+                    description: The name of AgentConnection resource. Must exist within the same namespace. Defaults to the AgentConnection specified by a ClusterAgentConnection.
                     nullable: true
                     type: string
                 type: object
@@ -115,9 +90,7 @@ spec:
                 nullable: true
                 properties:
                   name:
-                    description: |-
-                      The name of a AgentConfiguration resource. Must exist within the same namespace.
-                      Defaults to the AgentConfiguration specified by a ClusterAgentConfiguration.
+                    description: The name of a AgentConfiguration resource. Must exist within the same namespace. Defaults to the AgentConfiguration specified by a ClusterAgentConfiguration.
                     nullable: true
                     type: string
                 type: object

@@ -8,47 +8,28 @@ metadata:
 rules:
 - apiGroups:
   - apps
-  - argoproj.io
-  - ""
-  - apps.openshift.io
   resources:
   - daemonsets
-  - rollouts
   - deployments
   - statefulsets
-  - pods
-  - deploymentconfigs
   verbs:
   - get
   - list
   - watch
   - patch
 - apiGroups:
-  - agents.contrastsecurity.com
-  - dynatrace.com
+  - ""
   resources:
-  - clusteragentconfigurations
-  - dynakubes
-  - clusteragentconnections
+  - pods
   verbs:
   - get
   - list
   - watch
+  - patch
 - apiGroups:
-  - agents.contrastsecurity.com
   - ""
-  - coordination.k8s.io
   resources:
-  - agentconnections
   - secrets
-  - agentconfigurations
-  - leases
-  verbs:
-  - '*'
-- apiGroups:
-  - agents.contrastsecurity.com
-  resources:
-  - agentinjectors
   verbs:
   - '*'
 - apiGroups:
@@ -56,71 +37,97 @@ rules:
   resources:
   - mutatingwebhookconfigurations
   verbs:
-  - create
   - get
   - list
   - watch
   - patch
-  - update
-  - delete
+- apiGroups:
+  - agents.contrastsecurity.com
+  resources:
+  - agentconfigurations
+  - agentconnections
+  - agentinjectors
+  verbs:
+  - '*'
+- apiGroups:
+  - agents.contrastsecurity.com
+  resources:
+  - clusteragentconfigurations
+  - clusteragentconnections
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - apps.openshift.io
+  resources:
+  - deploymentconfigs
+  verbs:
+  - get
+  - list
+  - watch
+  - patch
+- apiGroups:
+  - dynatrace.com
+  resources:
+  - dynakubes
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - argoproj.io
+  resources:
+  - rollouts
+  verbs:
+  - get
+  - list
+  - watch
+  - patch
 - apiGroups:
   - ""
   resources:
   - events
   verbs:
-  - create
   - get
   - list
+  - create
   - update
 - apiGroups:
-  - ""
-  - admissionregistration.k8s.io
+  - coordination.k8s.io
   resources:
-  - services
-  - validatingwebhookconfigurations
+  - leases
   verbs:
-  - create
-  - get
-  - patch
-  - update
-  - delete
+  - '*'
 - apiGroups:
   - apps
   resources:
   - daemonsets/status
   verbs:
   - get
-  - patch
   - update
+  - patch
 - apiGroups:
   - apps
   resources:
   - deployments/status
   verbs:
   - get
-  - patch
   - update
-- apiGroups:
-  - apps
-  resources:
-  - statefulsets/status
-  verbs:
-  - get
   - patch
-  - update
 - apiGroups:
   - ""
   resources:
   - pods/status
   verbs:
   - get
-  - patch
   - update
+  - patch
 - apiGroups:
-  - ""
+  - apps
   resources:
-  - services/status
+  - statefulsets/status
   verbs:
   - get
-  - patch
   - update
+  - patch
