@@ -3,7 +3,7 @@
 
 using System.Threading.Tasks;
 using CommandLine;
-using DotnetKubernetesClient;
+using KubeOps.KubernetesClient;
 using static Contrast.K8s.AgentOperator.Performance.ClusterFaker.Options;
 
 namespace Contrast.K8s.AgentOperator.Performance.ClusterFaker
