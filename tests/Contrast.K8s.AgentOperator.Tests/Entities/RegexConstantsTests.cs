@@ -18,8 +18,6 @@ public class RegexConstantsTests
     [InlineData("nodejs")]
     [InlineData("node-esm")]
     [InlineData("nodejs-esm")]
-    [InlineData("node-protect")]
-    [InlineData("nodejs-protect")]
     [InlineData("php")]
     [InlineData("personal-home-page")]
     [InlineData("python")]

@@ -16,7 +16,6 @@ resources:
   - ./injection-javatooloptions.yaml
   - ./injection-nodejs-cjs.yaml
   - ./injection-nodejs-esm.yaml
-  - ./injection-nodejs-protect.yaml
   - ./injection-php.yaml
   - ./injection-python.yaml
   - ./missing-deps.yaml
