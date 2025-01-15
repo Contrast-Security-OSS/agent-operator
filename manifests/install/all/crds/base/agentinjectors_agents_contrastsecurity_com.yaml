@@ -29,7 +29,7 @@ spec:
                 type: string
               type:
                 description: The type of agent to inject. Can be one of ['dotnet-core', 'java', 'nodejs', 'nodejs-esm', 'php', 'python']. Required.
-                pattern: ^(dotnet-core|dotnet|java|node|nodejs|node-esm|nodejs-esm|node-protect|nodejs-protect|php|personal-home-page|python|dummy)$
+                pattern: ^(dotnet-core|dotnet|java|node|nodejs|node-esm|nodejs-esm|php|personal-home-page|python|dummy)$
                 type: string
               image:
                 description: Overrides the default agent images.

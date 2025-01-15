@@ -9,7 +9,6 @@ public enum AgentInjectionType
     Java,
     NodeJs,
     NodeJsEsm,
-    NodeJsProtect, //deprecated
     Php,
     Python,
     Dummy
