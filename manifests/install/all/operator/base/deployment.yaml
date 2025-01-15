@@ -92,3 +92,10 @@ spec:
             requests:
               cpu: 500m
               memory: 256Mi
+          volumeMounts: # We set readOnlyRootFilesystem but ASP.NET Core will buffer requests to disk under high load
+            - name: tmpfs
+              mountPath: /tmp
+      volumes:
+        - name: tmpfs
+          emptyDir:
+            sizeLimit: 50Mi
