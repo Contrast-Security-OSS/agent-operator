@@ -57,6 +57,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting.Patching.Age
                 new("CONTRAST__AGENT__CONTRAST_WORKING_DIR", contextFake.WritableMountPath),
                 new("CONTRAST__AGENT__LOGGER__PATH", $"{contextFake.WritableMountPath}/logs/contrast_agent.log"),
                 new("CONTRAST_INSTALL_SOURCE", "kubernetes-operator"),
+                new("CONTRAST__ASSESS__CACHE__HIERARCHY_ENABLE", "false"),
             });
         }
 
