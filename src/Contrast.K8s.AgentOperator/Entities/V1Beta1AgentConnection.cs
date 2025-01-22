@@ -16,19 +16,19 @@ public partial class V1Beta1AgentConnection : CustomKubernetesEntity<V1Beta1Agen
     public class AgentConnectionSpec
     {
         [Description("The Token to use for this connection.")]
-        public SecretRef? Token { get; set; } = new();
+        public SecretRef? Token { get; set; }
 
         [Description("The URL of the Contrast server. Defaults to 'https://app-agents.contrastsecurity.com/Contrast'.")]
         public string? Url { get; set; }
 
         [Description("The API Key to use for this connection.")]
-        public SecretRef? ApiKey { get; set; } = new();
+        public SecretRef? ApiKey { get; set; }
 
-        [Description("The Service Key to use for this connection.")]
-        public SecretRef? ServiceKey { get; set; } = new();
+        [Description("The ServiceKey to use for this connection.")]
+        public SecretRef? ServiceKey { get; set; }
 
-        [Description("The User Name to use for this connection.")]
-        public SecretRef? UserName { get; set; } = new();
+        [Description("The UserName to use for this connection.")]
+        public SecretRef? UserName { get; set; }
     }
 
     public class SecretRef
