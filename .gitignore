@@ -273,4 +273,3 @@ publish*/
 
 # Dotcover snapshots.
 *.dcvr
-/manifests/generated
