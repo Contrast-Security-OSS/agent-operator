@@ -39,7 +39,7 @@ public class ClusterAgentConnectionSyncingHandler
                                                                              string targetNamespace)
     {
 
-        var spec = new V1Beta1AgentConnection.AgentInjectorSpec
+        var spec = new V1Beta1AgentConnection.AgentConnectionSpec
         {
             Url = desiredResource.TeamServerUri
         };
