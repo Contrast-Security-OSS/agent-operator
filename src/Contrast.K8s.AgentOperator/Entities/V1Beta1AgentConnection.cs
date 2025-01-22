@@ -11,9 +11,9 @@ namespace Contrast.K8s.AgentOperator.Entities;
 
 [KubernetesEntity(Group = "agents.contrastsecurity.com", ApiVersion = "v1beta1", Kind = "AgentConnection", PluralName = "agentconnections")]
 [EntityRbac(typeof(V1Beta1AgentConnection), Verbs = VerbConstants.FullControl)]
-public partial class V1Beta1AgentConnection : CustomKubernetesEntity<V1Beta1AgentConnection.AgentInjectorSpec>
+public partial class V1Beta1AgentConnection : CustomKubernetesEntity<V1Beta1AgentConnection.AgentConnectionSpec>
 {
-    public class AgentInjectorSpec
+    public class AgentConnectionSpec
     {
         [Description("The Token to use for this connection.")]
         public SecretRef? Token { get; set; } = new();
