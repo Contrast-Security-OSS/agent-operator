@@ -36,15 +36,15 @@ public class OldAuthTests : IClassFixture<TestingContext>
             var container = result.Spec.Containers.Should().ContainSingle().Subject;
 
             var apiKey = container.Env.Should().Contain(x => x.Name == "CONTRAST__API__API_KEY").Subject;
-            apiKey.ValueFrom.SecretKeyRef.Name.Should().Be("testing-agent-connection-secret");
+            apiKey.ValueFrom.SecretKeyRef.Name.Should().Be("oldauth-agent-connection-secret");
             apiKey.ValueFrom.SecretKeyRef.Key.Should().Be("apiKey");
 
             var serviceKey = container.Env.Should().Contain(x => x.Name == "CONTRAST__API__SERVICE_KEY").Subject;
-            serviceKey.ValueFrom.SecretKeyRef.Name.Should().Be("testing-agent-connection-secret");
+            serviceKey.ValueFrom.SecretKeyRef.Name.Should().Be("oldauth-agent-connection-secret");
             serviceKey.ValueFrom.SecretKeyRef.Key.Should().Be("serviceKey");
 
             var userName = container.Env.Should().Contain(x => x.Name == "CONTRAST__API__USER_NAME").Subject;
-            userName.ValueFrom.SecretKeyRef.Name.Should().Be("testing-agent-connection-secret");
+            userName.ValueFrom.SecretKeyRef.Name.Should().Be("oldauth-agent-connection-secret");
             userName.ValueFrom.SecretKeyRef.Key.Should().Be("userName");
         }
 

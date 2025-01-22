@@ -36,7 +36,7 @@ public class TokenTests : IClassFixture<TestingContext>
             var container = result.Spec.Containers.Should().ContainSingle().Subject;
 
             var token = container.Env.Should().Contain(x => x.Name == "CONTRAST__API__TOKEN").Subject;
-            token.ValueFrom.SecretKeyRef.Name.Should().Be("testing-agent-connection-secret");
+            token.ValueFrom.SecretKeyRef.Name.Should().Be("token-agent-connection-secret");
             token.ValueFrom.SecretKeyRef.Key.Should().Be("token");
         }
 

@@ -3,3 +3,4 @@ bases:
   - ./scenarios/namespaced
   - ./scenarios/restricted-policy
   - ./scenarios/config-variables
+  - ./scenarios/token
