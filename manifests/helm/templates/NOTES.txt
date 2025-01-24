@@ -30,7 +30,15 @@
 
 {{ if .Values.clusterDefaults.enabled }}
 ✅ Cluster agent defaults deployed
-{{- if .Values.clusterDefaults.existingSecret }}
+{{- if .Values.clusterDefaults.existingTokenSecret }}
+🔐 Agent token will be retrieved from a secret named {{ .Values.namespace }}/{{ .Values.clusterDefaults.existingTokenSecret }}
+  The secret can be created with a command like the following:
+    ⎈ kubectl create secret generic {{ .Values.clusterDefaults.existingTokenSecret }} --namespace {{ .Values.namespace }} \
+       --from-literal=token=YOUR_AGENT_TOKEN
+  ⚠️  Injection will not work until this secret is created.
+
+  Refer to documentation on how to find the agent token: https://docs.contrastsecurity.com/en/find-the-agent-keys.html
+{{- else if .Values.clusterDefaults.existingSecret }}
 🔐 Agent credentials will be retrieved from a secret named {{ .Values.namespace }}/{{ .Values.clusterDefaults.existingSecret }}
   The secret can be created with a command like the following:
     ⎈ kubectl create secret generic {{ .Values.clusterDefaults.existingSecret }} --namespace {{ .Values.namespace }} \
