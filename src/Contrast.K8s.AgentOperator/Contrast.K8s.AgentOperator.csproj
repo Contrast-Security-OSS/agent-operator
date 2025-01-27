@@ -39,7 +39,7 @@
         </PackageReference>
 
         <PackageReference Include="Sigil" Version="5.0.0" />
-        <PackageReference Include="KubeOps.Operator.Web" Version="9.1.5" />
+        <PackageReference Include="KubeOps.Operator.Web" Version="9.2.0" />
         <PackageReference Include="KubeOps.Generator" Version="9.2.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
