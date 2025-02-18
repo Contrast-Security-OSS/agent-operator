@@ -23,7 +23,7 @@ metadata:
 spec:
   template:
     spec:
-{{if or .Values.clusterDefaults.existingTokenSecret .Values.clusterDefaults.tokenValue }}
+{{ if or .Values.clusterDefaults.existingTokenSecret .Values.clusterDefaults.tokenValue }}
       token:
         secretName: {{ .Values.clusterDefaults.existingTokenSecret | default "default-agent-connection-token-secret" }}
         secretKey: token
@@ -41,7 +41,8 @@ spec:
         secretKey: userName
 {{ end }}
 ---
-{{if and (not .Values.clusterDefaults.existingTokenSecret) .Values.clusterDefaults.tokenValue  }}
+{{ if and (not .Values.clusterDefaults.existingTokenSecret) (not .Values.clusterDefaults.existingSecret) }}
+{{ if .Values.clusterDefaults.tokenValue  }}
 apiVersion: v1
 kind: Secret
 metadata:
@@ -52,7 +53,7 @@ type: Opaque
 stringData:
   token: >-
     {{ required "The key clusterDefaults.tokenValue must be set if clusterDefaults.enabled is true and clusterDefaults.existingTokenSecret is not set" .Values.clusterDefaults.tokenValue }}
-{{else if not .Values.clusterDefaults.existingSecret }}
+{{ else }}
 apiVersion: v1
 kind: Secret
 metadata:
@@ -67,5 +68,6 @@ stringData:
     {{ required "The key clusterDefaults.serviceKeyValue must be set if clusterDefaults.enabled is true and clusterDefaults.existingSecret is not set" .Values.clusterDefaults.serviceKeyValue }}
   userName: >-
     {{ required "The key clusterDefaults.userNameValue must be set if clusterDefaults.enabled is true and clusterDefaults.existingSecret is not set" .Values.clusterDefaults.userNameValue }}
+{{ end }}
 {{ end }}
 {{ end }}
