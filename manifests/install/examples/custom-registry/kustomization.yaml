@@ -1,5 +1,5 @@
 namespace: contrast-agent-operator
-bases:
+resources:
   - ../../all
 
 # 1. Update `contrast/agent-operator` (DockerHub by default) to your custom registry.
