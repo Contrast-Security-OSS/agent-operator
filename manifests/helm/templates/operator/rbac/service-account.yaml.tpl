@@ -3,7 +3,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: contrast-agent-operator-service-account
-  namespace: '{{ .Values.namespace }}'
+  namespace: '{{ default .Release.Namespace .Values.namespace }}'
   labels:
     app.kubernetes.io/name: operator
     app.kubernetes.io/part-of: contrast-agent-operator

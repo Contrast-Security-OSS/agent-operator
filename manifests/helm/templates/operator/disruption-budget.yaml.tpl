@@ -3,7 +3,7 @@ apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
   name: contrast-agent-operator
-  namespace: '{{ .Values.namespace }}'
+  namespace: '{{ default .Release.Namespace .Values.namespace }}'
 spec:
   maxUnavailable: 1
   selector:
