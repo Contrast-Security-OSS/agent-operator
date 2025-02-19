@@ -12,7 +12,7 @@ namespace: contrast-agent-operator
 image:
   registry: contrast
   repository: agent-operator
-  tag: latest
+  tag:
 
 agentInjectors:
   enabled: true
