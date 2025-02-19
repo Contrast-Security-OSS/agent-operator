@@ -3,8 +3,7 @@ apiVersion: agents.contrastsecurity.com/v1beta1
 kind: ClusterAgentConfiguration
 metadata:
   name: default-agent-configuration
-  namespace: >-
-    {{ .Values.namespace }}
+  namespace: '{{ .Values.namespace }}'
 spec:
   template:
     spec:
@@ -18,8 +17,7 @@ apiVersion: agents.contrastsecurity.com/v1beta1
 kind: ClusterAgentConnection
 metadata:
   name: default-agent-connection
-  namespace: >-
-    {{ .Values.namespace }}
+  namespace: '{{ .Values.namespace }}'
 spec:
   template:
     spec:
@@ -58,8 +56,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: default-agent-connection-secret
-  namespace: >-
-    {{ .Values.namespace }}
+  namespace: '{{ .Values.namespace }}'
 type: Opaque
 stringData:
   apiKey: >-

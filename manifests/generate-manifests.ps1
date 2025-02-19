@@ -19,4 +19,4 @@ dotnet kubeops generate operator contrast-agent-operator $project --out $output
     Remove-Item $_
 }
 
-Write-Host "Done. Compare with manifests in install folder and merge changes."
+Write-Host "Done. Compare with manifests in `manifests/install/all` and `manifests/helm/templates/operator` folders and merge changes."

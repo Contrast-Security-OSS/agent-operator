@@ -1,4 +1,4 @@
-# Release.Namespace is ignored. The operator must be created in a separate namespace.
+# Namespace for the agent-operator, will be created if specified.
 namespace: contrast-agent-operator
 image:
   registry: contrast
