@@ -38,6 +38,8 @@ public class NodeJsEsmInjectionTests : IClassFixture<TestingContext>
                      .Which.Value.Should().Be("--import /contrast/agent/node_modules/@contrast/agent/lib/esm-loader.mjs");
             container.Env.Should().Contain(x => x.Name == "CONTRAST__AGENT__LOGGER__PATH")
                      .Which.Value.Should().Be("/contrast/data/logs/contrast_agent.log");
+            container.Env.Should().Contain(x => x.Name == "CONTRAST_INSTALLATION_TOOL")
+                     .Which.Value.Should().Be("KUBERNETES_OPERATOR");
         }
     }
 

@@ -27,6 +27,6 @@ public class PythonAgentPatcher : IAgentPatcher
         }
         yield return new V1EnvVar("__CONTRAST_USING_RUNNER", "true");
         yield return new V1EnvVar("CONTRAST__AGENT__LOGGER__PATH", $"{context.WritableMountPath}/logs/contrast_agent.log");
-        yield return new V1EnvVar("CONTRAST_INSTALL_SOURCE", "kubernetes-operator");
+        yield return new V1EnvVar("CONTRAST_INSTALLATION_TOOL", "KUBERNETES_OPERATOR");
     }
 }

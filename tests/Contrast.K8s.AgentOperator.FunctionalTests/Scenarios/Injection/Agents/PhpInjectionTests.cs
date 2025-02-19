@@ -39,6 +39,8 @@ public class PhpInjectionTests : IClassFixture<TestingContext>
                      .Which.Value.Should().Be(":/usr/local/lib/contrast/php/ini/");
             container.Env.Should().Contain(x => x.Name == "CONTRAST__AGENT__LOGGER__PATH")
                      .Which.Value.Should().Be("/contrast/data/logs/contrast_agent.log");
+            container.Env.Should().Contain(x => x.Name == "CONTRAST_INSTALLATION_TOOL")
+                     .Which.Value.Should().Be("KUBERNETES_OPERATOR");
         }
     }
 

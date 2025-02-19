@@ -34,8 +34,8 @@ public class DotNetAgentPatcher : IAgentPatcher
             yield return new V1EnvVar("CORECLR_ENABLE_PROFILING", "1");
         }
 
-        yield return new V1EnvVar("CONTRAST_SOURCE", "kubernetes-operator"); //TODO: remove later after dotnet agent has migrated to CONTRAST_INSTALL_SOURCE
-        yield return new V1EnvVar("CONTRAST_INSTALL_SOURCE", "kubernetes-operator");
+        yield return new V1EnvVar("CONTRAST_INSTALL_SOURCE", "kubernetes-operator"); //For backwards compatibility
+        yield return new V1EnvVar("CONTRAST_INSTALLATION_TOOL", "KUBERNETES_OPERATOR");
         yield return new V1EnvVar("CONTRAST_CORECLR_INSTALL_DIRECTORY", context.AgentMountPath);
         yield return new V1EnvVar("CONTRAST_CORECLR_DATA_DIRECTORY", context.WritableMountPath);
         yield return new V1EnvVar("CONTRAST_CORECLR_LOGS_DIRECTORY", $"{context.WritableMountPath}/logs");

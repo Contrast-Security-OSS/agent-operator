@@ -15,7 +15,7 @@ public class PhpAgentPatcher : IAgentPatcher
     {
         yield return new V1EnvVar("PHP_INI_SCAN_DIR", $":{context.AgentMountPath}/ini/");
         yield return new V1EnvVar("CONTRAST__AGENT__LOGGER__PATH", $"{context.WritableMountPath}/logs/contrast_agent.log");
-        yield return new V1EnvVar("CONTRAST_INSTALL_SOURCE", "kubernetes-operator");
+        yield return new V1EnvVar("CONTRAST_INSTALLATION_TOOL", "KUBERNETES_OPERATOR");
     }
 
     public string GetOverrideAgentMountPath() => "/usr/local/lib/contrast/php";
