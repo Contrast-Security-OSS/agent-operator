@@ -1,0 +1,27 @@
+{{ if ne .Values.operator.enabled false }}
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: contrast-web-hook-configuration
+  labels:
+    app.kubernetes.io/name: operator
+    app.kubernetes.io/part-of: contrast-agent-operator
+webhooks:
+  - name: pods.agents.contrastsecurity.com
+    reinvocationPolicy: IfNeeded
+    failurePolicy: Ignore
+    timeoutSeconds: 2
+    rules:
+      - apiGroups: [ "" ]
+        apiVersions: [ "v1" ]
+        operations: [ "CREATE" ]
+        resources: [ "pods" ]
+        scope: Namespaced
+    clientConfig:
+      service:
+        name: contrast-agent-operator
+        namespace: '{{ .Values.namespace }}'
+        path: /mutate/v1pod
+    admissionReviewVersions: [ "v1" ]
+    sideEffects: None
+{{ end }}

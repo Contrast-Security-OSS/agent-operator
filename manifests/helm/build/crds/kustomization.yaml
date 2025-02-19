@@ -1,5 +1,5 @@
 namespace: >-
   {{ .Values.namespace }}
 
-bases:
+resources:
   - ../../../install/all/crds
