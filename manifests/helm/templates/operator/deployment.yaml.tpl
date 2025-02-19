@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: contrast-agent-operator
-  namespace: '{{ .Values.namespace }}'
+  namespace: '{{ default .Release.Namespace .Values.namespace }}'
   labels:
     app.kubernetes.io/name: operator
     app.kubernetes.io/part-of: contrast-agent-operator

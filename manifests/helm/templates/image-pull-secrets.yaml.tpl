@@ -8,7 +8,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: {{ .Values.imageCredentials.pullSecretName }}
-  namespace: '{{ .Values.namespace }}'
+  namespace: '{{ default .Release.Namespace .Values.namespace }}'
 type: kubernetes.io/dockerconfigjson
 data:
   .dockerconfigjson: {{ template "imagePullSecret" . }}

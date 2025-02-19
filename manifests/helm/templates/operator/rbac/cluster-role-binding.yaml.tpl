@@ -13,5 +13,5 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: contrast-agent-operator-service-account
-    namespace: '{{ .Values.namespace }}'
+    namespace: '{{ default .Release.Namespace .Values.namespace }}'
 {{ end }}

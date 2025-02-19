@@ -20,7 +20,7 @@ webhooks:
     clientConfig:
       service:
         name: contrast-agent-operator
-        namespace: '{{ .Values.namespace }}'
+        namespace: '{{ default .Release.Namespace .Values.namespace }}'
         path: /mutate/v1pod
     admissionReviewVersions: [ "v1" ]
     sideEffects: None
