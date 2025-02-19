@@ -1,4 +1,4 @@
 namespace: contrast-agent-operator
-bases:
+resources:
   - crds
   - operator

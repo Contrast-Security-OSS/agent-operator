@@ -1,5 +1,5 @@
 namespace: contrast-agent-operator
-bases:
+resources:
   - ../../all
 
 patchesStrategicMerge:
