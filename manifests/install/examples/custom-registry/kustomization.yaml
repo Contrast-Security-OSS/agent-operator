@@ -9,8 +9,8 @@ images:
     newTag: latest
 
 # 2. Update the default registry to your custom registry.
-patchesStrategicMerge:
-  - |-
+patches:
+- patch: |-
     apiVersion: apps/v1
     kind: Deployment
     metadata:

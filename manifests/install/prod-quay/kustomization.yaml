@@ -7,8 +7,8 @@ images:
     newName: quay.io/contrast/agent-operator
     newTag: latest
 
-patchesStrategicMerge:
-  - |-
+patches:
+- patch: |-
     apiVersion: apps/v1
     kind: Deployment
     metadata:
