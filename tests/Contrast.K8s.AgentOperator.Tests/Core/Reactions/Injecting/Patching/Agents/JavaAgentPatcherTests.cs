@@ -56,7 +56,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting.Patching.Age
                 new("JAVA_TOOL_OPTIONS", $"-javaagent:{contextFake.AgentMountPath}/contrast-agent.jar"),
                 new("CONTRAST__AGENT__CONTRAST_WORKING_DIR", contextFake.WritableMountPath),
                 new("CONTRAST__AGENT__LOGGER__PATH", $"{contextFake.WritableMountPath}/logs/contrast_agent.log"),
-                new("CONTRAST_INSTALL_SOURCE", "kubernetes-operator"),
+                new("CONTRAST_INSTALLATION_TOOL", "KUBERNETES_OPERATOR"),
                 new("CONTRAST__ASSESS__CACHE__HIERARCHY_ENABLE", "false"),
             });
         }

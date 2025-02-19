@@ -41,8 +41,10 @@ public class DotnetInjectionTests : IClassFixture<TestingContext>
                      .Which.Value.Should().Be("/contrast/agent/runtimes/linux-x64/native/ContrastProfiler.so");
             container.Env.Should().Contain(x => x.Name == "CORECLR_ENABLE_PROFILING")
                      .Which.Value.Should().Be("1");
-            container.Env.Should().Contain(x => x.Name == "CONTRAST_SOURCE")
+            container.Env.Should().Contain(x => x.Name == "CONTRAST_INSTALL_SOURCE")
                      .Which.Value.Should().Be("kubernetes-operator");
+            container.Env.Should().Contain(x => x.Name == "CONTRAST_INSTALLATION_TOOL")
+                     .Which.Value.Should().Be("KUBERNETES_OPERATOR");
             container.Env.Should().Contain(x => x.Name == "CONTRAST_CORECLR_INSTALL_DIRECTORY")
                      .Which.Value.Should().Be("/contrast/agent");
             container.Env.Should().Contain(x => x.Name == "CONTRAST_CORECLR_DATA_DIRECTORY")

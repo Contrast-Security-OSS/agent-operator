@@ -22,7 +22,7 @@ public class JavaAgentPatcher : IAgentPatcher
         yield return new V1EnvVar("JAVA_TOOL_OPTIONS", GetContrastAgentArgument(context));
         yield return new V1EnvVar("CONTRAST__AGENT__CONTRAST_WORKING_DIR", context.WritableMountPath);
         yield return new V1EnvVar("CONTRAST__AGENT__LOGGER__PATH", $"{context.WritableMountPath}/logs/contrast_agent.log");
-        yield return new V1EnvVar("CONTRAST_INSTALL_SOURCE", "kubernetes-operator");
+        yield return new V1EnvVar("CONTRAST_INSTALLATION_TOOL", "KUBERNETES_OPERATOR");
 
         //Disable hierarchy cache since we are in containers
         yield return new V1EnvVar("CONTRAST__ASSESS__CACHE__HIERARCHY_ENABLE", "false");
