@@ -8,5 +8,5 @@ images:
     newName: local/agent-operator
     newTag: latest
 
-patchesStrategicMerge:
-  - overlays/deployment.yaml
+patches:
+- path: overlays/deployment.yaml

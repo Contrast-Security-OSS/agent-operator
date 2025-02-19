@@ -1,5 +1,5 @@
 resources:
-  - ../all
+- ../all
 
-patchesStrategicMerge:
-  - overlays/deployment.yaml
+patches:
+- path: overlays/deployment.yaml

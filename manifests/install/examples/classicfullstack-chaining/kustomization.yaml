@@ -2,8 +2,8 @@ namespace: contrast-agent-operator
 resources:
   - ../../all
 
-patchesStrategicMerge:
-  - |-
+patches:
+- patch: |-
     apiVersion: apps/v1
     kind: Deployment
     metadata:
