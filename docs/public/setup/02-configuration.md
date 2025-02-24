@@ -67,3 +67,36 @@ spec:
 ```
 
 In this example manifest, the Contrast Agent Operator will automatically inject the .NET Contrast agent into workloads (e.g. Deployments, DeploymentConfigs, etc.) that have the label `app=dotnet-hello-world` in the namespace `default`.
+
+
+## Agent Token auth configuration
+
+The Agent Token is a base64 encoded JSON object containing the url, api_key, service_key, and user_name configuration settings, allowing you to set them in a single value. The minimum agent version for token support is: java 6.10.1, dotnet-core 4.3.2, nodejs 5.15.0, python 8.6.0, php 1.34.0
+
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: default-agent-connection-secret
+  namespace: contrast-agent-operator
+type: Opaque
+stringData:
+  token: TODO
+```
+
+> Finding your token is documented in the "[Find the agent keys](https://docs.contrastsecurity.com/en/find-the-agent-keys.html)" section.
+
+```yaml
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: ClusterAgentConnection
+metadata:
+  name: default-agent-connection
+  namespace: contrast-agent-operator
+spec:
+  template:
+    spec:
+      token:
+        secretName: default-agent-connection-secret
+        secretKey: token
+```
