@@ -71,6 +71,9 @@ spec:
   userName:
     secretName: example-agent-connection-secret
     secretKey: userName
+  token:
+    secretName: example-agent-connection-secret
+    secretKey: token
 ```
 
 | Property                   | Type   | Required | Default Value | Description                                                         |
@@ -82,8 +85,12 @@ spec:
 | spec.serviceKey.secretKey  | string | Yes      |               | The key of the value in the named Secret containing the serviceKey. |
 | spec.userName.secretName   | string | Yes      |               | The name of the Secret containing the userName.                     |
 | spec.userName.secretKey    | string | Yes      |               | The key of the value in the named Secret containing the userName.   |
+| spec.token.secretName      | string | Yes      |               | The name of the Secret containing the token.                        |
+| spec.token.secretKey       | string | Yes      |               | The key of the value in the named Secret containing the token.      |
 
 - For security, Secrets referenced must be contained in the same namespace as the AgentConnection.
+- Either (`url`, `apiKey`, `serviceKey`, `userName`) or `token` should be used, not both. The Agent Token is a base64 encoded JSON object containing the url, api_key, service_key, and user_name configuration settings, allowing you to set them in a single value.
+- Minimum agent version for token support is: java 6.10.1, dotnet-core 4.3.2, nodejs 5.15.0, python 8.6.0, php 1.34.0
 
 ## AgentInjector
 
@@ -205,6 +212,9 @@ spec:
       userName:
         secretName: default-agent-connection-secret
         secretKey: userName
+      token:
+        secretName: example-agent-connection-secret
+        secretKey: token
 ```
 
 | Property        | Type            | Required | Default Value   | Description                                                                           |
@@ -214,3 +224,5 @@ spec:
 
 - For security, ClusterAgentConnection manifests must be deployed into the same namespace of the operator.
 - Secrets referenced by ClusterAgentConnection must exist in the same namespace in which the ClusterAgentConnection entity is deployed.
+- Either (`url`, `apiKey`, `serviceKey`, `userName`) or `token` should be used, not both. The Agent Token is a base64 encoded JSON object containing the url, api_key, service_key, and user_name configuration settings, allowing you to set them in a single value.
+- Minimum agent version for token support is: java 6.10.1, dotnet-core 4.3.2, nodejs 5.15.0, python 8.6.0, php 1.34.0
