@@ -31,6 +31,7 @@ public class DotNetAgentPatcher : IAgentPatcher
         {
             yield return new V1EnvVar("CORECLR_PROFILER", "{8B2CE134-0948-48CA-A4B2-80DDAD9F5791}");
             yield return new V1EnvVar("CORECLR_PROFILER_PATH", $"{context.AgentMountPath}/runtimes/linux-x64/native/ContrastProfiler.so");
+            yield return new V1EnvVar("CORECLR_PROFILER_PATH_ARM64", $"{context.AgentMountPath}/runtimes/linux-arm64/native/ContrastProfiler.so");
             yield return new V1EnvVar("CORECLR_ENABLE_PROFILING", "1");
         }
 
