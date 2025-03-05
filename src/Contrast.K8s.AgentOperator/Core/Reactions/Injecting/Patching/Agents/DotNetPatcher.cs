@@ -25,7 +25,7 @@ public class DotNetAgentPatcher : IAgentPatcher
         if (_injectorOptions.EnableEarlyChaining)
         {
             yield return new V1EnvVar("LD_PRELOAD",
-                $"{context.AgentMountPath}/runtimes/linux-x64/native/ContrastChainLoader.so");
+                $"{context.AgentMountPath}/runtimes/linux/native/ContrastChainLoader.so");
         }
         else
         {
@@ -63,7 +63,7 @@ public class DotNetAgentPatcher : IAgentPatcher
         {
             container.Env.AddOrUpdate(new V1EnvVar("CONTRAST_EXISTING_LD_PRELOAD", currentLdPreloadValue));
             container.Env.AddOrUpdate(new V1EnvVar("LD_PRELOAD",
-                $"{context.AgentMountPath}/runtimes/linux-x64/native/ContrastChainLoader.so:{currentLdPreloadValue}"));
+                $"{context.AgentMountPath}/runtimes/linux/native/ContrastChainLoader.so:{currentLdPreloadValue}"));
         }
     }
 

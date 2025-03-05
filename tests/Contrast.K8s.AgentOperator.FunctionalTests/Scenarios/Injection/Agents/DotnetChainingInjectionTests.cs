@@ -36,7 +36,7 @@ public class DotnetChainingInjectionTests : IClassFixture<TestingContext>
             var container = result.Spec.Containers.Should().ContainSingle().Subject;
 
             container.Env.Should().Contain(x => x.Name == "LD_PRELOAD")
-                     .Which.Value.Should().Be("/contrast/agent/runtimes/linux-x64/native/ContrastChainLoader.so:something");
+                     .Which.Value.Should().Be("/contrast/agent/runtimes/linux/native/ContrastChainLoader.so:something");
             container.Env.Should().Contain(x => x.Name == "CONTRAST_EXISTING_LD_PRELOAD")
                      .Which.Value.Should().Be("something");
         }
