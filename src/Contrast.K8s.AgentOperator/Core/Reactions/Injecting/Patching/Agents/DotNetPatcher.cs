@@ -25,12 +25,13 @@ public class DotNetAgentPatcher : IAgentPatcher
         if (_injectorOptions.EnableEarlyChaining)
         {
             yield return new V1EnvVar("LD_PRELOAD",
-                $"{context.AgentMountPath}/runtimes/linux-x64/native/ContrastChainLoader.so");
+                $"{context.AgentMountPath}/runtimes/linux/native/ContrastChainLoader.so");
         }
         else
         {
             yield return new V1EnvVar("CORECLR_PROFILER", "{8B2CE134-0948-48CA-A4B2-80DDAD9F5791}");
             yield return new V1EnvVar("CORECLR_PROFILER_PATH", $"{context.AgentMountPath}/runtimes/linux-x64/native/ContrastProfiler.so");
+            yield return new V1EnvVar("CORECLR_PROFILER_PATH_ARM64", $"{context.AgentMountPath}/runtimes/linux-arm64/native/ContrastProfiler.so");
             yield return new V1EnvVar("CORECLR_ENABLE_PROFILING", "1");
         }
 
@@ -62,7 +63,7 @@ public class DotNetAgentPatcher : IAgentPatcher
         {
             container.Env.AddOrUpdate(new V1EnvVar("CONTRAST_EXISTING_LD_PRELOAD", currentLdPreloadValue));
             container.Env.AddOrUpdate(new V1EnvVar("LD_PRELOAD",
-                $"{context.AgentMountPath}/runtimes/linux-x64/native/ContrastChainLoader.so:{currentLdPreloadValue}"));
+                $"{context.AgentMountPath}/runtimes/linux/native/ContrastChainLoader.so:{currentLdPreloadValue}"));
         }
     }
 

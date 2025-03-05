@@ -39,6 +39,8 @@ public class DotnetInjectionTests : IClassFixture<TestingContext>
                      .Which.Value.Should().Be("{8B2CE134-0948-48CA-A4B2-80DDAD9F5791}");
             container.Env.Should().Contain(x => x.Name == "CORECLR_PROFILER_PATH")
                      .Which.Value.Should().Be("/contrast/agent/runtimes/linux-x64/native/ContrastProfiler.so");
+            container.Env.Should().Contain(x => x.Name == "CORECLR_PROFILER_PATH_ARM64")
+                .Which.Value.Should().Be("/contrast/agent/runtimes/linux-arm64/native/ContrastProfiler.so");
             container.Env.Should().Contain(x => x.Name == "CORECLR_ENABLE_PROFILING")
                      .Which.Value.Should().Be("1");
             container.Env.Should().Contain(x => x.Name == "CONTRAST_INSTALL_SOURCE")

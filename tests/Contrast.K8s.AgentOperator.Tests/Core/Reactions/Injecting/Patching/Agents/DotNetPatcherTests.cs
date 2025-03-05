@@ -27,6 +27,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting.Patching.Age
             {
                 "CORECLR_PROFILER",
                 "CORECLR_PROFILER_PATH",
+                "CORECLR_PROFILER_PATH_ARM64",
                 "CORECLR_ENABLE_PROFILING",
                 "CONTRAST_INSTALL_SOURCE",
                 "CONTRAST_INSTALLATION_TOOL",
@@ -86,7 +87,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting.Patching.Age
                          .Contain(x => x.Name == "CONTRAST_EXISTING_LD_PRELOAD" && x.Value == existingPreload);
                 container.Env.Should().Contain(x =>
                     x.Name == "LD_PRELOAD" && x.Value ==
-                    $"{context.AgentMountPath}/runtimes/linux-x64/native/ContrastChainLoader.so:{existingPreload}");
+                    $"{context.AgentMountPath}/runtimes/linux/native/ContrastChainLoader.so:{existingPreload}");
             }
         }
 
