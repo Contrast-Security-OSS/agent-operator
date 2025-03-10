@@ -8,7 +8,6 @@ clusterDefaults:
     enable: true
     second-line: something
 
-namespace: contrast-agent-operator
 image:
   registry: contrast
   repository: agent-operator

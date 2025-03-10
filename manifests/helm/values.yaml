@@ -1,6 +1,6 @@
 # Namespace for the agent-operator, will be created if specified.
 # When left blank the Helm namespace will be used and can be changed using `helm -n <namespace>`. Helm's `--create-namespace` option should be used when the Helm namespace does not exist and should be created.
-namespace: contrast-agent-operator
+namespace:
 image:
   registry: contrast
   repository: agent-operator
