@@ -13,7 +13,7 @@
 
 - The Contrast Agent Operator follows the upstream [Kubernetes community support policy](https://kubernetes.io/releases/patch-releases/#support-period). End-of-life dates are documented on the [Kubernetes releases](https://kubernetes.io/releases/#release-history) page.
 - OpenShift support is dependent on the included version of Kubernetes. For example, OpenShift v4.10 uses Kubernetes v1.23 and will be supported by Contrast until 2023-02-28. See Red Hat's [support article](https://access.redhat.com/solutions/4870701) for the mapping between Kubernetes and OpenShift versions.
-- The Contrast Agent Operator only supports executing on Linux amd64 hosts and will refuse to be scheduled onto incompatible nodes. Additionally, the operator only supports injecting workloads running on Linux amd64 hosts, even if the Contrast Agent supports additional platforms. Contact [Contrast Support](https://support.contrastsecurity.com/hc/en-us) if Kubernetes on Windows or arm64 support is desired.
+- The Contrast Agent Operator only supports executing on Linux amd64/arm64 hosts and will refuse to be scheduled onto incompatible nodes. Additionally, the operator only supports injecting workloads running on Linux amd64/arm64 hosts, even if the Contrast Agent supports additional platforms. Contact [Contrast Support](https://support.contrastsecurity.com/hc/en-us) if Kubernetes on Windows support is desired.
 
 ## Agent types
 
