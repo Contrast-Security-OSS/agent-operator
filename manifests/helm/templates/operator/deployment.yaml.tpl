@@ -33,6 +33,7 @@ spec:
                     operator: In
                     values:
                       - amd64
+                      - arm64
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
             - weight: 100
