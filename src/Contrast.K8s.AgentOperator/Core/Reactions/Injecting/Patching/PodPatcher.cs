@@ -200,9 +200,17 @@ public class PodPatcher : IPodPatcher
         resources.Requests.TryAdd("cpu", new ResourceQuantity(_initOptions.CpuRequest));
         resources.Requests.TryAdd("memory", new ResourceQuantity(_initOptions.MemoryRequest));
 
+        if (!string.IsNullOrEmpty(_initOptions.EphemeralStorageRequest)) {
+            resources.Requests.TryAdd("ephemeral-storage", new ResourceQuantity(_initOptions.EphemeralStorageRequest));
+        }
+
         resources.Limits ??= new Dictionary<string, ResourceQuantity>(StringComparer.Ordinal);
         resources.Limits.TryAdd("cpu", new ResourceQuantity(_initOptions.CpuLimit));
         resources.Limits.TryAdd("memory", new ResourceQuantity(_initOptions.MemoryLimit));
+
+        if (!string.IsNullOrEmpty(_initOptions.EphemeralStorageLimit)) {
+            resources.Limits.TryAdd("ephemeral-storage", new ResourceQuantity(_initOptions.EphemeralStorageLimit));
+        }
 
         var initContainer = new V1Container("contrast-init")
         {

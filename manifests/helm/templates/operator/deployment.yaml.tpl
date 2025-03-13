@@ -99,6 +99,14 @@ spec:
               value: '{{ .Values.operator.initContainer.resources.requests.memory }}'
             - name: CONTRAST_INITCONTAINER_MEMORY_LIMIT
               value: '{{ .Values.operator.initContainer.resources.limits.memory }}'
+            {{- if .Values.operator.initContainer.resources.requests.ephemeralStorage }}
+            - name: CONTRAST_INITCONTAINER_EPHEMERALSTORAGE_REQUEST
+              value: '{{ .Values.operator.initContainer.resources.requests.ephemeralStorage }}'
+            {{- end}}
+            {{- if .Values.operator.initContainer.resources.limits.ephemeralStorage }}
+            - name: CONTRAST_INITCONTAINER_EPHEMERALSTORAGE_LIMIT
+              value: '{{ .Values.operator.initContainer.resources.limits.ephemeralStorage }}'
+            {{- end}}
           livenessProbe:
             httpGet:
               path: /health

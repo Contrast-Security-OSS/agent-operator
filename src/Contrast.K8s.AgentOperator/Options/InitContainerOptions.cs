@@ -7,4 +7,6 @@ public record InitContainerOptions(
     string CpuRequest,
     string CpuLimit,
     string MemoryRequest,
-    string MemoryLimit);
+    string MemoryLimit,
+    string? EphemeralStorageRequest,
+    string? EphemeralStorageLimit);

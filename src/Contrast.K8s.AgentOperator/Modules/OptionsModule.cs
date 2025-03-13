@@ -125,7 +125,19 @@ public class OptionsModule : Module
                 memoryLimit = memoryLimitStr;
             }
 
-            return new InitContainerOptions(cpuRequest, cpuLimit, memoryRequest, memoryLimit);
+            string? storageLimit = null;
+            string? storageRequest = null;
+            if (GetEnvironmentVariableAsString("CONTRAST_INITCONTAINER_EPHEMERALSTORAGE_LIMIT", out var ephemeralStorageLimitStr)) {
+                logger.LogOptionValue("initcontainer-ephemeralstorage-limit", null, ephemeralStorageLimitStr);
+                storageLimit = ephemeralStorageLimitStr;
+            }
+
+            if (GetEnvironmentVariableAsString("CONTRAST_INITCONTAINER_EPHEMERALSTORAGE_REQUEST", out var ephemeralStorageRequestStr)) {
+                logger.LogOptionValue("initcontainer-ephemeralstorage-request", null, ephemeralStorageRequestStr);
+                storageRequest = ephemeralStorageRequestStr;
+            }
+
+            return new InitContainerOptions(cpuRequest, cpuLimit, memoryRequest, memoryLimit, storageRequest, storageLimit);
         }).SingleInstance();
 
         builder.Register(context =>

@@ -51,9 +51,11 @@ operator:
       limits:
         cpu: 100m
         memory: 64Mi
+        #ephemeralStorage:
       requests:
         cpu: 100m
         memory: 64Mi
+        #ephemeralStorage:
 
 clusterDefaults:
   # If enabled, configure cluster-wide defaults.
