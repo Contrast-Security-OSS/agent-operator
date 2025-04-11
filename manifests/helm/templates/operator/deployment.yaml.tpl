@@ -91,30 +91,18 @@ spec:
               value: '{{ .Values.operator.enableEarlyChaining }}'
             - name: CONTRAST_INSTALL_SOURCE
               value: helm
-            {{- if .Values.operator.initContainer.resources.requests.cpu }}
             - name: CONTRAST_INITCONTAINER_CPU_REQUEST
               value: '{{ .Values.operator.initContainer.resources.requests.cpu }}'
-            {{- end}}
-            {{- if .Values.operator.initContainer.resources.limits.cpu }}
             - name: CONTRAST_INITCONTAINER_CPU_LIMIT
               value: '{{ .Values.operator.initContainer.resources.limits.cpu }}'
-            {{- end}}
-            {{- if .Values.operator.initContainer.resources.requests.memory }}
             - name: CONTRAST_INITCONTAINER_MEMORY_REQUEST
               value: '{{ .Values.operator.initContainer.resources.requests.memory }}'
-            {{- end}}
-            {{- if .Values.operator.initContainer.resources.limits.memory }}
             - name: CONTRAST_INITCONTAINER_MEMORY_LIMIT
               value: '{{ .Values.operator.initContainer.resources.limits.memory }}'
-            {{- end}}
-            {{- if .Values.operator.initContainer.resources.requests.ephemeralStorage }}
             - name: CONTRAST_INITCONTAINER_EPHEMERALSTORAGE_REQUEST
               value: '{{ .Values.operator.initContainer.resources.requests.ephemeralStorage }}'
-            {{- end}}
-            {{- if .Values.operator.initContainer.resources.limits.ephemeralStorage }}
             - name: CONTRAST_INITCONTAINER_EPHEMERALSTORAGE_LIMIT
               value: '{{ .Values.operator.initContainer.resources.limits.ephemeralStorage }}'
-            {{- end}}
           livenessProbe:
             httpGet:
               path: /health
