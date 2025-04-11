@@ -199,18 +199,12 @@ public class PodPatcher : IPodPatcher
         resources.Requests ??= new Dictionary<string, ResourceQuantity>(StringComparer.Ordinal);
         resources.Requests.TryAdd("cpu", new ResourceQuantity(_initOptions.CpuRequest));
         resources.Requests.TryAdd("memory", new ResourceQuantity(_initOptions.MemoryRequest));
-
-        if (!string.IsNullOrEmpty(_initOptions.EphemeralStorageRequest)) {
-            resources.Requests.TryAdd("ephemeral-storage", new ResourceQuantity(_initOptions.EphemeralStorageRequest));
-        }
+        resources.Requests.TryAdd("ephemeral-storage", new ResourceQuantity(_initOptions.EphemeralStorageRequest));
 
         resources.Limits ??= new Dictionary<string, ResourceQuantity>(StringComparer.Ordinal);
         resources.Limits.TryAdd("cpu", new ResourceQuantity(_initOptions.CpuLimit));
         resources.Limits.TryAdd("memory", new ResourceQuantity(_initOptions.MemoryLimit));
-
-        if (!string.IsNullOrEmpty(_initOptions.EphemeralStorageLimit)) {
-            resources.Limits.TryAdd("ephemeral-storage", new ResourceQuantity(_initOptions.EphemeralStorageLimit));
-        }
+        resources.Limits.TryAdd("ephemeral-storage", new ResourceQuantity(_initOptions.EphemeralStorageLimit));
 
         var initContainer = new V1Container("contrast-init")
         {
@@ -223,7 +217,6 @@ public class PodPatcher : IPodPatcher
             ImagePullPolicy = context.Injector.ImagePullPolicy,
             Env = new List<V1EnvVar>
             {
-                // This isn't used in modern agent images, but is still used in older images.
                 new("CONTRAST_MOUNT_PATH", initAgentMountPath),
                 new("CONTRAST_MOUNT_AGENT_PATH", initAgentMountPath),
                 new("CONTRAST_MOUNT_WRITABLE_PATH", initWritableMountPath),
