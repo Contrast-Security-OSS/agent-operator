@@ -125,14 +125,16 @@ public class OptionsModule : Module
                 memoryLimit = memoryLimitStr;
             }
 
-            string? storageLimit = null;
-            string? storageRequest = null;
-            if (GetEnvironmentVariableAsString("CONTRAST_INITCONTAINER_EPHEMERALSTORAGE_LIMIT", out var ephemeralStorageLimitStr)) {
+            var storageLimit = "10Mi";
+            var storageRequest = "10Mi";
+            if (GetEnvironmentVariableAsString("CONTRAST_INITCONTAINER_EPHEMERALSTORAGE_LIMIT", out var ephemeralStorageLimitStr))
+            {
                 logger.LogOptionValue("initcontainer-ephemeralstorage-limit", "null", ephemeralStorageLimitStr);
                 storageLimit = ephemeralStorageLimitStr;
             }
 
-            if (GetEnvironmentVariableAsString("CONTRAST_INITCONTAINER_EPHEMERALSTORAGE_REQUEST", out var ephemeralStorageRequestStr)) {
+            if (GetEnvironmentVariableAsString("CONTRAST_INITCONTAINER_EPHEMERALSTORAGE_REQUEST", out var ephemeralStorageRequestStr))
+            {
                 logger.LogOptionValue("initcontainer-ephemeralstorage-request", "null", ephemeralStorageRequestStr);
                 storageRequest = ephemeralStorageRequestStr;
             }
