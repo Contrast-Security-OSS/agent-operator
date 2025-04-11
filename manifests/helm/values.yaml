@@ -49,13 +49,13 @@ operator:
   initContainer:
     resources:
       limits:
-        cpu:
-        memory:
-        ephemeralStorage:
+        cpu: 100m
+        memory: 64Mi
+        ephemeralStorage: 10Mi
       requests:
-        cpu:
-        memory:
-        ephemeralStorage:
+        cpu: 100m
+        memory: 64Mi
+        ephemeralStorage: 10Mi
 
 clusterDefaults:
   # If enabled, configure cluster-wide defaults.
