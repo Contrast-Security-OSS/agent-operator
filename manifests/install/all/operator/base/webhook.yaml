@@ -10,6 +10,14 @@ webhooks:
     reinvocationPolicy: IfNeeded
     failurePolicy: Ignore
     timeoutSeconds: 2
+    namespaceSelector:
+      matchExpressions:
+      - key: kubernetes.io/metadata.name
+        operator: NotIn
+        values:
+        - kube-system
+        - kube-node-lease
+    matchPolicy: Equivalent
     rules:
       - apiGroups: [ "" ]
         apiVersions: [ "v1" ]
