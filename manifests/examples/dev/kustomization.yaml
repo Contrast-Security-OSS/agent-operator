@@ -3,8 +3,8 @@ resources:
   - sample-apps/dotnet-core-chaining.yaml
   - sample-apps/dotnet-core.yaml
   - sample-apps/java.yaml
+  - sample-apps/nodejs-legacy.yaml
   - sample-apps/nodejs.yaml
-  - sample-apps/nodejs-esm.yaml
   - sample-apps/php.yaml
   - sample-apps/python.yaml
   - cluster-defaults.yaml

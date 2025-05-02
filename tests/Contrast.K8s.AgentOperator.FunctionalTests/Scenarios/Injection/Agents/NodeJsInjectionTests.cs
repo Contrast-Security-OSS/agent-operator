@@ -12,7 +12,7 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection.Agents;
 
 public class NodeJsInjectionTests : IClassFixture<TestingContext>
 {
-    private const string ScenarioName = "injection-nodejs-cjs";
+    private const string ScenarioName = "injection-nodejs";
 
     private readonly TestingContext _context;
 
@@ -35,7 +35,7 @@ public class NodeJsInjectionTests : IClassFixture<TestingContext>
         {
             var container = result.Spec.Containers.Should().ContainSingle().Subject;
             container.Env.Should().Contain(x => x.Name == "NODE_OPTIONS")
-                     .Which.Value.Should().Be("--require /contrast/agent/node_modules/@contrast/agent");
+                     .Which.Value.Should().Be("--import /contrast/agent/node_modules/@contrast/agent/lib/esm-loader.mjs");
             container.Env.Should().Contain(x => x.Name == "CONTRAST__AGENT__LOGGER__PATH")
                      .Which.Value.Should().Be("/contrast/data/logs/contrast_agent.log");
             container.Env.Should().Contain(x => x.Name == "CONTRAST_INSTALLATION_TOOL")

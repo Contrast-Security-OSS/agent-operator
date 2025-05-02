@@ -25,7 +25,7 @@ public partial class V1Beta1AgentInjector : CustomKubernetesEntity<V1Beta1AgentI
         public string? Version { get; set; }
 
         [Required, Pattern(RegexConstants.AgentTypeRegex)]
-        [Description("The type of agent to inject. Can be one of ['dotnet-core', 'java', 'nodejs', 'nodejs-esm', 'php', 'python']. Required.")]
+        [Description("The type of agent to inject. Can be one of ['dotnet-core', 'java', 'nodejs', 'nodejs-legacy', 'php', 'python']. Required.")]
         public string Type { get; set; } = null!;
 
         [Description("Overrides the default agent images.")]

@@ -9,6 +9,8 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents;
 
 public class NodeJsEsmAgentPatcher : IAgentPatcher
 {
+    public bool Deprecated => true;
+
     public AgentInjectionType Type => AgentInjectionType.NodeJsEsm;
 
     public IEnumerable<V1EnvVar> GenerateEnvVars(PatchingContext context)

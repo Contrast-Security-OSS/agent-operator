@@ -81,18 +81,18 @@ spec:
 apiVersion: agents.contrastsecurity.com/v1beta1
 kind: AgentInjector
 metadata:
-  name: example-injector-nodejs-esm
+  name: example-injector-nodejs-legacy
   namespace: dev
 spec:
   enabled: true
   version: latest
-  type: nodejs-esm
+  type: nodejs-legacy
   selector:
     images:
       - "*"
     labels:
       - name: app
-        value: nodejs-esm-app
+        value: nodejs-legacy-app
   connection:
     name: example-agent-connection
   configuration:
