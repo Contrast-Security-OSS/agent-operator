@@ -1,26 +1,26 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nodejs-esm-app
+  name: nodejs-legacy-app
   namespace: dev
   labels:
-    app: nodejs-esm-app
+    app: nodejs-legacy-app
 spec:
   replicas: 2
   revisionHistoryLimit: 1
   selector:
     matchLabels:
-      app: nodejs-esm-app
+      app: nodejs-legacy-app
   template:
     metadata:
       labels:
-        app: nodejs-esm-app
+        app: nodejs-legacy-app
       annotations:
         test: test
     spec:
       containers:
-        - image: contrast/sample-app-fastify-esm:latest
-          name: nodejs-esm-app
+        - image: bkimminich/juice-shop:v14.0.0
+          name: nodejs-legacy-app
           ports:
             - containerPort: 3000
               name: http

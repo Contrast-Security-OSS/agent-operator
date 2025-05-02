@@ -139,12 +139,6 @@ agentInjectors:
         labels:
           - name: contrast-agent
             value: nodejs
-    - language: nodejs-esm
-      name: contrast-nodejs-esm-injector
-      selector:
-        labels:
-          - name: contrast-agent
-            value: nodejs-esm
     - language: php
       name: contrast-php-injector
       selector:

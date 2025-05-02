@@ -7,14 +7,14 @@ using k8s.Models;
 
 namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents;
 
-public class NodeJsAgentPatcher : IAgentPatcher
+public class NodeJsLegacyAgentPatcher : IAgentPatcher
 {
-    public AgentInjectionType Type => AgentInjectionType.NodeJs;
+    public AgentInjectionType Type => AgentInjectionType.NodeJsLegacy;
 
     public IEnumerable<V1EnvVar> GenerateEnvVars(PatchingContext context)
     {
         // https://nodejs.org/api/cli.html#node_optionsoptions
-        yield return new V1EnvVar("NODE_OPTIONS", $"--import {context.AgentMountPath}/node_modules/@contrast/agent/lib/esm-loader.mjs");
+        yield return new V1EnvVar("NODE_OPTIONS", $"--require {context.AgentMountPath}/node_modules/@contrast/agent");
         yield return new V1EnvVar("CONTRAST__AGENT__LOGGER__PATH", $"{context.WritableMountPath}/logs/contrast_agent.log");
         yield return new V1EnvVar("CONTRAST__AGENT__SECURITY_LOGGER__PATH", $"{context.WritableMountPath}/logs/contrast_agent_cef.log");
         yield return new V1EnvVar("CONTRAST__AGENT__NODE__REWRITE__CACHE__PATH", $"{context.WritableMountPath}/cache");

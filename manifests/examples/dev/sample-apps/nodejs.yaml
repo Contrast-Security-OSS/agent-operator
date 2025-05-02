@@ -19,7 +19,7 @@ spec:
         test: test
     spec:
       containers:
-        - image: bkimminich/juice-shop:v14.0.0
+        - image: contrast/sample-app-fastify-esm:latest
           name: nodejs-app
           ports:
             - containerPort: 3000

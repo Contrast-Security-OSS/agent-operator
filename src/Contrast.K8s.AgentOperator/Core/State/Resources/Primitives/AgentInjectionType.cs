@@ -8,7 +8,8 @@ public enum AgentInjectionType
     DotNetCore,
     Java,
     NodeJs,
-    NodeJsEsm,
+    NodeJsEsm, //Deprecated
+    NodeJsLegacy,
     Php,
     Python,
     Dummy

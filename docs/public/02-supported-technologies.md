@@ -22,7 +22,7 @@
 | .NET Core             | dotnet-core    | Supported      | [Supported .NET Core technologies](https://docs.contrastsecurity.com/en/-net-core-supported-technologies.html) |
 | Java                  | java           | Supported      | [Supported Java technologies](https://docs.contrastsecurity.com/en/java-supported-technologies.html)           |
 | NodeJS                | nodejs         | Beta           | [Supported NodeJS technologies](https://docs.contrastsecurity.com/en/node-js-supported-technologies.html )     |
-| NodeJS ESM            | nodejs-esm     | Beta           | [Supported NodeJS technologies](https://docs.contrastsecurity.com/en/node-js-supported-technologies.html )     |
+| NodeJS Legacy         | nodejs-legacy  | Beta           | [Supported NodeJS technologies](https://docs.contrastsecurity.com/en/node-js-supported-technologies.html )     |
 | PHP                   | php            | Beta           | [Supported PHP technologies](https://docs.contrastsecurity.com/en/php-supported-technologies.html)             |
 | Python                | python         | Beta           | [Supported Python technologies](https://docs.contrastsecurity.com/en/python-supported-technologies.html)       |
 

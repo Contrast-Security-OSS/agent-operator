@@ -1,14 +1,14 @@
 apiVersion: agents.contrastsecurity.com/v1beta1
 kind: AgentInjector
 metadata:
-  name: injection-nodejs-cjs
+  name: injection-nodejs-require
 spec:
   enabled: true
-  type: nodejs
+  type: nodejs-legacy
   selector:
     labels:
       - name: app
-        value: injection-nodejs-cjs
+        value: injection-nodejs-require
   image:
     pullPolicy: Never
   connection:
@@ -19,20 +19,20 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: injection-nodejs-cjs
+  name: injection-nodejs-require
   labels:
-    app: injection-nodejs-cjs
+    app: injection-nodejs-require
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: injection-nodejs-cjs
+      app: injection-nodejs-require
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app: injection-nodejs-cjs
+        app: injection-nodejs-require
     spec:
       containers:
         - image: k8s.gcr.io/pause:3.3
