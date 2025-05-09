@@ -12,7 +12,7 @@ namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection.Agents;
 
 public class NodeJsLegacyInjectionTests : IClassFixture<TestingContext>
 {
-    private const string ScenarioName = "injection-nodejs-cjs";
+    private const string ScenarioName = "injection-nodejs-require";
 
     private readonly TestingContext _context;
 

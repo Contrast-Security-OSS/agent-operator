@@ -12,6 +12,7 @@ public interface IAgentInjectionTypeConverter
     string GetDefaultImageRegistry(AgentInjectionType type);
     string GetDefaultImageName(AgentInjectionType type);
     AgentInjectionType GetTypeFromString(string type);
+    string GetStringFromType(AgentInjectionType? type);
 }
 
 public class AgentInjectionTypeConverter : IAgentInjectionTypeConverter
@@ -65,6 +66,22 @@ public class AgentInjectionTypeConverter : IAgentInjectionTypeConverter
             "python" => AgentInjectionType.Python,
             "dummy" => AgentInjectionType.Dummy,
             _ => throw new ArgumentOutOfRangeException()
+        };
+    }
+
+    public string GetStringFromType(AgentInjectionType? type)
+    {
+        return type switch
+        {
+            AgentInjectionType.DotNetCore => "dotnet-core", 
+            AgentInjectionType.Java => "java", 
+            AgentInjectionType.NodeJs => "nodejs", 
+            AgentInjectionType.NodeJsEsm => "nodejs-esm", 
+            AgentInjectionType.NodeJsLegacy => "nodejs-legacy", 
+            AgentInjectionType.Php => "php", 
+            AgentInjectionType.Python => "python", 
+            AgentInjectionType.Dummy => "dummy", 
+            _ => "unknown"
         };
     }
 }
