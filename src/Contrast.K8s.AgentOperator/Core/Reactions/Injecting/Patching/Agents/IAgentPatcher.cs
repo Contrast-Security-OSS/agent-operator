@@ -11,6 +11,8 @@ public interface IAgentPatcher
 {
     bool Deprecated => false;
 
+    public string? DeprecationMessage() => null;
+
     AgentInjectionType Type { get; }
 
     IEnumerable<V1EnvVar> GenerateEnvVars(PatchingContext context);

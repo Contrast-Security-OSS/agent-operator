@@ -29,15 +29,18 @@ public class PodPatcher : IPodPatcher
     private readonly IClusterIdState _clusterIdState;
     private readonly OperatorOptions _operatorOptions;
     private readonly InitContainerOptions _initOptions;
+    private readonly IAgentInjectionTypeConverter _agentTypeConverter;
 
     public PodPatcher(Func<IEnumerable<IAgentPatcher>> patchersFactory, IGlobMatcher globMatcher,
-        IClusterIdState clusterIdState, OperatorOptions operatorOptions, InitContainerOptions initOptions)
+            IClusterIdState clusterIdState, OperatorOptions operatorOptions, InitContainerOptions initOptions,
+            IAgentInjectionTypeConverter agentTypeConverter)
     {
         _patchersFactory = patchersFactory;
         _globMatcher = globMatcher;
         _clusterIdState = clusterIdState;
         _operatorOptions = operatorOptions;
         _initOptions = initOptions;
+        _agentTypeConverter = agentTypeConverter;
     }
 
     public ValueTask Patch(PatchingContext context, V1Pod pod, CancellationToken cancellationToken = default)
@@ -47,7 +50,7 @@ public class PodPatcher : IPodPatcher
 
         if (patcher is { Deprecated: true })
         {
-            Logger.Warn($"Using deprecated agent injector '{patcher?.Type.ToString() ?? "Default"}'.");
+            Logger.Warn($"Using deprecated agent injector type '{_agentTypeConverter.GetStringFromType(patcher.Type)}'. {patcher.DeprecationMessage()}");
         }
 
         if (patcher?.GetOverrideAgentMountPath() is { } agentMountPathOverride)
@@ -58,7 +61,7 @@ public class PodPatcher : IPodPatcher
             };
         }
 
-        Logger.Trace($"Selected agent injector '{patcher?.Type.ToString() ?? "Default"}'.");
+        Logger.Trace($"Selected agent injector '{_agentTypeConverter.GetStringFromType(patcher?.Type)}'.");
 
         ApplyPatches(context, pod, patcher);
 
