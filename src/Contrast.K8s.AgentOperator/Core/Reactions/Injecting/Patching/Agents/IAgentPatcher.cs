@@ -10,8 +10,7 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents;
 public interface IAgentPatcher
 {
     bool Deprecated => false;
-
-    public string? DeprecationMessage() => null;
+    string? DeprecatedMessage => null;
 
     AgentInjectionType Type { get; }
 
