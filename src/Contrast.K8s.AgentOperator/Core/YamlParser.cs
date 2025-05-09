@@ -120,13 +120,13 @@ public class YamlParser : IYamlParser
 }
 
 public record ParseResult(bool IsValid,
-                          int LineNumber = -1,
-                          int StartColumn = -1,
-                          int EndColumn = -1,
+                          long LineNumber = -1,
+                          long StartColumn = -1,
+                          long EndColumn = -1,
                           string? Error = null);
 
 public record YamlSetting(string Key,
                           string? Value,
-                          int Line,
-                          int KeyColumn,
-                          int ValueColumn);
+                          long Line,
+                          long KeyColumn,
+                          long ValueColumn);

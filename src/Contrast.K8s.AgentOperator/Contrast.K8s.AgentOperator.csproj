@@ -15,8 +15,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="System.Text.Json" Version="8.0.5" />
-        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.1" />
         <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
         <PackageReference Include="CertificateManager" Version="1.0.9" />
         <PackageReference Include="Autofac" Version="8.2.0" />
@@ -39,8 +37,8 @@
         </PackageReference>
 
         <PackageReference Include="Sigil" Version="5.0.0" />
-        <PackageReference Include="KubeOps.Operator.Web" Version="9.4.1" />
-        <PackageReference Include="KubeOps.Generator" Version="9.4.1">
+        <PackageReference Include="KubeOps.Operator.Web" Version="9.5.0" />
+        <PackageReference Include="KubeOps.Generator" Version="9.5.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
         </PackageReference>
