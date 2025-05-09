@@ -50,7 +50,7 @@ public class PodPatcher : IPodPatcher
 
         if (patcher is { Deprecated: true })
         {
-            Logger.Warn($"Using deprecated agent injector type '{_agentTypeConverter.GetStringFromType(patcher.Type)}'. {patcher.DeprecationMessage()}");
+            Logger.Warn($"Using deprecated agent injector type '{_agentTypeConverter.GetStringFromType(patcher.Type)}'. {patcher.DeprecatedMessage}");
         }
 
         if (patcher?.GetOverrideAgentMountPath() is { } agentMountPathOverride)
