@@ -32,7 +32,13 @@ rules:
   resources:
   - secrets
   verbs:
-  - '*'
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
 - apiGroups:
   - admissionregistration.k8s.io
   resources:
@@ -49,7 +55,13 @@ rules:
   - agentconnections
   - agentinjectors
   verbs:
-  - '*'
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
 - apiGroups:
   - agents.contrastsecurity.com
   resources:
@@ -99,7 +111,13 @@ rules:
   resources:
   - leases
   verbs:
-  - '*'
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
 - apiGroups:
   - apps
   resources:
