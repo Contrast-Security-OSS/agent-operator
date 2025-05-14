@@ -12,7 +12,7 @@ namespace Contrast.K8s.AgentOperator.Entities
     [EntityRbac(typeof(V1DaemonSet), Verbs = VerbConstants.ReadAndPatch)]
     [EntityRbac(typeof(V1Deployment), Verbs = VerbConstants.ReadAndPatch)]
     [EntityRbac(typeof(V1Pod), Verbs = VerbConstants.ReadAndPatch)]
-    [EntityRbac(typeof(V1Secret), Verbs = VerbConstants.AllButDelete)]
+    [EntityRbac(typeof(V1Secret), Verbs = VerbConstants.All)]
     [EntityRbac(typeof(V1MutatingWebhookConfiguration), Verbs = VerbConstants.ReadAndPatch)]
     [EntityRbac(typeof(V1StatefulSet), Verbs = VerbConstants.ReadAndPatch)]
     [UsedImplicitly]

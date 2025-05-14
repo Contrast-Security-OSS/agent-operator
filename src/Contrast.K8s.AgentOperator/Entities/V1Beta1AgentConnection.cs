@@ -10,7 +10,7 @@ using KubeOps.Abstractions.Rbac;
 namespace Contrast.K8s.AgentOperator.Entities;
 
 [KubernetesEntity(Group = "agents.contrastsecurity.com", ApiVersion = "v1beta1", Kind = "AgentConnection", PluralName = "agentconnections")]
-[EntityRbac(typeof(V1Beta1AgentConnection), Verbs = VerbConstants.FullControl)]
+[EntityRbac(typeof(V1Beta1AgentConnection), Verbs = VerbConstants.All)]
 public partial class V1Beta1AgentConnection : CustomKubernetesEntity<V1Beta1AgentConnection.AgentConnectionSpec>
 {
     public class AgentConnectionSpec

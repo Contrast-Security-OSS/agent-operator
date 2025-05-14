@@ -14,5 +14,5 @@ public static class VerbConstants
 
     public const RbacVerb ReadOnly = RbacVerb.Get | RbacVerb.List | RbacVerb.Watch;
 
-    public const RbacVerb FullControl = RbacVerb.AllExplicit;
+    public const RbacVerb All = RbacVerb.AllExplicit;
 }
