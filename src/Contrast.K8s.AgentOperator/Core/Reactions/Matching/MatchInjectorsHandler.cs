@@ -120,7 +120,7 @@ public class MatchInjectorsHandler : INotificationHandler<DeferredStateModified>
             var result = await _state.GetReadyAgentInjectorById(identity.Name, identity.Namespace, cancellationToken);
             if (result is IsReadyResult<AgentInjectorResource> isReadyResult)
             {
-                readyAgentInjectors.Add(new ResourceIdentityPair<AgentInjectorResource>(identity, isReadyResult.Data));
+                readyAgentInjectors.Add(new ResourceIdentityPair<AgentInjectorResource>(identity, isReadyResult.Resource));
             }
             else if (result is NotReadyResult<AgentInjectorResource> notReadyResult)
             {

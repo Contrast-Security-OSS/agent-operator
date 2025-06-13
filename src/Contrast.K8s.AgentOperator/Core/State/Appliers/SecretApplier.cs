@@ -3,7 +3,6 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
@@ -24,16 +23,9 @@ public class SecretApplier : BaseApplier<V1Secret, SecretResource>
     public override ValueTask<SecretResource> CreateFrom(V1Secret entity, CancellationToken cancellationToken = default)
     {
         var data = entity.Data ?? new Dictionary<string, byte[]>();
-        var keyPairs = data.Select(x => new SecretKeyValue(x.Key, Sha256(x.Value))).NormalizeSecrets();
+        var keyPairs = data.Select(x => SecretKeyValue.Create(x.Key, x.Value)).NormalizeSecrets();
 
         var resource = new SecretResource(keyPairs);
         return ValueTask.FromResult(resource);
-    }
-
-    private static string Sha256(byte[] data)
-    {
-        using var sha256 = SHA256.Create();
-        var bytes = sha256.ComputeHash(data);
-        return HexConverter.ToLowerHex(bytes);
     }
 }

@@ -21,6 +21,7 @@ metadata:
 spec:
   template:
     spec:
+      mountAsVolume: {{ .Values.clusterDefaults.mountConnectionAsVolume | default false }}
 {{ if or .Values.clusterDefaults.existingTokenSecret .Values.clusterDefaults.tokenValue }}
       token:
         secretName: {{ .Values.clusterDefaults.existingTokenSecret | default "default-agent-connection-token-secret" }}

@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.FunctionalTests.Fixtures;
 using FluentAssertions;
 using FluentAssertions.Execution;
-using k8s.Models;
 using Xunit;
 using Xunit.Abstractions;
 

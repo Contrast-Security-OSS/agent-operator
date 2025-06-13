@@ -37,14 +37,6 @@ public class ClusterDefaults
         return "default-agent-connection-secret-" + GetShortHash(targetNamespace);
     }
 
-    public Dictionary<string, string> GetAnnotationsForManagedResources(string templateResourceName, string templateResourceNamespace)
-    {
-        return new Dictionary<string, string>
-        {
-            { ClusterDefaultsConstants.ResourceManagedByAttributeName, $"{templateResourceNamespace}/{templateResourceName}" },
-        };
-    }
-
     public async ValueTask<IReadOnlyCollection<string>> GetAllNamespaces(CancellationToken cancellationToken = default)
     {
         var namespaces = new HashSet<string>(StringComparer.Ordinal);

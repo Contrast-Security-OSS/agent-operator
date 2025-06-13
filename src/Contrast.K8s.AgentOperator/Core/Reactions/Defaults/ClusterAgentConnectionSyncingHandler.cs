@@ -8,7 +8,6 @@ using Contrast.K8s.AgentOperator.Core.State.Resources;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
 using Contrast.K8s.AgentOperator.Entities;
 using Contrast.K8s.AgentOperator.Options;
-using k8s;
 using k8s.Models;
 using KubeOps.KubernetesClient;
 
@@ -41,6 +40,7 @@ public class ClusterAgentConnectionSyncingHandler
 
         var spec = new V1Beta1AgentConnection.AgentConnectionSpec
         {
+            MountAsVolume = desiredResource.MountAsVolume,
             Url = desiredResource.TeamServerUri
         };
 

@@ -14,7 +14,8 @@ namespace Contrast.K8s.AgentOperator.Core.State;
 
 public interface IStateContainer
 {
-    ValueTask<StateUpdateResult<T>> AddOrReplaceById<T>(string name, string @namespace, T resource, CancellationToken cancellationToken = default)
+    ValueTask<StateUpdateResult<T>> AddOrReplaceById<T>(string name, string @namespace, T resource,
+        ResourceMetadata metadata, CancellationToken cancellationToken = default)
         where T : class, INamespacedResource;
 
     ValueTask<StateUpdateResult<T>> RemoveById<T>(string name, string @namespace, CancellationToken cancellationToken = default)
@@ -22,6 +23,10 @@ public interface IStateContainer
 
     ValueTask<T?> GetById<T>(string name, string @namespace, CancellationToken cancellationToken = default)
         where T : class, INamespacedResource;
+
+    ValueTask<ResourceMetadataPair<T>?> GetByIdWithMetadata<T>(string name, string @namespace, CancellationToken cancellationToken = default)
+        where T : class, INamespacedResource;
+
 
     ValueTask<bool> ExistsById<T>(string name, string @namespace, CancellationToken cancellationToken = default)
         where T : class, INamespacedResource;
@@ -50,6 +55,7 @@ public interface IStateContainer
     ValueTask Settled(CancellationToken cancellationToken = default);
     ValueTask<bool> GetHasSettled(CancellationToken cancellationToken = default);
     ValueTask<IReadOnlyCollection<NamespacedResourceIdentity>> GetAllKeys(CancellationToken cancellationToken = default);
+
 }
 
 public class StateContainer : IStateContainer
@@ -66,9 +72,10 @@ public class StateContainer : IStateContainer
     }
 
     public async ValueTask<StateUpdateResult<T>> AddOrReplaceById<T>(string name,
-                                                                     string @namespace,
-                                                                     T resource,
-                                                                     CancellationToken cancellationToken = default)
+        string @namespace,
+        T resource,
+        ResourceMetadata metadata,
+        CancellationToken cancellationToken = default)
         where T : class, INamespacedResource
     {
         using (await _lock.LockAsync(cancellationToken))
@@ -79,20 +86,20 @@ public class StateContainer : IStateContainer
                 if (_resourceComparer.AreEqual(existing.Resource, resource))
                 {
                     // Make sure to clear the IsDirty flag.
-                    _resources[identity] = new ResourceHolder(resource);
+                    _resources[identity] = new ResourceHolder(resource, metadata);
 
                     // No change.
                     return new StateUpdateResult<T>(false, null, (T)existing.Resource);
                 }
 
                 // Updated.
-                _resources[identity] = new ResourceHolder(resource);
+                _resources[identity] = new ResourceHolder(resource, metadata);
                 return new StateUpdateResult<T>(true, (T)existing.Resource, resource);
             }
             else
             {
                 // Added.
-                _resources[identity] = new ResourceHolder(resource);
+                _resources[identity] = new ResourceHolder(resource, metadata);
                 return new StateUpdateResult<T>(true, null, resource);
             }
         }
@@ -130,6 +137,20 @@ public class StateContainer : IStateContainer
             }
 
             return default;
+        }
+    }
+
+    public async ValueTask<ResourceMetadataPair<T>?> GetByIdWithMetadata<T>(string name, string @namespace, CancellationToken cancellationToken = default) where T : class, INamespacedResource
+    {
+        using (await _lock.LockAsync(cancellationToken))
+        {
+            var identity = NamespacedResourceIdentity.Create<T>(name, @namespace);
+            if (_resources.TryGetValue(identity, out var ret) && ret.Resource != null)
+            {
+                return new ResourceMetadataPair<T>((T)ret.Resource, ret.Metadata);
+            }
+
+            return null;
         }
     }
 
@@ -201,7 +222,7 @@ public class StateContainer : IStateContainer
             }
             else
             {
-                _resources[identity] = new ResourceHolder(null, true);
+                _resources[identity] = new ResourceHolder(null, null, true);
             }
         }
     }
@@ -254,5 +275,7 @@ public class StateContainer : IStateContainer
 }
 
 public record ResourceIdentityPair<T>(NamespacedResourceIdentity Identity, T Resource);
+
+public record ResourceMetadataPair<T>(T Resource, ResourceMetadata? Metadata);
 
 public record StateUpdateResult<T>(bool Modified, T? Previous, T? Current) where T : class, INamespacedResource;

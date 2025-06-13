@@ -15,6 +15,9 @@ public partial class V1Beta1AgentConnection : CustomKubernetesEntity<V1Beta1Agen
 {
     public class AgentConnectionSpec
     {
+        [Description("If true, mount the AgentConnection secrets as a volume. Defaults to false. This will override CONTRAST_CONFIG_PATH on the pod.")]
+        public bool? MountAsVolume { get; set; }
+
         [Description("The Token to use for this connection.")]
         public SecretRef? Token { get; set; }
 
