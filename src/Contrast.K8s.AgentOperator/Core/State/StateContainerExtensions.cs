@@ -250,7 +250,7 @@ public record InjectorBundle(AgentInjectorResource Injector,
 
 public abstract record ReadyResult<T>;
 
-public record IsReadyResult<T>(T Data) : ReadyResult<T>;
+public record IsReadyResult<T>(T Resource) : ReadyResult<T>;
 
 public record NotReadyResult<T>(IReadOnlyCollection<string> FailureReasons) : ReadyResult<T>
 {

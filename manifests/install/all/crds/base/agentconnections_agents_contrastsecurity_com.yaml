@@ -19,6 +19,10 @@ spec:
         properties:
           spec:
             properties:
+              mountAsVolume:
+                description: If true, mount the AgentConnection secrets as a volume. Defaults to false. This will override CONTRAST_CONFIG_PATH on the pod.
+                nullable: true
+                type: boolean
               token:
                 description: The Token to use for this connection.
                 nullable: true

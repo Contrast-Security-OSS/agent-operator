@@ -3,11 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents;
+using Contrast.K8s.AgentOperator.Core.Reactions.Secrets;
 using Contrast.K8s.AgentOperator.Core.Telemetry.Cluster;
 using Contrast.K8s.AgentOperator.Options;
 using k8s.Models;
@@ -90,6 +92,19 @@ public class PodPatcher : IPodPatcher
             EmptyDir = new V1EmptyDirVolumeSource()
         };
         pod.Spec.Volumes.AddOrUpdate(writableVolume.Name, writableVolume);
+        var connectionSecretVolumeName = "contrast-connection";
+        if (context.Connection.MountAsVolume == true)
+        {
+            var secretVolume = new V1Volume(connectionSecretVolumeName)
+            {
+                Secret = new V1SecretVolumeSource
+                {
+                    SecretName = VolumeSecrets.GetConnectionVolumeSecretName(context.Injector.ConnectionReference.Name),
+                    Optional = true
+                }
+            };
+            pod.Spec.Volumes.AddOrUpdate(secretVolume.Name, secretVolume);
+        }
 
         // Init Container.
         {
@@ -124,6 +139,11 @@ public class PodPatcher : IPodPatcher
                 new V1VolumeMount(context.WritableMountPath, writableVolume.Name, readOnlyProperty: false);
             container.VolumeMounts.AddOrUpdate(writableVolumeMount.Name, writableVolumeMount);
 
+            if (context.Connection.MountAsVolume == true)
+            {
+                var connectionSecretVolumeMount = new V1VolumeMount(context.ConnectionSecretMountPath, connectionSecretVolumeName, readOnlyProperty: true);
+                container.VolumeMounts.AddOrUpdate(connectionSecretVolumeMount.Name, connectionSecretVolumeMount);
+            }
 
             var genericPatches = GenerateEnvVars(context, pod);
             var agentPatches = agentPatcher?.GenerateEnvVars(context) ?? Array.Empty<V1EnvVar>();
@@ -270,55 +290,65 @@ public class PodPatcher : IPodPatcher
 
     private IEnumerable<V1EnvVar> GenerateEnvVars(PatchingContext context, V1Pod pod)
     {
-        var (workloadName, workloadNamespace, _, connection, configuration, agentMountPath, writableMountPath) = context;
+        var (workloadName, workloadNamespace, _, connection, configuration, agentMountPath, writableMountPath, secretMountPath) = context;
 
         // This isn't used in modern agent images, but is still used in older images.
         yield return new V1EnvVar("CONTRAST_MOUNT_PATH", agentMountPath);
         yield return new V1EnvVar("CONTRAST_MOUNT_AGENT_PATH", agentMountPath);
         yield return new V1EnvVar("CONTRAST_MOUNT_WRITABLE_PATH", writableMountPath);
 
-        // New auth method
-        if (connection.Token != null)
-        {
-            yield return new V1EnvVar(
-                "CONTRAST__API__TOKEN",
-                valueFrom: new V1EnvVarSource(
-                    secretKeyRef: new V1SecretKeySelector(connection.Token.Key, connection.Token.Name)
-                )
-            );
-        }
-
-        // Old auth method
         if (connection.TeamServerUri != null)
         {
             yield return new V1EnvVar("CONTRAST__API__URL", connection.TeamServerUri);
         }
-        if (connection.ApiKey != null)
+
+        if (context.Connection.MountAsVolume == true)
         {
-            yield return new V1EnvVar(
-                "CONTRAST__API__API_KEY",
-                valueFrom: new V1EnvVarSource(
-                    secretKeyRef: new V1SecretKeySelector(connection.ApiKey.Key, connection.ApiKey.Name)
-                )
-            );
+            yield return new V1EnvVar("CONTRAST_CONFIG_PATH", Path.Join(secretMountPath, "contrast_security.yaml"));
         }
-        if (connection.ServiceKey != null)
+        else
         {
-            yield return new V1EnvVar(
-                "CONTRAST__API__SERVICE_KEY",
-                valueFrom: new V1EnvVarSource(
-                    secretKeyRef: new V1SecretKeySelector(connection.ServiceKey.Key, connection.ServiceKey.Name)
-                )
-            );
-        }
-        if (connection.UserName != null)
-        {
-            yield return new V1EnvVar(
-                "CONTRAST__API__USER_NAME",
-                valueFrom: new V1EnvVarSource(
-                    secretKeyRef: new V1SecretKeySelector(connection.UserName.Key, connection.UserName.Name)
-                )
-            );
+            // New auth method
+            if (connection.Token != null)
+            {
+                yield return new V1EnvVar(
+                    "CONTRAST__API__TOKEN",
+                    valueFrom: new V1EnvVarSource(
+                        secretKeyRef: new V1SecretKeySelector(connection.Token.Key, connection.Token.Name)
+                    )
+                );
+            }
+
+            // Legacy auth method
+            if (connection.ApiKey != null)
+            {
+                yield return new V1EnvVar(
+                    "CONTRAST__API__API_KEY",
+                    valueFrom: new V1EnvVarSource(
+                        secretKeyRef: new V1SecretKeySelector(connection.ApiKey.Key, connection.ApiKey.Name)
+                    )
+                );
+            }
+
+            if (connection.ServiceKey != null)
+            {
+                yield return new V1EnvVar(
+                    "CONTRAST__API__SERVICE_KEY",
+                    valueFrom: new V1EnvVarSource(
+                        secretKeyRef: new V1SecretKeySelector(connection.ServiceKey.Key, connection.ServiceKey.Name)
+                    )
+                );
+            }
+
+            if (connection.UserName != null)
+            {
+                yield return new V1EnvVar(
+                    "CONTRAST__API__USER_NAME",
+                    valueFrom: new V1EnvVarSource(
+                        secretKeyRef: new V1SecretKeySelector(connection.UserName.Key, connection.UserName.Name)
+                    )
+                );
+            }
         }
 
 
