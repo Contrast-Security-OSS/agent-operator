@@ -44,7 +44,8 @@ public class PodInjectionHandler : IRequestHandler<EntityCreating<V1Pod>, Entity
                 connection,
                 configuration,
                 "/contrast/agent",
-                "/contrast/data"
+                "/contrast/data",
+                "/contrast/connection"
             );
             await _patcher.Patch(context, request.Entity, cancellationToken);
 

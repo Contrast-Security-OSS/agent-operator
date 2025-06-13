@@ -1,7 +1,6 @@
 ﻿// Contrast Security, Inc licenses this file to you under the Apache 2.0 License.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -18,10 +17,9 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults;
 public class ClusterAgentConnectionSecretSyncingHandler
     : BaseSyncingHandler<ClusterAgentConnectionResource, SecretResource, V1Secret>
 {
-    private readonly IStateContainer _state;
-    private readonly IKubernetesClient _kubernetesClient;
     private readonly ClusterDefaults _clusterDefaults;
     private readonly IGlobMatcher _matcher;
+    private readonly ISecretHelper _secretHelper;
 
     protected override string EntityName => "AgentConnectionSecret";
 
@@ -31,13 +29,13 @@ public class ClusterAgentConnectionSecretSyncingHandler
                                                       IKubernetesClient kubernetesClient,
                                                       ClusterDefaults clusterDefaults,
                                                       IReactionHelper reactionHelper,
-                                                      IGlobMatcher matcher)
+                                                      IGlobMatcher matcher,
+                                                      ISecretHelper secretHelper)
         : base(state, operatorOptions, comparer, kubernetesClient, clusterDefaults, reactionHelper)
     {
-        _state = state;
-        _kubernetesClient = kubernetesClient;
         _clusterDefaults = clusterDefaults;
         _matcher = matcher;
+        _secretHelper = secretHelper;
     }
 
     protected override ValueTask<ResourceIdentityPair<ClusterAgentConnectionResource>?> GetBestBaseForNamespace(
@@ -69,7 +67,7 @@ public class ClusterAgentConnectionSecretSyncingHandler
 
         if (template.Token != null)
         {
-            var tokenHash = await GetCachedSecretDataHashByRef(template.Token.Name, @namespace, template.Token.Key);
+            var tokenHash = await _secretHelper.GetCachedSecretDataHashByRef(template.Token.Name, @namespace, template.Token.Key);
             if (tokenHash != null)
             {
                 secretKeyValues.Add(new SecretKeyValue(ClusterDefaultsConstants.DefaultTokenSecretKey, tokenHash));
@@ -78,7 +76,7 @@ public class ClusterAgentConnectionSecretSyncingHandler
 
         if (template.UserName != null)
         {
-            var usernameHash = await GetCachedSecretDataHashByRef(template.UserName.Name, @namespace, template.UserName.Key);
+            var usernameHash = await _secretHelper.GetCachedSecretDataHashByRef(template.UserName.Name, @namespace, template.UserName.Key);
             if (usernameHash != null)
             {
                 secretKeyValues.Add(new SecretKeyValue(ClusterDefaultsConstants.DefaultUsernameSecretKey, usernameHash));
@@ -87,7 +85,7 @@ public class ClusterAgentConnectionSecretSyncingHandler
 
         if (template.ApiKey != null)
         {
-            var apiKeyHash = await GetCachedSecretDataHashByRef(template.ApiKey.Name, @namespace, template.ApiKey.Key);
+            var apiKeyHash = await _secretHelper.GetCachedSecretDataHashByRef(template.ApiKey.Name, @namespace, template.ApiKey.Key);
             if (apiKeyHash != null)
             {
                 secretKeyValues.Add(new SecretKeyValue(ClusterDefaultsConstants.DefaultApiKeySecretKey, apiKeyHash));
@@ -96,7 +94,7 @@ public class ClusterAgentConnectionSecretSyncingHandler
 
         if (template.ServiceKey != null)
         {
-            var serviceKeyHash = await GetCachedSecretDataHashByRef(template.ServiceKey.Name, @namespace, template.ServiceKey.Key);
+            var serviceKeyHash = await _secretHelper.GetCachedSecretDataHashByRef(template.ServiceKey.Name, @namespace, template.ServiceKey.Key);
             if (serviceKeyHash != null)
             {
                 secretKeyValues.Add(new SecretKeyValue(ClusterDefaultsConstants.DefaultServiceKeySecretKey, serviceKeyHash));
@@ -118,7 +116,7 @@ public class ClusterAgentConnectionSecretSyncingHandler
 
         if (template.Token != null)
         {
-            var tokenData = await GetLiveSecretDataByRef(template.Token.Name, @namespace, template.Token.Key);
+            var tokenData = await _secretHelper.GetLiveSecretDataByRef(template.Token.Name, @namespace, template.Token.Key);
             if (tokenData != null)
             {
                 data.Add(ClusterDefaultsConstants.DefaultTokenSecretKey, tokenData);
@@ -127,7 +125,7 @@ public class ClusterAgentConnectionSecretSyncingHandler
 
         if (template.UserName != null)
         {
-            var usernameData = await GetLiveSecretDataByRef(template.UserName.Name, @namespace, template.UserName.Key);
+            var usernameData = await _secretHelper.GetLiveSecretDataByRef(template.UserName.Name, @namespace, template.UserName.Key);
             if (usernameData != null)
             {
                 data.Add(ClusterDefaultsConstants.DefaultUsernameSecretKey, usernameData);
@@ -136,7 +134,7 @@ public class ClusterAgentConnectionSecretSyncingHandler
 
         if (template.ApiKey != null)
         {
-            var apiKeyData = await GetLiveSecretDataByRef(template.ApiKey.Name, @namespace, template.ApiKey.Key);
+            var apiKeyData = await _secretHelper.GetLiveSecretDataByRef(template.ApiKey.Name, @namespace, template.ApiKey.Key);
             if (apiKeyData != null)
             {
                 data.Add(ClusterDefaultsConstants.DefaultApiKeySecretKey, apiKeyData);
@@ -145,7 +143,7 @@ public class ClusterAgentConnectionSecretSyncingHandler
 
         if (template.ServiceKey != null)
         {
-            var serviceKeyData = await GetLiveSecretDataByRef(template.ServiceKey.Name, @namespace, template.ServiceKey.Key);
+            var serviceKeyData = await _secretHelper.GetLiveSecretDataByRef(template.ServiceKey.Name, @namespace, template.ServiceKey.Key);
             if (serviceKeyData != null)
             {
                 data.Add(ClusterDefaultsConstants.DefaultServiceKeySecretKey, serviceKeyData);
@@ -165,48 +163,5 @@ public class ClusterAgentConnectionSecretSyncingHandler
     protected override string GetTargetEntityName(string targetNamespace)
     {
         return _clusterDefaults.GetDefaultAgentConnectionSecretName(targetNamespace);
-    }
-
-    private async ValueTask<string?> GetCachedSecretDataHashByRef(string name, string @namespace, string key)
-    {
-        var cachedSecret = await _state.GetById<SecretResource>(name, @namespace);
-        if (cachedSecret?.KeyPairs != null)
-        {
-            if (cachedSecret.KeyPairs.FirstOrDefault(x => string.Equals(x.Key, key, StringComparison.Ordinal)) is { DataHash: { } value })
-            {
-                return value;
-            }
-
-            Logger.Warn(
-                $"Secret '{@namespace}/{name}' exists, but the key '{key}' did not exist. Available keys are [{string.Join(", ", cachedSecret.KeyPairs.Select(x => x.Key))}].");
-        }
-        else
-        {
-            Logger.Info($"Secret {@namespace}/{name}' does not exist, is not accessible, or contains no data. This error condition may be transitive.");
-        }
-
-        return null;
-    }
-
-    private async ValueTask<byte[]?> GetLiveSecretDataByRef(string name, string @namespace, string key)
-    {
-        var liveSecret = await _kubernetesClient.GetAsync<V1Secret>(name, @namespace);
-        if (liveSecret?.Data != null)
-        {
-            if (liveSecret.Data.TryGetValue(key, out var value)
-                && value != null)
-            {
-                return value;
-            }
-
-            Logger.Warn(
-                $"Secret '{@namespace}/{name}' exists, but the key '{key}' no longer exists. Available keys are [{string.Join(", ", liveSecret.Data.Keys)}].");
-        }
-        else
-        {
-            Logger.Warn($"Secret {@namespace}/{name}' no longer exists, is accessible, or contains data.");
-        }
-
-        return null;
     }
 }

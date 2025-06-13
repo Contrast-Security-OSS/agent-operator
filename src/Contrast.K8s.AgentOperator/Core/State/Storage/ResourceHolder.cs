@@ -5,4 +5,4 @@ using Contrast.K8s.AgentOperator.Core.State.Resources.Interfaces;
 
 namespace Contrast.K8s.AgentOperator.Core.State.Storage;
 
-public record ResourceHolder(INamespacedResource? Resource, bool IsDirty = false);
+public record ResourceHolder(INamespacedResource? Resource, ResourceMetadata? Metadata, bool IsDirty = false);

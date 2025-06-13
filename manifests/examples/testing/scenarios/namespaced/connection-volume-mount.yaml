@@ -1,0 +1,57 @@
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: AgentConnection
+metadata:
+  name: connection-volume-mount-connection
+spec:
+  mountAsVolume: true
+  token:
+    secretName: testing-agent-connection-secret
+    secretKey: token
+  url: http://localhost
+  apiKey:
+    secretName: testing-agent-connection-secret
+    secretKey: apiKey
+  serviceKey:
+    secretName: testing-agent-connection-secret
+    secretKey: serviceKey
+  userName:
+    secretName: testing-agent-connection-secret
+    secretKey: userName
+---
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: AgentInjector
+metadata:
+  name: connection-volume-mount
+spec:
+  enabled: true
+  type: dummy
+  selector:
+    labels:
+      - name: app
+        value: connection-volume-mount
+  connection:
+    name: connection-volume-mount-connection
+  configuration:
+    name: testing-agent-configuration
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: connection-volume-mount
+  labels:
+    app: connection-volume-mount
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: connection-volume-mount
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: connection-volume-mount
+    spec:
+      containers:
+        - image: k8s.gcr.io/pause:3.3
+          name: pause

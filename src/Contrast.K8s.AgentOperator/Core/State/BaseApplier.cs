@@ -1,10 +1,16 @@
 ﻿// Contrast Security, Inc licenses this file to you under the Apache 2.0 License.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Events;
+using Contrast.K8s.AgentOperator.Core.Kube;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Interfaces;
+using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
+using Contrast.K8s.AgentOperator.Core.State.Storage;
 using k8s;
 using k8s.Models;
 using MediatR;
@@ -39,8 +45,10 @@ public abstract class BaseApplier<TKubernetesObject, TResource> : IApplier<TKube
 
         var name = entity.Name();
         var ns = entity.Namespace();
+        var operatorAnnotations = entity.GetOperatorAnnotations();
+        var metadata = new ResourceMetadata(entity.Uid(), operatorAnnotations);
 
-        var (modified, previous, current) = await _stateContainer.AddOrReplaceById(name, ns, resource, cancellationToken);
+        var (modified, previous, current) = await _stateContainer.AddOrReplaceById(name, ns, resource, metadata, cancellationToken);
         if (modified)
         {
             Logger.Debug($"Resource '{typeof(TResource).Name}/{ns}/{name}' was reconciled.");

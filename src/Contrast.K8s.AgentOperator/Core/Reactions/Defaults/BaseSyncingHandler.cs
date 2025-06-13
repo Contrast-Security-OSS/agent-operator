@@ -123,7 +123,7 @@ public abstract class BaseSyncingHandler<TClusterResource, TTargetResource, TEnt
                 return;
             }
 
-            var annotations = _clusterDefaults.GetAnnotationsForManagedResources(clusterResource.Identity.Name, clusterResource.Identity.Namespace);
+            var annotations = ResourceAnnotations.GetAnnotationsForManagedResources(clusterResource.Identity.Name, clusterResource.Identity.Namespace);
             foreach (var annotation in annotations)
             {
                 entity.SetAnnotation(annotation.Key, annotation.Value);

@@ -10,7 +10,7 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents;
 public class NodeJsEsmAgentPatcher : IAgentPatcher
 {
     public bool Deprecated => true;
-    public string? DeprecatedMessage => "Please migrate to 'nodejs' for NodeJS LTS 18.19.0 and above, 'nodejs-legacy' for NodeJS LTS below 18.19.0";
+    public string? DeprecatedMessage => "Please migrate to use 'nodejs' for NodeJS LTS >= 18.19.0 and 'nodejs-legacy' for NodeJS LTS < 18.19.0";
 
     public AgentInjectionType Type => AgentInjectionType.NodeJsEsm;
 

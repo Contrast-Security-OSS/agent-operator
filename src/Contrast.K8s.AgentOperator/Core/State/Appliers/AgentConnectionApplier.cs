@@ -74,6 +74,7 @@ public class AgentConnectionApplier : BaseApplier<V1Beta1AgentConnection, AgentC
         }
 
         var resource = new AgentConnectionResource(
+            spec.MountAsVolume,
             token,
             uri,
             apiKey,

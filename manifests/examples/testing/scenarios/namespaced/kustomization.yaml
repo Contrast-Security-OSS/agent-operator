@@ -4,6 +4,7 @@ resources:
   - ./shared/testing-agent-connection-secret.yaml
   - ./shared/testing-agent-connection.yaml
   - ./config-optional.yaml
+  - ./connection-volume-mount.yaml
   - ./custom-images.yaml
   - ./custom-version.yaml
   - ./enabled-flag.yaml

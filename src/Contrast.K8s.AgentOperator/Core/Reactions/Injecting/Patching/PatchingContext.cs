@@ -11,4 +11,5 @@ public record PatchingContext(string WorkloadName,
                               AgentConnectionResource Connection,
                               AgentConfigurationResource? Configuration,
                               string AgentMountPath,
-                              string WritableMountPath);
+                              string WritableMountPath,
+                              string ConnectionSecretMountPath);
