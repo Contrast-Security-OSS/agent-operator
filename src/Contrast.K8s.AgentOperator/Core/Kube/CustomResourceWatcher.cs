@@ -29,7 +29,6 @@ namespace Contrast.K8s.AgentOperator.Core.Kube;
 // Use BackgroundService instead
 // Remove entity cache, our state system will hold the cache
 // Remove controllers, just enqueue the entity into the eventqueue for the state system to handle
-// Quiet 404 responses (TODO figure out if we should just stop watching?)
 public class CustomResourceWatcher<TEntity> : BackgroundService
     where TEntity : IKubernetesObject<V1ObjectMeta>
 {
@@ -100,8 +99,8 @@ public class CustomResourceWatcher<TEntity> : BackgroundService
             }
             catch (HttpOperationException e) when (e.Response.StatusCode is HttpStatusCode.NotFound)
             {
-                Logger.Debug($"Watcher for {typeof(TEntity).Name} delaying due to 404 Not Found.");
-                await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
+                Logger.Debug($"Entity {typeof(TEntity).Name} doesn't exist, stopping watcher.");
+                return;
             }
             catch (KubernetesException e) when (e.Status.Code is (int)HttpStatusCode.Gone)
             {
@@ -115,7 +114,8 @@ public class CustomResourceWatcher<TEntity> : BackgroundService
 
             if (stoppingToken.IsCancellationRequested)
             {
-                break;
+                Logger.Debug($"Watcher for {typeof(TEntity).Name} received CancellationRequested, stopping watcher.");
+                return;
             }
 
             Logger.Debug($"Watcher for {typeof(TEntity).Name} was terminated and is reconnecting.");
