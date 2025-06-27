@@ -74,19 +74,22 @@ spec:
   token:
     secretName: example-agent-connection-secret
     secretKey: token
+  mountAsVolume: false
 ```
 
-| Property                   | Type   | Required | Default Value | Description                                                         |
-|----------------------------|--------|----------| ------------- |---------------------------------------------------------------------|
-| spec.url                   | string | Yes      |               | The URL of your Contrast server.                                    |
-| spec.apiKey.secretName     | string | Yes      |               | The name of the Secret containing the apiKey.                       |
-| spec.apiKey.secretKey      | string | Yes      |               | The key of the value in the named Secret containing the apiKey.     |
-| spec.serviceKey.secretName | string | Yes      |               | The name of the Secret containing the serviceKey.                   |
-| spec.serviceKey.secretKey  | string | Yes      |               | The key of the value in the named Secret containing the serviceKey. |
-| spec.userName.secretName   | string | Yes      |               | The name of the Secret containing the userName.                     |
-| spec.userName.secretKey    | string | Yes      |               | The key of the value in the named Secret containing the userName.   |
-| spec.token.secretName      | string | Yes      |               | The name of the Secret containing the token.                        |
-| spec.token.secretKey       | string | Yes      |               | The key of the value in the named Secret containing the token.      |
+| Property                   | Type   | Required | Default Value | Description                                                                                                                    |
+|----------------------------|--------|----------| ------------- |--------------------------------------------------------------------------------------------------------------------------------|
+| spec.url                   | string | Yes      |               | The URL of your Contrast server.                                                                                               |
+| spec.apiKey.secretName     | string | Yes      |               | The name of the Secret containing the apiKey.                                                                                  |
+| spec.apiKey.secretKey      | string | Yes      |               | The key of the value in the named Secret containing the apiKey.                                                                |
+| spec.serviceKey.secretName | string | Yes      |               | The name of the Secret containing the serviceKey.                                                                              |
+| spec.serviceKey.secretKey  | string | Yes      |               | The key of the value in the named Secret containing the serviceKey.                                                            |
+| spec.userName.secretName   | string | Yes      |               | The name of the Secret containing the userName.                                                                                |
+| spec.userName.secretKey    | string | Yes      |               | The key of the value in the named Secret containing the userName.                                                              |
+| spec.token.secretName      | string | Yes      |               | The name of the Secret containing the token.                                                                                   |
+| spec.token.secretKey       | string | Yes      |               | The key of the value in the named Secret containing the token.                                                                 |
+| spec.mountAsVolume         | boolean| No       | False         | If true, mount the AgentConnection secrets as a volume. Defaults to false. This will override CONTRAST_CONFIG_PATH on the pod. |
+
 
 - For security, Secrets referenced must be contained in the same namespace as the AgentConnection.
 - Either (`url`, `apiKey`, `serviceKey`, `userName`) or `token` should be used, not both. The Agent Token is a base64 encoded JSON object containing the url, api_key, service_key, and user_name configuration settings, allowing you to set them in a single value.
@@ -215,6 +218,7 @@ spec:
       token:
         secretName: example-agent-connection-secret
         secretKey: token
+      mountAsVolume: false
 ```
 
 | Property        | Type            | Required | Default Value   | Description                                                                           |
@@ -226,3 +230,4 @@ spec:
 - Secrets referenced by ClusterAgentConnection must exist in the same namespace in which the ClusterAgentConnection entity is deployed.
 - Either (`url`, `apiKey`, `serviceKey`, `userName`) or `token` should be used, not both. The Agent Token is a base64 encoded JSON object containing the url, api_key, service_key, and user_name configuration settings, allowing you to set them in a single value.
 - Minimum agent version for token support is: java 6.10.1, dotnet-core 4.3.2, nodejs 5.15.0, python 8.6.0, php 1.34.0
+- Setting `mountAsVolume` to `true` will override CONTRAST_CONFIG_PATH on the pod.
