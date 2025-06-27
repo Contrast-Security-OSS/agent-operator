@@ -13,6 +13,6 @@ spec:
             - name: CONTRAST_AGENT_TELEMETRY_OPTOUT
               value: "true"
             - name: CONTRAST_RUN_INIT_CONTAINER_AS_NON_ROOT
-              value: "false"
+              value: "true"
             - name: "CONTRAST_LOG_LEVEL"
               value: "TRACE"
