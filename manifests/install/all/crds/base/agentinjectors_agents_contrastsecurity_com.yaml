@@ -28,8 +28,8 @@ spec:
                 pattern: ^(latest|(\d+(\.\d+){0,3}(-.+)?))$
                 type: string
               type:
-                description: The type of agent to inject. Can be one of ['dotnet-core', 'java', 'nodejs', 'nodejs-legacy', 'php', 'python']. Required.
-                pattern: ^(dotnet-core|dotnet|java|node|nodejs|node-esm|nodejs-esm|nodejs-legacy|php|personal-home-page|python|dummy)$
+                description: The type of agent to inject. Can be one of ['dotnet-core', 'java', 'nodejs', 'nodejs-legacy', 'php', 'python', 'flex']. Required.
+                pattern: ^(dotnet-core|dotnet|java|node|nodejs|node-esm|nodejs-esm|nodejs-legacy|php|personal-home-page|python|flex|dummy)$
                 type: string
               image:
                 description: Overrides the default agent images.

@@ -139,6 +139,26 @@ spec:
     name: example-agent-configuration
 ---
 apiVersion: agents.contrastsecurity.com/v1beta1
+kind: AgentInjector
+metadata:
+  name: example-injector-flex
+  namespace: dev
+spec:
+  enabled: true
+  version: latest
+  type: flex
+  selector:
+    images:
+      - "*"
+    labels:
+      - name: app
+        value: flex-app
+  connection:
+    name: example-agent-connection
+  configuration:
+    name: example-agent-configuration
+---
+apiVersion: agents.contrastsecurity.com/v1beta1
 kind: AgentConnection
 metadata:
   name: example-agent-connection

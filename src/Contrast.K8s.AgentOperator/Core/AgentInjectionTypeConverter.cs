@@ -44,6 +44,7 @@ public class AgentInjectionTypeConverter : IAgentInjectionTypeConverter
             AgentInjectionType.NodeJsLegacy => "agent-nodejs",
             AgentInjectionType.Php => "agent-php",
             AgentInjectionType.Python => "agent-python",
+            AgentInjectionType.Flex => "agent-flex",
             AgentInjectionType.Dummy => "busybox",
             _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
         };
@@ -64,6 +65,7 @@ public class AgentInjectionTypeConverter : IAgentInjectionTypeConverter
             "php" => AgentInjectionType.Php,
             "personal-home-page" => AgentInjectionType.Php,
             "python" => AgentInjectionType.Python,
+            "flex" => AgentInjectionType.Flex,
             "dummy" => AgentInjectionType.Dummy,
             _ => throw new ArgumentOutOfRangeException()
         };
@@ -80,6 +82,7 @@ public class AgentInjectionTypeConverter : IAgentInjectionTypeConverter
             AgentInjectionType.NodeJsLegacy => "nodejs-legacy", 
             AgentInjectionType.Php => "php", 
             AgentInjectionType.Python => "python", 
+            AgentInjectionType.Flex => "flex",
             AgentInjectionType.Dummy => "dummy", 
             _ => "unknown"
         };

@@ -12,5 +12,6 @@ public enum AgentInjectionType
     NodeJsLegacy,
     Php,
     Python,
+    Flex,
     Dummy
 }
