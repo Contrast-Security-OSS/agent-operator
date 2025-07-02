@@ -31,6 +31,6 @@ public class DummyInjectionTests : IClassFixture<TestingContext>
 
         // Assert
         result.Spec.InitContainers.Should().ContainSingle(x => x.Name == "contrast-init")
-              .Which.Image.Should().Be("docker.io/library/busybox:latest");
+              .Which.Image.Should().Be("contrast/agent-dummy:latest");
     }
 }
