@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flex-app
+  namespace: dev
+  labels:
+    app: flex-app
+spec:
+  replicas: 2
+  revisionHistoryLimit: 1
+  selector:
+    matchLabels:
+      app: flex-app
+  template:
+    metadata:
+      labels:
+        app: flex-app
+      annotations:
+        test: test
+    spec:
+      containers:
+        - image: contrast/sample-app-aspnetcore:latest
+          name: flex-app
+          env:
+            - name: "CONTRAST_FLEX_INJECTOR_LOG_LEVEL"
+              value: "TRACE"
+          ports:
+            - containerPort: 80
+              name: http
+          # livenessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: 80
+          # readinessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: 80
+          resources:
+            limits:
+              cpu: '1'
+              memory: 1024M
