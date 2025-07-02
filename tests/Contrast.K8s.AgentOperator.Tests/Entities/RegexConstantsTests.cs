@@ -22,6 +22,7 @@ public class RegexConstantsTests
     [InlineData("php")]
     [InlineData("personal-home-page")]
     [InlineData("python")]
+    [InlineData("flex")]
     [InlineData("dummy")]
     public void AgentTypeRegex_should_match_valid_values(string input)
     {

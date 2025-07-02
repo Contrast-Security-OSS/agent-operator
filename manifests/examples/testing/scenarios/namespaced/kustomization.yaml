@@ -18,6 +18,7 @@ resources:
   - ./injection-nodejs-import.yaml
   - ./injection-php.yaml
   - ./injection-python.yaml
+  - ./injection-flex.yaml
   - ./missing-deps.yaml
   - ./multiple-images.yaml
   - ./namespace.yaml

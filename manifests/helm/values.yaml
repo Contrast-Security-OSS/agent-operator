@@ -151,3 +151,9 @@ agentInjectors:
         labels:
           - name: contrast-agent
             value: python
+    - language: flex
+      name: contrast-flex-injector
+      selector:
+        labels:
+          - name: contrast-agent
+            value: flex
