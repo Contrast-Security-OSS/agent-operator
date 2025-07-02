@@ -20,6 +20,7 @@ resources:
   - ./injection-php.yaml
   - ./injection-python.yaml
   - ./injection-flex.yaml
+  - ./injection-flexchaining.yaml
   - ./missing-deps.yaml
   - ./multiple-images.yaml
   - ./namespace.yaml
