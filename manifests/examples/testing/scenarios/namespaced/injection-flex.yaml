@@ -1,0 +1,39 @@
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: AgentInjector
+metadata:
+  name: injection-flex
+spec:
+  enabled: true
+  type: flex
+  selector:
+    labels:
+      - name: app
+        value: injection-flex
+  image:
+    pullPolicy: Never
+  connection:
+    name: testing-agent-connection
+  configuration:
+    name: testing-agent-configuration
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: injection-flex
+  labels:
+    app: injection-flex
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: injection-flex
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: injection-flex
+    spec:
+      containers:
+        - image: k8s.gcr.io/pause:3.3
+          name: pause
