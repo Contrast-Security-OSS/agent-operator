@@ -1,0 +1,42 @@
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: AgentInjector
+metadata:
+  name: injection-flex-chaining
+spec:
+  enabled: true
+  type: flex
+  selector:
+    labels:
+      - name: app
+        value: injection-flex-chaining
+  image:
+    pullPolicy: Never
+  connection:
+    name: testing-agent-connection
+  configuration:
+    name: testing-agent-configuration
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: injection-flex-chaining
+  labels:
+    app: injection-flex-chaining
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: injection-flex-chaining
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: injection-flex-chaining
+    spec:
+      containers:
+        - image: k8s.gcr.io/pause:3.3
+          name: pause
+          env:
+            - name: LD_PRELOAD
+              value: something
