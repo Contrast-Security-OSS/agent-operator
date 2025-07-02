@@ -25,6 +25,7 @@
 | NodeJS Legacy         | nodejs-legacy  | Supported      | NodeJS LTS below 18.19.0 [Supported NodeJS technologies](https://docs.contrastsecurity.com/en/node-js-supported-technologies.html )     |
 | PHP                   | php            | Beta           | [Supported PHP technologies](https://docs.contrastsecurity.com/en/php-supported-technologies.html)             |
 | Python                | python         | Supported      | [Supported Python technologies](https://docs.contrastsecurity.com/en/python-supported-technologies.html)       |
+| Flex                  | flex           | Beta      |        |
 
 - Injection of PHP applications is in beta. Beta status means the feature might change or act unexpectedly. By using this feature, you agree to the [Contrast Beta Terms and Conditions](https://docs.contrastsecurity.com/en/beta-terms-and-conditions.html "Contrast Beta Terms and Conditions").
 - Injection of the NodeJS Agent may result in a substantial increase in the startup time of the instrumented application. If startup time is unacceptable, injecting the agent during compilation may be desireable. If the application was injected by the NodeJS agent during compilation then injection during runtime by the operator should be disabled. See the [rewriter CLI](https://docs.contrastsecurity.com/en/node-js-agent-rewriter-cli.html) for more information.
