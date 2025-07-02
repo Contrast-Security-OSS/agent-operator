@@ -26,11 +26,7 @@ public class AgentInjectionTypeConverter : IAgentInjectionTypeConverter
 
     public string GetDefaultImageRegistry(AgentInjectionType type)
     {
-        return type switch
-        {
-            AgentInjectionType.Dummy => "docker.io/library",
-            _ => _repositoryOptions.DefaultRegistry
-        };
+        return _repositoryOptions.DefaultRegistry;
     }
 
     public string GetDefaultImageName(AgentInjectionType type)
@@ -44,7 +40,7 @@ public class AgentInjectionTypeConverter : IAgentInjectionTypeConverter
             AgentInjectionType.NodeJsLegacy => "agent-nodejs",
             AgentInjectionType.Php => "agent-php",
             AgentInjectionType.Python => "agent-python",
-            AgentInjectionType.Dummy => "busybox",
+            AgentInjectionType.Dummy => "agent-dummy",
             _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
         };
     }
