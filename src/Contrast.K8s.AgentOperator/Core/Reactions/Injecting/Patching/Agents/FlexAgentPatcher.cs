@@ -18,8 +18,8 @@ public class FlexAgentPatcher : IAgentPatcher
         yield return new V1EnvVar("LD_PRELOAD", $"{context.AgentMountPath}/injector/agent_injector.so");
         yield return new V1EnvVar("CONTRAST_INSTALLATION_TOOL", "KUBERNETES_OPERATOR");
 
-        yield return new V1EnvVar("CONTRAST_FLEX_AGENTS_DIR", $"{context.AgentMountPath}/agents");
-        yield return new V1EnvVar("CONTRAST_FLEX_COMMS_DIR", $"{context.AgentMountPath}/comms");
+        yield return new V1EnvVar("CONTRAST_FLEX_AGENTS_DIR", context.AgentMountPath);
+        yield return new V1EnvVar("CONTRAST_FLEX_COMMS_DIR", context.AgentMountPath);
         yield return new V1EnvVar("CONTRAST_FLEX_WRITABLE_DIR", context.WritableMountPath);
     }
 
