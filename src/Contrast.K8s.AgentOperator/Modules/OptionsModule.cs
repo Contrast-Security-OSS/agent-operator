@@ -126,8 +126,8 @@ public class OptionsModule : Module
             }
 
             // Needs to be greater than the size of the largest agent
-            var storageLimit = "400Mi";
-            var storageRequest = "400Mi";
+            var storageLimit = "1Gi";
+            var storageRequest = "1Gi";
             if (GetEnvironmentVariableAsString("CONTRAST_INITCONTAINER_EPHEMERALSTORAGE_LIMIT", out var ephemeralStorageLimitStr))
             {
                 logger.LogOptionValue("initcontainer-ephemeralstorage-limit", storageLimit, ephemeralStorageLimitStr);
