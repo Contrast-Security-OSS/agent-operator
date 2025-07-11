@@ -40,9 +40,9 @@ public class FlexInjectionTests : IClassFixture<TestingContext>
             container.Env.Should().Contain(x => x.Name == "CONTRAST_INSTALLATION_TOOL")
                      .Which.Value.Should().Be("KUBERNETES_OPERATOR");
             container.Env.Should().Contain(x => x.Name == "CONTRAST_FLEX_AGENTS_DIR")
-                     .Which.Value.Should().Be("/contrast/agent/agents");
+                     .Which.Value.Should().Be("/contrast/agent");
             container.Env.Should().Contain(x => x.Name == "CONTRAST_FLEX_COMMS_DIR")
-                     .Which.Value.Should().Be("/contrast/agent/comms");
+                     .Which.Value.Should().Be("/contrast/agent");
             container.Env.Should().Contain(x => x.Name == "CONTRAST_FLEX_WRITABLE_DIR")
                      .Which.Value.Should().Be("/contrast/data");
         }
