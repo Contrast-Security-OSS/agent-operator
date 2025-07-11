@@ -51,11 +51,11 @@ operator:
       limits:
         cpu: 100m
         memory: 64Mi
-        ephemeralStorage: 400Mi # Needs to be greater than the size of the largest agent
+        ephemeralStorage: 1Gi # Needs to be greater than the size of the largest agent
       requests:
         cpu: 100m
         memory: 64Mi
-        ephemeralStorage: 400Mi # Needs to be greater than the size of the largest agent
+        ephemeralStorage: 1Gi # Needs to be greater than the size of the largest agent
 
 clusterDefaults:
   # If enabled, configure cluster-wide defaults.
