@@ -36,7 +36,7 @@ public class FlexInjectionTests : IClassFixture<TestingContext>
             var container = result.Spec.Containers.Should().ContainSingle().Subject;
 
             container.Env.Should().Contain(x => x.Name == "LD_PRELOAD")
-                     .Which.Value.Should().Be("/contrast/injector/agent_injector.so");
+                     .Which.Value.Should().Be("/contrast/agent/injector/agent_injector.so");
             container.Env.Should().Contain(x => x.Name == "CONTRAST_INSTALLATION_TOOL")
                      .Which.Value.Should().Be("KUBERNETES_OPERATOR");
             container.Env.Should().Contain(x => x.Name == "CONTRAST_FLEX_AGENTS_PARENT_DIR")
