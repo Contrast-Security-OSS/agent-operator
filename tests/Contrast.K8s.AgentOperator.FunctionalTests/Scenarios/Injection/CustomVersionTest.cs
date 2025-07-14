@@ -31,6 +31,6 @@ public class CustomVersionTest : IClassFixture<TestingContext>
 
         // Assert
         result.Spec.InitContainers.Should().ContainSingle(x => x.Name == "contrast-init")
-              .Which.Image.Should().Be("docker.io/library/busybox:1.0");
+              .Which.Image.Should().Be("contrast/agent-dummy:1.0");
     }
 }
