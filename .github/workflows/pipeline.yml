@@ -279,7 +279,7 @@ jobs:
       fail-fast: false
     steps:
       - name: Setup Pluto
-        uses: fairwindsops/pluto/github-action@d45f6d122de3d99fc4b7576592939ff62655db66 # v5.21.1
+        uses: fairwindsops/pluto/github-action@b2edcf65c9a59ea14efc56f4fd4cd0634b1c19e2 # v5.21.1
       - name: Setup Polaris
         uses: fairwindsops/polaris/.github/actions/setup-polaris@80e6f7214ee611feb8a0ad2f8be6e58f822b868b # v9.6.1
         with:
