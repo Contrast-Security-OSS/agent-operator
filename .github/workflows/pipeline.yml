@@ -442,7 +442,9 @@ jobs:
         uses: ncipollo/release-action@cdcc88a9acf3ca41c16c37bb7d21b9ad48560d87 # v1.15.0
         with:
           body: |
-            Version v${{ env.BUILD_VERSION }} released!
+            ## Version v${{ env.BUILD_VERSION }} released!
+
+            ---
             ```
             contrast/agent-operator:${{ env.BUILD_VERSION }}
             contrast/agent-operator@${{ needs.build-image.outputs.digest }}
