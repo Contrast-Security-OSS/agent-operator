@@ -50,7 +50,7 @@ Note: If you get the error `Error: Process 'PID 4 System Service' binds to port 
 
 ## Building the Operator
 
-> Make sure to restore the submodules in the `./vendor` directory and you have the latest .NET LTS installed!
+> Make sure you have the latest .NET LTS installed!
 
 The Contrast Agent Operator is a standard .NET application and can be built as such.
 

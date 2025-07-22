@@ -61,8 +61,6 @@ jobs:
       IS_PUBLIC_BUILD: ${{ needs.generate-version.outputs.is-public-build }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          submodules: true
       - name: Setup QEMU
         uses: docker/setup-qemu-action@53851d14592bedcffcf25ea515637cff71ef929a # v3.3.0
         with:
@@ -125,11 +123,19 @@ jobs:
           cat ../../license-header.yaml > ./install-prod-quay.yaml
           kustomize build ./ >> ./install-prod-quay.yaml
         shell: bash
+      - name: Generate Manifests (CRDs)
+        run: |
+          set -xe
+          cd ./manifests/install/all/crds
+          cat ../../../license-header.yaml > ./crds.yaml
+          kustomize build ./ >> ./crds.yaml
+        shell: bash
       - name: Stage Manifests
         run: |
           set -xe
           cp manifests/install/prod/install-prod.yaml ./install-prod.yaml
           cp manifests/install/prod-quay/install-prod-quay.yaml ./install-prod-quay.yaml
+          cp manifests/install/all/crds/crds.yaml ./crds.yaml
         shell: bash
       - name: Publish (Artifacts)
         uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
@@ -138,6 +144,7 @@ jobs:
           path: |
             install-prod.yaml
             install-prod-quay.yaml
+            crds.yaml
           retention-days: 7
   build-helm-chart:
     runs-on: ubuntu-latest
@@ -201,8 +208,6 @@ jobs:
     if: ${{ github.event_name != 'pull_request' }} # should match push logic in build-image
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          submodules: true
       - uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
         with:
           registry: ghcr.io
