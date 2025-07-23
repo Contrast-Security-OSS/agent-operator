@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/name: operator
     app.kubernetes.io/part-of: contrast-agent-operator
 spec:
-  replicas: 1
+  replicas: {{ .Values.operator.replicas | default 1 }}
   revisionHistoryLimit: 1
   selector:
     matchLabels:
@@ -113,13 +113,19 @@ spec:
               path: /ready
               port: 5001
               scheme: HTTPS
-          resources: # Very liberal here, likely not needed.
+          resources:
             limits:
-              cpu: 2000m
-              memory: 512Mi
+              cpu: {{ .Values.operator.resources.limits.cpu | default "2000m" }}
+              memory: {{ .Values.operator.resources.limits.memory | default "512Mi" }}
+            {{- if .Values.operator.resources.limits.ephemeralStorage }}
+              ephemeralStorage: {{ .Values.operator.resources.limits.ephemeralStorage | default "300Mi" }}
+            {{- end }}
             requests:
-              cpu: 500m
-              memory: 256Mi
+              cpu: {{ .Values.operator.resources.requests.cpu | default "500m" }}
+              memory: {{ .Values.operator.resources.requests.memory | default "256Mi" }}
+            {{- if .Values.operator.resources.requests.ephemeralStorage }}
+              ephemeralStorage: {{ .Values.operator.resources.requests.ephemeralStorage | default "100Mi" }}
+            {{- end }}
           volumeMounts: # We set readOnlyRootFilesystem but ASP.NET Core will buffer requests to disk under high load
             - name: tmpfs
               mountPath: /tmp

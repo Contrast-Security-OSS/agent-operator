@@ -45,6 +45,17 @@ operator:
   webhookConfiguration: contrast-web-hook-configuration
   # Enable early chaining. Should normally be disabled unless DynaKube is used in classicStack mode.
   enableEarlyChaining: false
+  # Resource management for the operator container.
+  replicas: 1
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 512Mi
+      #ephemeralStorage:
+    requests:
+      cpu: 500m
+      memory: 256Mi
+      #ephemeralStorage:
   # Resource management for the agent initContainers
   initContainer:
     resources:
