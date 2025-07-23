@@ -33,7 +33,7 @@ To install the latest version of the operator into a cluster, apply the installa
 kubectl apply -f https://github.com/Contrast-Security-OSS/agent-operator/releases/latest/download/install-prod.yaml
 ```
 
-The operator can also be deployed using Helm - see [contrastsecurity.dev/helm-charts](https://contrastsecurity.dev/helm-charts/).
+The operator can also be deployed using Helm (requires helm version 3.11+) - see [contrastsecurity.dev/helm-charts](https://contrastsecurity.dev/helm-charts/).
 
 Further documentation and examples can be found on [docs.contrastsecurity.com](https://docs.contrastsecurity.com/en/agent-operator.html) ([en](https://docs.contrastsecurity.com/en/agent-operator.html)/[jp](https://docs.contrastsecurity.jp/ja/agent-operator.html)).
 
