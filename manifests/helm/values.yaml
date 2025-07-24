@@ -45,6 +45,12 @@ operator:
   webhookConfiguration: contrast-web-hook-configuration
   # Enable early chaining. Should normally be disabled unless DynaKube is used in classicStack mode.
   enableEarlyChaining: false
+  # Metadata for the operator deployment.
+  labels: {}
+  annotations: {}
+  # Metadata for the operator pod(s).
+  podLabels: {}
+  podAnnotations: {}
   # Resource management for the operator container.
   replicas: 1
   resources:

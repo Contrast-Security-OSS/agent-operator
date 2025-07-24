@@ -7,6 +7,13 @@ metadata:
   labels:
     app.kubernetes.io/name: operator
     app.kubernetes.io/part-of: contrast-agent-operator
+    {{- if .Values.operator.labels }}
+    {{- toYaml .Values.operator.labels | nindent 4 }}
+    {{- end }}
+  {{- if .Values.operator.annotations }}
+  annotations:
+    {{- toYaml .Values.operator.annotations | nindent 4 }}
+  {{- end }}
 spec:
   replicas: {{ .Values.operator.replicas | default 1 }}
   revisionHistoryLimit: 1
@@ -19,6 +26,13 @@ spec:
       labels:
         app.kubernetes.io/name: operator
         app.kubernetes.io/part-of: contrast-agent-operator
+        {{- if .Values.operator.podLabels }}
+        {{- toYaml .Values.operator.podLabels | nindent 8 }}
+        {{- end }}
+    {{- if .Values.operator.podAnnotations }}
+      annotations:
+        {{- toYaml .Values.operator.podAnnotations | nindent 8 }}
+    {{- end }}
     spec:
       affinity:
         nodeAffinity:
