@@ -1,0 +1,20 @@
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: ClusterAgentInjector
+metadata:
+  name: cluster-agent-injector-dummy
+  namespace: testing-agent-operator
+spec:
+  namespaces:
+    - testing
+  template:
+    spec:
+      enabled: true
+      type: dummy
+      image:
+        pullSecretName: cluster-image-pullsecret
+      selector:
+        images:
+          - "*"
+        labels:
+          - name: app
+            value: injection-cluster

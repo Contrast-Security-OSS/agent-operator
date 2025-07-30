@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Comparing;
+using Contrast.K8s.AgentOperator.Core.Reactions.Defaults.Base;
 using Contrast.K8s.AgentOperator.Core.State;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
@@ -15,7 +16,7 @@ using KubeOps.KubernetesClient;
 namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults;
 
 public class ClusterAgentConnectionSecretSyncingHandler
-    : BaseSyncingHandler<ClusterAgentConnectionResource, SecretResource, V1Secret>
+    : BaseUniqueSyncingHandler<ClusterAgentConnectionResource, SecretResource, V1Secret>
 {
     private readonly ClusterDefaults _clusterDefaults;
     private readonly IGlobMatcher _matcher;
@@ -24,14 +25,14 @@ public class ClusterAgentConnectionSecretSyncingHandler
     protected override string EntityName => "AgentConnectionSecret";
 
     public ClusterAgentConnectionSecretSyncingHandler(IStateContainer state,
-                                                      OperatorOptions operatorOptions,
-                                                      IResourceComparer comparer,
-                                                      IKubernetesClient kubernetesClient,
-                                                      ClusterDefaults clusterDefaults,
-                                                      IReactionHelper reactionHelper,
-                                                      IGlobMatcher matcher,
-                                                      ISecretHelper secretHelper)
-        : base(state, operatorOptions, comparer, kubernetesClient, clusterDefaults, reactionHelper)
+        OperatorOptions operatorOptions,
+        IKubernetesClient kubernetesClient,
+        IReactionHelper reactionHelper,
+        ClusterDefaults clusterDefaults,
+        IResourceComparer comparer,
+        IGlobMatcher matcher,
+        ISecretHelper secretHelper)
+        : base(state, operatorOptions, kubernetesClient, reactionHelper, clusterDefaults, comparer)
     {
         _clusterDefaults = clusterDefaults;
         _matcher = matcher;
@@ -56,9 +57,10 @@ public class ClusterAgentConnectionSecretSyncingHandler
         return ValueTask.FromResult(matchingDefaultBase.SingleOrDefault());
     }
 
-    protected override async ValueTask<SecretResource?> CreateDesiredResource(ResourceIdentityPair<ClusterAgentConnectionResource> baseResource,
-                                                                              string targetName,
-                                                                              string targetNamespace)
+    protected override async ValueTask<SecretResource?> CreateDesiredResource(SecretResource? existingResource,
+        ResourceIdentityPair<ClusterAgentConnectionResource> baseResource,
+        string targetName,
+        string targetNamespace)
     {
         var @namespace = baseResource.Identity.Namespace;
         var template = baseResource.Resource.Template;
@@ -104,10 +106,11 @@ public class ClusterAgentConnectionSecretSyncingHandler
         return new SecretResource(secretKeyValues.NormalizeSecrets());
     }
 
-    protected override async ValueTask<V1Secret?> CreateTargetEntity(ResourceIdentityPair<ClusterAgentConnectionResource> baseResource,
-                                                                     SecretResource desiredResource,
-                                                                     string targetName,
-                                                                     string targetNamespace)
+    protected override async ValueTask<V1Secret?> CreateTargetEntity(
+        ResourceIdentityPair<ClusterAgentConnectionResource> baseResource,
+        SecretResource desiredResource,
+        string targetName,
+        string targetNamespace)
     {
         var @namespace = baseResource.Identity.Namespace;
         var template = baseResource.Resource.Template;

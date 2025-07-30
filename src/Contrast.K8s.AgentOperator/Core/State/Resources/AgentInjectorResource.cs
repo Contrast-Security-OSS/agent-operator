@@ -15,4 +15,4 @@ public record AgentInjectorResource(
     AgentConfigurationReference ConfigurationReference,
     SecretReference? ImagePullSecret,
     string ImagePullPolicy
-) : INamespacedResource;
+) : INamespacedResource, IMutableResource;

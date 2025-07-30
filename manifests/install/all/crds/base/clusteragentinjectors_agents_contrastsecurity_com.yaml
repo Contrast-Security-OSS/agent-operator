@@ -1,0 +1,99 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: clusteragentinjectors.agents.contrastsecurity.com
+  labels:
+    app.kubernetes.io/part-of: contrast-agent-operator
+spec:
+  group: agents.contrastsecurity.com
+  names:
+    kind: ClusterAgentInjector
+    listKind: ClusterAgentInjectorList
+    plural: clusteragentinjectors
+    singular: clusteragentinjector
+  scope: Namespaced
+  versions:
+  - name: v1beta1
+    schema:
+      openAPIV3Schema:
+        properties:
+          spec:
+            properties:
+              template:
+                description: The default AgentInjector to apply to the namespaces selected by 'spec.namespaces'. Required.
+                nullable: true
+                properties:
+                  spec:
+                    properties:
+                      enabled:
+                        description: Enable this agent injector. Defaults to 'true'.
+                        type: boolean
+                      version:
+                        description: The version of the agent to inject. The literal 'latest' will inject the latest version. Partial version matches are supported, e.g. '2' will select the version '2.1.0'. Defaults to 'latest'.
+                        nullable: true
+                        pattern: ^(latest|(\d+(\.\d+){0,3}(-.+)?))$
+                        type: string
+                      type:
+                        description: The type of agent to inject. Can be one of ['dotnet-core', 'java', 'nodejs', 'nodejs-legacy', 'php', 'python', 'flex']. Required.
+                        pattern: ^(dotnet-core|dotnet|java|node|nodejs|node-esm|nodejs-esm|nodejs-legacy|php|personal-home-page|python|flex|dummy)$
+                        type: string
+                      image:
+                        description: Overrides the default agent images.
+                        properties:
+                          registry:
+                            description: The fully qualified name of the registry to pull agent images from. This registry must be accessible by the pods being injected and the operator. Defaults to the official Contrast container image registry.
+                            nullable: true
+                            type: string
+                          name:
+                            description: The name of the injector image to use. The default depends on the value of spec.type.
+                            nullable: true
+                            type: string
+                          pullSecretName:
+                            description: The name of a pull secret to append to the pod's imagePullSecrets list.
+                            nullable: true
+                            type: string
+                          pullPolicy:
+                            description: The pull policy to use when fetching Contrast images. See Kubernetes imagePullPolicy for more information. Defaults to 'Always'.
+                            nullable: true
+                            pattern: ^(Always|IfNotPresent|Never)$
+                            type: string
+                        type: object
+                      selector:
+                        description: Select which Deployment/StatefulSet/DaemonSet/Rollout pods are eligible for agent injection. Under OpenShift, DeploymentConfig is also supported.
+                        properties:
+                          images:
+                            description: Container images to inject the agent into. Glob patterns are supported. If empty (the default), selects all containers in Pod.
+                            items:
+                              type: string
+                            type: array
+                          labels:
+                            description: Deployment/StatefulSet/DaemonSet/DeploymentConfig labels whose pods are eligible for agent injection. If empty (the default), selects all workloads in namespace.
+                            items:
+                              properties:
+                                name:
+                                  description: The name of the label to match. Required.
+                                  type: string
+                                value:
+                                  description: The value of the label to match. Glob patterns are supported. Required.
+                                  type: string
+                              required:
+                              - name
+                              - value
+                              type: object
+                            type: array
+                        type: object
+                    required:
+                    - type
+                    type: object
+                type: object
+              namespaces:
+                description: The namespaces to apply this AgentInjector template to. Glob syntax is supported. Optional, defaults to none.
+                items:
+                  type: string
+                type: array
+            required:
+            - template
+            type: object
+        type: object
+    served: true
+    storage: true

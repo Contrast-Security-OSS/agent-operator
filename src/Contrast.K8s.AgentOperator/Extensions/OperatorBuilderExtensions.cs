@@ -24,6 +24,7 @@ namespace Contrast.K8s.AgentOperator.Extensions
             builder.RegisterEntity<V1Beta1AgentInjector>();
             builder.RegisterEntity<V1Beta1ClusterAgentConfiguration>();
             builder.RegisterEntity<V1Beta1ClusterAgentConnection>();
+            builder.RegisterEntity<V1Beta1ClusterAgentInjector>();
             builder.RegisterEntity<V1DaemonSet>();
             builder.RegisterEntity<V1DeploymentConfig>();
             builder.RegisterEntity<V1Deployment>();

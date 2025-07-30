@@ -4,6 +4,7 @@
 using System.Text;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Comparing;
+using Contrast.K8s.AgentOperator.Core.Reactions.Defaults.Base;
 using Contrast.K8s.AgentOperator.Core.State;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
 using Contrast.K8s.AgentOperator.Entities;
@@ -14,28 +15,30 @@ using KubeOps.KubernetesClient;
 namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults;
 
 public class ClusterAgentConfigurationSyncingHandler
-    : BaseTemplateSyncingHandler<ClusterAgentConfigurationResource, AgentConfigurationResource, V1Beta1AgentConfiguration>
+    : BaseTemplateSyncingHandler<ClusterAgentConfigurationResource, AgentConfigurationResource,
+        V1Beta1AgentConfiguration>
 {
     private readonly ClusterDefaults _clusterDefaults;
 
     protected override string EntityName => "AgentConfiguration";
 
     public ClusterAgentConfigurationSyncingHandler(IStateContainer state,
-                                                   IGlobMatcher matcher,
-                                                   OperatorOptions operatorOptions,
-                                                   IResourceComparer comparer,
-                                                   IKubernetesClient kubernetesClient,
-                                                   ClusterDefaults clusterDefaults,
-                                                   IReactionHelper reactionHelper)
-        : base(state, matcher, operatorOptions, comparer, kubernetesClient, clusterDefaults, reactionHelper)
+        OperatorOptions operatorOptions,
+        IKubernetesClient kubernetesClient,
+        IReactionHelper reactionHelper,
+        ClusterDefaults clusterDefaults,
+        IResourceComparer comparer,
+        IGlobMatcher matcher)
+        : base(state, operatorOptions, kubernetesClient, reactionHelper, clusterDefaults, comparer, matcher)
     {
         _clusterDefaults = clusterDefaults;
     }
 
-    protected override ValueTask<V1Beta1AgentConfiguration?> CreateTargetEntity(ResourceIdentityPair<ClusterAgentConfigurationResource> baseResource,
-                                                                                AgentConfigurationResource desiredResource,
-                                                                                string targetName,
-                                                                                string targetNamespace)
+    protected override ValueTask<V1Beta1AgentConfiguration?> CreateTargetEntity(
+        ResourceIdentityPair<ClusterAgentConfigurationResource> baseResource,
+        AgentConfigurationResource desiredResource,
+        string targetName,
+        string targetNamespace)
     {
         var builder = new StringBuilder();
         foreach (var yamlKey in desiredResource.YamlKeys)

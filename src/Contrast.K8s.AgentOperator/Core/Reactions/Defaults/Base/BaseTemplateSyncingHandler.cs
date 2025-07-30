@@ -12,10 +12,16 @@ using k8s;
 using k8s.Models;
 using KubeOps.KubernetesClient;
 
-namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults;
+namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults.Base;
 
+/// <summary>
+/// Base for syncing cluster resources with templates
+/// </summary>
+/// <typeparam name="TClusterResource"></typeparam>
+/// <typeparam name="TTargetResource"></typeparam>
+/// <typeparam name="TEntity"></typeparam>
 public abstract class BaseTemplateSyncingHandler<TClusterResource, TTargetResource, TEntity>
-    : BaseSyncingHandler<TClusterResource, TTargetResource, TEntity>
+    : BaseUniqueSyncingHandler<TClusterResource, TTargetResource, TEntity>
     where TClusterResource : class, IClusterResourceTemplate<TTargetResource>
     where TTargetResource : class, INamespacedResource, IMutableResource
     where TEntity : class, IKubernetesObject<V1ObjectMeta>
@@ -23,13 +29,13 @@ public abstract class BaseTemplateSyncingHandler<TClusterResource, TTargetResour
     private readonly IGlobMatcher _matcher;
 
     protected BaseTemplateSyncingHandler(IStateContainer state,
-                                         IGlobMatcher matcher,
-                                         OperatorOptions operatorOptions,
-                                         IResourceComparer comparer,
-                                         IKubernetesClient kubernetesClient,
-                                         ClusterDefaults clusterDefaults,
-                                         IReactionHelper reactionHelper)
-        : base(state, operatorOptions, comparer, kubernetesClient, clusterDefaults, reactionHelper)
+        OperatorOptions operatorOptions,
+        IKubernetesClient kubernetesClient,
+        IReactionHelper reactionHelper,
+        ClusterDefaults clusterDefaults,
+        IResourceComparer comparer,
+        IGlobMatcher matcher)
+        : base(state, operatorOptions, kubernetesClient, reactionHelper, clusterDefaults, comparer)
     {
         _matcher = matcher;
     }
@@ -52,8 +58,9 @@ public abstract class BaseTemplateSyncingHandler<TClusterResource, TTargetResour
         return ValueTask.FromResult(matchingDefaultBase.SingleOrDefault());
     }
 
-    protected override ValueTask<TTargetResource?> CreateDesiredResource(ResourceIdentityPair<TClusterResource> baseResource, string targetName,
-                                                                         string targetNamespace)
+    protected override ValueTask<TTargetResource?> CreateDesiredResource(TTargetResource? existingResource,
+        ResourceIdentityPair<TClusterResource> baseResource, string targetName,
+        string targetNamespace)
     {
         return ValueTask.FromResult(baseResource.Resource.Template)!;
     }
