@@ -2,4 +2,6 @@ resources:
   - cluster-agent-configuration.yaml
   - cluster-agent-connection-secret.yaml
   - cluster-agent-connection.yaml
+  - cluster-agent-injector.yaml
+  - cluster-image-pullsecret.yaml
   - injection-cluster.yaml

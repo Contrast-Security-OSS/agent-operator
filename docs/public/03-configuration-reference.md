@@ -8,6 +8,7 @@ The topic describes the schema for every configuration entity type the Contrast 
   - [AgentInjector](#agentinjector)
   - [ClusterAgentConfiguration](#clusteragentconfiguration)
   - [ClusterAgentConnection](#clusteragentconnection)
+  - [ClusterAgentInjector](#clusteragentinjector)
 
 ## AgentConfiguration
 
@@ -110,7 +111,7 @@ spec:
   image:
     registry: docker.io/contrast
     name: agent-dotnet-core
-    pullSecretName: contrastdotnet-pull-secret
+    pullSecretName: custom-pull-secret
     pullPolicy: Always
   selector:
     images:
@@ -188,7 +189,7 @@ spec:
 
 | Property        | Type               | Required | Default Value   | Description                                                                              |
 |-----------------|--------------------|----------|-----------------|------------------------------------------------------------------------------------------|
-| spec.namespaces | string[]           | No       | All namespaces. | The namespaces to apply this AgentConfiguration template to. Glob syntax is supported.   |
+| spec.namespaces | string[]           | No       | All namespaces  | The namespaces to apply this AgentConfiguration template to. Glob syntax is supported.   |
 | spec.template   | AgentConfiguration | Yes      |                 | The default AgentConfiguration to apply to the namespaces selected by 'spec.namespaces'. |
 
 - For security, ClusterAgentConfiguration manifests must be deployed into the same namespace of the operator.
@@ -224,7 +225,7 @@ spec:
 
 | Property        | Type            | Required | Default Value   | Description                                                                           |
 |-----------------|-----------------|----------|-----------------|---------------------------------------------------------------------------------------|
-| spec.namespaces | string[]        | No       | All namespaces. | The namespaces to apply this AgentConnection template to. Glob syntax is supported.   |
+| spec.namespaces | string[]        | No       | All namespaces  | The namespaces to apply this AgentConnection template to. Glob syntax is supported.   |
 | spec.template   | AgentConnection | Yes      |                 | The default AgentConnection to apply to the namespaces selected by 'spec.namespaces'. |
 
 - For security, ClusterAgentConnection manifests must be deployed into the same namespace of the operator.
@@ -232,3 +233,40 @@ spec:
 - Either (`url`, `apiKey`, `serviceKey`, `userName`) or `token` should be used, not both. The Agent Token is a base64 encoded JSON object containing the url, api_key, service_key, and user_name configuration settings, allowing you to set them in a single value.
 - Minimum agent version for token support is: java 6.10.1, dotnet-core 4.3.2, nodejs 5.15.0, python 8.6.0, php 1.34.0
 - Setting `mountAsVolume` to `true` will override CONTRAST_CONFIG_PATH on the pod.
+
+## ClusterAgentInjector
+
+```yaml
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: ClusterAgentInjector
+metadata:
+  name: default-agent-injector
+  namespace: contrast-agent-operator
+spec:
+  namespaces:
+    - default
+  template:
+    spec:
+      enabled: true
+      version: latest
+      type: dotnet-core
+      image:
+        pullSecretName: cluster-pull-secret
+      selector:
+        images:
+          - "*"
+        labels:
+          - name: app
+            value: example-*
+```
+
+| Property        | Type            | Required | Default Value   | Description                                                                           |
+|-----------------|-----------------|----------|-----------------|---------------------------------------------------------------------------------------|
+| spec.namespaces | string[]        | No       | None            | The namespaces to apply this AgentInjector template to. Glob syntax is supported.     |
+| spec.template   | AgentInjector   | Yes      |                 | The default AgentInjector to apply to the namespaces selected by 'spec.namespaces'.   |
+
+- For security, ClusterAgentInjector manifests must be deployed into the same namespace of the operator.
+- Secrets referenced by ClusterAgentInjector must exist in the same namespace in which the ClusterAgentInjector entity is deployed.
+- ClusterAgentInjector requires the ClusterAgentConfiguration and ClusterAgentConnection to be configured for the namespaces specified.
+- **Will not** target any namespaces by default, they must be specified in `spec.namespaces`.
+- **Will not** target the `kube-system`, `kube-node-lease`, `kube-public`, `gatekeeper-system` namespaces.

@@ -4,3 +4,4 @@ resources:
   - base/agentinjectors_agents_contrastsecurity_com.yaml
   - base/clusteragentconfigurations_agents_contrastsecurity_com.yaml
   - base/clusteragentconnections_agents_contrastsecurity_com.yaml
+  - base/clusteragentinjectors_agents_contrastsecurity_com.yaml

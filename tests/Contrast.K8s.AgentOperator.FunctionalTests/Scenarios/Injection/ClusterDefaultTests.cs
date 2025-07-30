@@ -124,4 +124,17 @@ public class ClusterDefaultTests : IClassFixture<TestingContext>
             context.RunAsNonRoot.Should().BeFalse();
         }
     }
+
+    [Fact]
+    public async Task Pod_should_have_image_pullsecret()
+    {
+        var client = await _context.GetClient();
+
+        // Act
+        var result = await client.GetInjectedPodByPrefix(ScenarioName);
+
+        // Assert
+        result.Spec.ImagePullSecrets.Should().ContainSingle(x => x.Name.StartsWith("default-agent-injector-pullsecret"));
+    }
+
 }

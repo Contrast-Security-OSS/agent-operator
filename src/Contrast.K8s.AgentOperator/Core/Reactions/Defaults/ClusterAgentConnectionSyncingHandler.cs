@@ -3,6 +3,7 @@
 
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Comparing;
+using Contrast.K8s.AgentOperator.Core.Reactions.Defaults.Base;
 using Contrast.K8s.AgentOperator.Core.State;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
@@ -21,23 +22,23 @@ public class ClusterAgentConnectionSyncingHandler
     protected override string EntityName => "AgentConnection";
 
     public ClusterAgentConnectionSyncingHandler(IStateContainer state,
-                                                IGlobMatcher matcher,
-                                                OperatorOptions operatorOptions,
-                                                IResourceComparer comparer,
-                                                IKubernetesClient kubernetesClient,
-                                                ClusterDefaults clusterDefaults,
-                                                IReactionHelper reactionHelper)
-        : base(state, matcher, operatorOptions, comparer, kubernetesClient, clusterDefaults, reactionHelper)
+        OperatorOptions operatorOptions,
+        IKubernetesClient kubernetesClient,
+        IReactionHelper reactionHelper,
+        ClusterDefaults clusterDefaults,
+        IResourceComparer comparer,
+        IGlobMatcher matcher)
+        : base(state, operatorOptions, kubernetesClient, reactionHelper, clusterDefaults, comparer, matcher)
     {
         _clusterDefaults = clusterDefaults;
     }
 
-    protected override ValueTask<V1Beta1AgentConnection?> CreateTargetEntity(ResourceIdentityPair<ClusterAgentConnectionResource> baseResource,
-                                                                             AgentConnectionResource desiredResource,
-                                                                             string targetName,
-                                                                             string targetNamespace)
+    protected override ValueTask<V1Beta1AgentConnection?> CreateTargetEntity(
+        ResourceIdentityPair<ClusterAgentConnectionResource> baseResource,
+        AgentConnectionResource desiredResource,
+        string targetName,
+        string targetNamespace)
     {
-
         var spec = new V1Beta1AgentConnection.AgentConnectionSpec
         {
             MountAsVolume = desiredResource.MountAsVolume,
@@ -92,9 +93,10 @@ public class ClusterAgentConnectionSyncingHandler
         return _clusterDefaults.GetDefaultAgentConnectionName(targetNamespace);
     }
 
-    protected override ValueTask<AgentConnectionResource?> CreateDesiredResource(ResourceIdentityPair<ClusterAgentConnectionResource> baseResource,
-                                                                                 string targetName,
-                                                                                 string targetNamespace)
+    protected override ValueTask<AgentConnectionResource?> CreateDesiredResource(
+        AgentConnectionResource? existingResource, ResourceIdentityPair<ClusterAgentConnectionResource> baseResource,
+        string targetName,
+        string targetNamespace)
     {
         var secretName = _clusterDefaults.GetDefaultAgentConnectionSecretName(targetNamespace);
         var template = baseResource.Resource.Template;

@@ -1,16 +1,3 @@
-apiVersion: agents.contrastsecurity.com/v1beta1
-kind: AgentInjector
-metadata:
-  name: injection-cluster
-  namespace: testing
-spec:
-  enabled: true
-  type: dummy
-  selector:
-    labels:
-      - name: app
-        value: injection-cluster
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
