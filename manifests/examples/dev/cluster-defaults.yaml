@@ -4,6 +4,8 @@ metadata:
   name: default-agent-configuration
   namespace: contrast-agent-operator
 spec:
+  namespaces:
+    - dev
   template:
     spec:
       yaml: |
@@ -11,8 +13,6 @@ spec:
         agent:
           dotnet:
             test: false
-  namespaces:
-    - dev
 ---
 apiVersion: agents.contrastsecurity.com/v1beta1
 kind: ClusterAgentConnection
@@ -45,16 +45,40 @@ stringData:
   userName: userName
 ---
 apiVersion: agents.contrastsecurity.com/v1beta1
-kind: AgentInjector
+kind: ClusterAgentInjector
 metadata:
-  name: cluster-dotnet-core
-  namespace: default
+  name: default-injector-dotnet-core
+  namespace: contrast-agent-operator
 spec:
-  enabled: true
-  type: dotnet-core
-  selector:
-    images:
-      - "*"
-    labels:
-      - name: app
-        value: cluster-dotnet-core
+  namespaces:
+    - dev
+  template:
+    spec:
+      enabled: true
+      type: dotnet-core
+      selector:
+        images:
+          - "*"
+        labels:
+          - name: app
+            value: cluster-dotnet-core
+---
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: ClusterAgentInjector
+metadata:
+  name: default-injector-python
+  namespace: contrast-agent-operator
+spec:
+  namespaces:
+    - dev
+  template:
+    spec:
+      enabled: true
+      type: python
+      selector:
+        images:
+          - "*"
+        labels:
+          - name: app
+            value: cluster-python
+

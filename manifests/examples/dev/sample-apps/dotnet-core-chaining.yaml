@@ -6,7 +6,7 @@ metadata:
   labels:
     app: dotnet-core-chaining-app
 spec:
-  replicas: 2
+  replicas: 1
   revisionHistoryLimit: 1
   selector:
     matchLabels:
@@ -27,14 +27,14 @@ spec:
           ports:
             - containerPort: 80
               name: http
-          livenessProbe:
-            httpGet:
-              path: /
-              port: 80
-          readinessProbe:
-            httpGet:
-              path: /
-              port: 80
+          # livenessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: 80
+          # readinessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: 80
           # resources:
           #   limits:
           #     cpu: '2'

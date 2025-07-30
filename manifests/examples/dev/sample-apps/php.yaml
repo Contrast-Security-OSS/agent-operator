@@ -6,7 +6,7 @@ metadata:
   labels:
     app: php-app
 spec:
-  replicas: 2
+  replicas: 1
   revisionHistoryLimit: 1
   selector:
     matchLabels:
@@ -18,8 +18,6 @@ spec:
       annotations:
         test: test
     spec:
-      imagePullSecrets:
-        - name: contrastdotnet-pull-secret
       containers:
         - image: contrast/sample-app-php
           name: php-app

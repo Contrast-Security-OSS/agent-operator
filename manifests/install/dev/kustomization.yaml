@@ -1,5 +1,10 @@
 resources:
 - ../all
 
+images:
+  - name: contrast/agent-operator
+    newName: local/agent-operator
+    newTag: latest
+
 patches:
 - path: overlays/deployment.yaml
