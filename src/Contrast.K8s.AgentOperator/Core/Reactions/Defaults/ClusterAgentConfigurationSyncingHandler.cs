@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Comparing;
 using Contrast.K8s.AgentOperator.Core.Reactions.Defaults.Base;
+using Contrast.K8s.AgentOperator.Core.Reactions.Matching;
 using Contrast.K8s.AgentOperator.Core.State;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
 using Contrast.K8s.AgentOperator.Entities;
@@ -27,7 +28,7 @@ public class ClusterAgentConfigurationSyncingHandler
         IReactionHelper reactionHelper,
         ClusterDefaults clusterDefaults,
         IResourceComparer comparer,
-        IGlobMatcher matcher)
+        ClusterResourceMatcher matcher)
         : base(state, operatorOptions, kubernetesClient, reactionHelper, clusterDefaults, comparer, matcher)
     {
         _clusterDefaults = clusterDefaults;

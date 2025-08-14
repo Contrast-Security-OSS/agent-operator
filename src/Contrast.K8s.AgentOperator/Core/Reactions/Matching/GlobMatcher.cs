@@ -5,7 +5,7 @@ using System.Collections.Concurrent;
 using GlobExpressions;
 using NLog;
 
-namespace Contrast.K8s.AgentOperator.Core.Reactions;
+namespace Contrast.K8s.AgentOperator.Core.Reactions.Matching;
 
 public interface IGlobMatcher
 {

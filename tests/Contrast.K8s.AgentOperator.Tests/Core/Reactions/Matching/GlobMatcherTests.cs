@@ -2,11 +2,11 @@
 // See the LICENSE file in the project root for more information.
 
 using AutoFixture;
-using Contrast.K8s.AgentOperator.Core.Reactions;
+using Contrast.K8s.AgentOperator.Core.Reactions.Matching;
 using FluentAssertions;
 using Xunit;
 
-namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting
+namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Matching
 {
     public class GlobMatcherTests
     {
