@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Comparing;
 using Contrast.K8s.AgentOperator.Core.Reactions.Defaults.Base;
+using Contrast.K8s.AgentOperator.Core.Reactions.Matching;
 using Contrast.K8s.AgentOperator.Core.State;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
@@ -30,7 +31,7 @@ public class ClusterAgentInjectorSyncingHandler
         IReactionHelper reactionHelper,
         ClusterDefaults clusterDefaults,
         IResourceComparer comparer,
-        IGlobMatcher matcher,
+        ClusterResourceMatcher matcher,
         IAgentInjectionTypeConverter typeConverter)
         : base(state, operatorOptions, kubernetesClient, reactionHelper, clusterDefaults, comparer, matcher)
     {

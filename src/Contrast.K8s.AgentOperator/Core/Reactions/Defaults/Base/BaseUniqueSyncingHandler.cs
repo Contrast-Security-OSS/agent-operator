@@ -2,12 +2,14 @@
 // See the LICENSE file in the project root for more information.
 
 using Contrast.K8s.AgentOperator.Core.Comparing;
+using Contrast.K8s.AgentOperator.Core.Reactions.Matching;
 using Contrast.K8s.AgentOperator.Core.State;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Interfaces;
 using Contrast.K8s.AgentOperator.Options;
 using k8s;
 using k8s.Models;
+using KubeOps.Abstractions.Events;
 using KubeOps.KubernetesClient;
 using System;
 using System.Collections.Generic;
@@ -30,7 +32,7 @@ public abstract class BaseUniqueSyncingHandler<TClusterResource, TTargetResource
     where TEntity : class, IKubernetesObject<V1ObjectMeta>
 {
     private readonly IResourceComparer _comparer;
-    private readonly IGlobMatcher _matcher;
+    private readonly ClusterResourceMatcher _matcher;
     private readonly IStateContainer _state;
     private readonly ClusterDefaults _clusterDefaults;
 
@@ -40,7 +42,7 @@ public abstract class BaseUniqueSyncingHandler<TClusterResource, TTargetResource
         IReactionHelper reactionHelper,
         ClusterDefaults clusterDefaults,
         IResourceComparer comparer,
-        IGlobMatcher matcher)
+        ClusterResourceMatcher matcher)
         : base(state, operatorOptions, kubernetesClient, reactionHelper)
     {
         _state = state;
@@ -97,18 +99,16 @@ public abstract class BaseUniqueSyncingHandler<TClusterResource, TTargetResource
         string namespaceName,
         NamespaceResource namespaceResource)
     {
-        var matchingDefaultBase = clusterResources.Where(x => x.Resource.NamespacePatterns.Count == 0
-                                                              || x.Resource.NamespacePatterns.Any(pattern => _matcher.Matches(pattern, namespaceName)))
-            .ToList();
-        if (matchingDefaultBase.Count > 1)
+        var matchingBases = _matcher.GetMatchingBases(clusterResources, namespaceName, namespaceResource);
+        if (matchingBases.Count > 1)
         {
             Logger.Warn($"Multiple {EntityName} entities "
-                        + $"[{string.Join(", ", matchingDefaultBase.Select(x => x.Identity.Name))}] match the namespace '{namespaceName}'. "
+                        + $"[{string.Join(", ", matchingBases.Select(x => x.Identity.Name))}] match the namespace '{namespaceName}'. "
                         + "Selecting first alphabetically to solve for ambiguity.");
-            return ValueTask.FromResult(matchingDefaultBase.OrderBy(x => x.Identity.Name).First())!;
+            return ValueTask.FromResult(matchingBases.OrderBy(x => x.Identity.Name).First())!;
         }
 
-        return ValueTask.FromResult(matchingDefaultBase.SingleOrDefault());
+        return ValueTask.FromResult(matchingBases.SingleOrDefault());
     }
 
     protected abstract string GetTargetEntityName(string targetNamespace);

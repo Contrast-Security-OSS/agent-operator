@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents;
+using Contrast.K8s.AgentOperator.Core.Reactions.Matching;
 using Contrast.K8s.AgentOperator.Core.Reactions.Secrets;
 using Contrast.K8s.AgentOperator.Core.Telemetry.Cluster;
 using Contrast.K8s.AgentOperator.Options;
