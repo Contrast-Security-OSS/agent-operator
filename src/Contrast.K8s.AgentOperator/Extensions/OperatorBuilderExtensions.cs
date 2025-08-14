@@ -33,6 +33,7 @@ namespace Contrast.K8s.AgentOperator.Extensions
             builder.RegisterEntity<V1Alpha1Rollout>();
             builder.RegisterEntity<V1Secret>();
             builder.RegisterEntity<V1StatefulSet>();
+            builder.RegisterEntity<V1Namespace>();
             return builder;
         }
 

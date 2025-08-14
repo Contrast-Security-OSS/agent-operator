@@ -15,7 +15,7 @@ using KubeOps.KubernetesClient;
 namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults;
 
 public class ClusterAgentConnectionSyncingHandler
-    : BaseTemplateSyncingHandler<ClusterAgentConnectionResource, AgentConnectionResource, V1Beta1AgentConnection>
+    : BaseUniqueSyncingHandler<ClusterAgentConnectionResource, AgentConnectionResource, V1Beta1AgentConnection>
 {
     private readonly ClusterDefaults _clusterDefaults;
 

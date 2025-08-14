@@ -1,18 +1,19 @@
 ﻿// Contrast Security, Inc licenses this file to you under the Apache 2.0 License.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Comparing;
 using Contrast.K8s.AgentOperator.Core.State;
+using Contrast.K8s.AgentOperator.Core.State.Resources;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Interfaces;
 using Contrast.K8s.AgentOperator.Options;
 using k8s;
 using k8s.Models;
 using KubeOps.KubernetesClient;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults.Base;
 
@@ -24,11 +25,12 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults.Base;
 /// <typeparam name="TEntity"></typeparam>
 public abstract class BaseUniqueSyncingHandler<TClusterResource, TTargetResource, TEntity>
     : BaseSyncingHandler<TClusterResource, TTargetResource, TEntity>
-    where TClusterResource : class, INamespacedResource
+    where TClusterResource : class, IClusterResource
     where TTargetResource : class, INamespacedResource, IMutableResource
     where TEntity : class, IKubernetesObject<V1ObjectMeta>
 {
     private readonly IResourceComparer _comparer;
+    private readonly IGlobMatcher _matcher;
     private readonly IStateContainer _state;
     private readonly ClusterDefaults _clusterDefaults;
 
@@ -37,12 +39,14 @@ public abstract class BaseUniqueSyncingHandler<TClusterResource, TTargetResource
         IKubernetesClient kubernetesClient,
         IReactionHelper reactionHelper,
         ClusterDefaults clusterDefaults,
-        IResourceComparer comparer)
+        IResourceComparer comparer,
+        IGlobMatcher matcher)
         : base(state, operatorOptions, kubernetesClient, reactionHelper)
     {
         _state = state;
         _clusterDefaults = clusterDefaults;
         _comparer = comparer;
+        _matcher = matcher;
     }
 
     protected override async ValueTask Sync(CancellationToken cancellationToken)
@@ -67,7 +71,8 @@ public abstract class BaseUniqueSyncingHandler<TClusterResource, TTargetResource
             var isValidNamespace = validNamespaces.Any(x => string.Equals(x, targetNamespace, StringComparison.OrdinalIgnoreCase));
 
             if (isValidNamespace
-                && await GetBestBaseForNamespace(availableClusterResources, targetNamespace) is { } bestBase
+                && await _state.GetById<NamespaceResource>(targetNamespace, targetNamespace, cancellationToken) is { } namespaceResource
+                && await GetBestBaseForNamespace(availableClusterResources, targetNamespace, namespaceResource) is { } bestBase
                 && await CreateDesiredResource(existingResource, bestBase, targetEntityName, targetNamespace) is { } desiredResource)
             {
                 if (!_comparer.AreEqual(existingResource, desiredResource))
@@ -87,9 +92,24 @@ public abstract class BaseUniqueSyncingHandler<TClusterResource, TTargetResource
         }
     }
 
-    protected abstract ValueTask<ResourceIdentityPair<TClusterResource>?> GetBestBaseForNamespace(
+    protected ValueTask<ResourceIdentityPair<TClusterResource>?> GetBestBaseForNamespace(
         IEnumerable<ResourceIdentityPair<TClusterResource>> clusterResources,
-        string @namespace);
+        string namespaceName,
+        NamespaceResource namespaceResource)
+    {
+        var matchingDefaultBase = clusterResources.Where(x => x.Resource.NamespacePatterns.Count == 0
+                                                              || x.Resource.NamespacePatterns.Any(pattern => _matcher.Matches(pattern, namespaceName)))
+            .ToList();
+        if (matchingDefaultBase.Count > 1)
+        {
+            Logger.Warn($"Multiple {EntityName} entities "
+                        + $"[{string.Join(", ", matchingDefaultBase.Select(x => x.Identity.Name))}] match the namespace '{namespaceName}'. "
+                        + "Selecting first alphabetically to solve for ambiguity.");
+            return ValueTask.FromResult(matchingDefaultBase.OrderBy(x => x.Identity.Name).First())!;
+        }
+
+        return ValueTask.FromResult(matchingDefaultBase.SingleOrDefault());
+    }
 
     protected abstract string GetTargetEntityName(string targetNamespace);
 }

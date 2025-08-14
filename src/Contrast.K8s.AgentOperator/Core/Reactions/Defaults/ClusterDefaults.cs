@@ -55,10 +55,10 @@ public class ClusterDefaults
     public async ValueTask<IReadOnlyCollection<string>> GetAllNamespaces(CancellationToken cancellationToken = default)
     {
         var namespaces = new HashSet<string>(StringComparer.Ordinal);
-        var keys = await _state.GetKeysByType<INamespacedResource>(cancellationToken);
+        var keys = await _state.GetKeysByType<NamespaceResource>(cancellationToken);
         foreach (var id in keys)
         {
-            var @namespace = id.Namespace.ToLowerInvariant();
+            var @namespace = id.Name.ToLowerInvariant();
             namespaces.Add(@namespace);
         }
 
