@@ -63,10 +63,10 @@ public partial class V1Beta1AgentInjector : CustomKubernetesEntity<V1Beta1AgentI
         public IReadOnlyCollection<string> Images { get; set; } = Array.Empty<string>();
 
         [Description("Deployment/StatefulSet/DaemonSet/DeploymentConfig labels whose pods are eligible for agent injection. If empty (the default), selects all workloads in namespace.")]
-        public IReadOnlyCollection<LabelSelectorSpec> Labels { get; set; } = Array.Empty<LabelSelectorSpec>();
+        public IReadOnlyCollection<AgentInjectorLabelSelectorSpec> Labels { get; set; } = Array.Empty<AgentInjectorLabelSelectorSpec>();
     }
 
-    public class LabelSelectorSpec
+    public class AgentInjectorLabelSelectorSpec
     {
         [Required]
         [Description("The name of the label to match. Required.")]

@@ -1,13 +1,15 @@
 ﻿// Contrast Security, Inc licenses this file to you under the Apache 2.0 License.
 // See the LICENSE file in the project root for more information.
 
-using System.Threading;
-using System.Threading.Tasks;
+using System.Linq;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
 using Contrast.K8s.AgentOperator.Entities;
 using JetBrains.Annotations;
 using k8s.Models;
 using MediatR;
+using System.Threading;
+using System.Threading.Tasks;
+using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
 
 namespace Contrast.K8s.AgentOperator.Core.State.Appliers;
 
@@ -29,7 +31,8 @@ public class ClusterAgentConnectionApplier : BaseApplier<V1Beta1ClusterAgentConn
 
         var template = await _agentConnectionApplier.CreateFrom(entity.Spec.Template!, cancellationToken);
         var namespaces = entity.Spec.Namespaces;
+        var namespaceLabels = entity.Spec.NamespaceLabelSelector.Select(x => new LabelPattern(x.Name, x.Value)).ToList();
 
-        return new ClusterAgentConnectionResource(template, namespaces);
+        return new ClusterAgentConnectionResource(template, namespaces, namespaceLabels);
     }
 }
