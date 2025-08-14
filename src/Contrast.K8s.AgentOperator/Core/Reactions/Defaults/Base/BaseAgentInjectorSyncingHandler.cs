@@ -64,6 +64,15 @@ public abstract class BaseAgentInjectorSyncingHandler<TTargetResource, TEntity>
             {
                 continue;
             }
+
+            var namespaceResource =
+                await _state.GetById<NamespaceResource>(targetNamespace, targetNamespace, cancellationToken);
+            if (namespaceResource == null)
+            {
+                Logger.Debug($"Failed to pull NamespaceResource for {targetNamespace}");
+                continue;
+            }
+
             foreach (var agentType in Enum.GetValues<AgentInjectionType>())
             {
                 var targetEntityName = GetTargetEntityName(targetNamespace, agentType);
@@ -75,7 +84,7 @@ public abstract class BaseAgentInjectorSyncingHandler<TTargetResource, TEntity>
 
                 var existingResource = await _state.GetById<TTargetResource>(targetEntityName, targetNamespace, cancellationToken);
 
-                if (await GetBestBaseForNamespace(availableClusterResources, targetNamespace, agentType) is { } bestBase
+                if (await GetBestBaseForNamespace(availableClusterResources, targetNamespace, namespaceResource, agentType) is { } bestBase
                     && await CreateDesiredResource(existingResource, bestBase, targetEntityName, targetNamespace) is { } desiredResource)
                 {
                     if (!_comparer.AreEqual(existingResource, desiredResource))
@@ -98,17 +107,18 @@ public abstract class BaseAgentInjectorSyncingHandler<TTargetResource, TEntity>
 
     protected ValueTask<ResourceIdentityPair<ClusterAgentInjectorResource>?> GetBestBaseForNamespace(
         IEnumerable<ResourceIdentityPair<ClusterAgentInjectorResource>> clusterResources,
-        string @namespace,
+        string namespaceName,
+        NamespaceResource namespaceResource,
         AgentInjectionType agentType)
     {
 
         var matchingDefaultBase = clusterResources.Where(x => x.Resource.NamespacePatterns.Any(pattern =>
-                _matcher.Matches(pattern, @namespace)) && x.Resource.Template.Type == agentType)
+                _matcher.Matches(pattern, namespaceName)) && x.Resource.Template.Type == agentType)
             .ToList();
         if (matchingDefaultBase.Count > 1)
         {
             Logger.Warn($"Multiple {EntityName} entities "
-                        + $"[{string.Join(", ", matchingDefaultBase.Select(x => x.Identity.Name))}] match the namespace '{@namespace}'. "
+                        + $"[{string.Join(", ", matchingDefaultBase.Select(x => x.Identity.Name))}] match the namespace '{namespaceName}'. "
                         + "Selecting first alphabetically to solve for ambiguity.");
             return ValueTask.FromResult(matchingDefaultBase.OrderBy(x => x.Identity.Name).First())!;
         }

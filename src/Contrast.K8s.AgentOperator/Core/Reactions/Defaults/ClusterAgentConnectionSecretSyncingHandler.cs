@@ -2,7 +2,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Comparing;
 using Contrast.K8s.AgentOperator.Core.Reactions.Defaults.Base;
@@ -19,7 +18,6 @@ public class ClusterAgentConnectionSecretSyncingHandler
     : BaseUniqueSyncingHandler<ClusterAgentConnectionResource, SecretResource, V1Secret>
 {
     private readonly ClusterDefaults _clusterDefaults;
-    private readonly IGlobMatcher _matcher;
     private readonly ISecretHelper _secretHelper;
 
     protected override string EntityName => "AgentConnectionSecret";
@@ -32,29 +30,10 @@ public class ClusterAgentConnectionSecretSyncingHandler
         IResourceComparer comparer,
         IGlobMatcher matcher,
         ISecretHelper secretHelper)
-        : base(state, operatorOptions, kubernetesClient, reactionHelper, clusterDefaults, comparer)
+        : base(state, operatorOptions, kubernetesClient, reactionHelper, clusterDefaults, comparer, matcher)
     {
         _clusterDefaults = clusterDefaults;
-        _matcher = matcher;
         _secretHelper = secretHelper;
-    }
-
-    protected override ValueTask<ResourceIdentityPair<ClusterAgentConnectionResource>?> GetBestBaseForNamespace(
-        IEnumerable<ResourceIdentityPair<ClusterAgentConnectionResource>> clusterResources,
-        string @namespace)
-    {
-        var matchingDefaultBase = clusterResources.Where(x => x.Resource.NamespacePatterns.Count == 0
-                                                              || x.Resource.NamespacePatterns.Any(pattern => _matcher.Matches(pattern, @namespace)))
-                                                  .ToList();
-        if (matchingDefaultBase.Count > 1)
-        {
-            Logger.Warn($"Multiple {EntityName} entities "
-                        + $"[{string.Join(", ", matchingDefaultBase.Select(x => x.Identity.Name))}] match the namespace '{@namespace}'. "
-                        + "Selecting first alphabetically to solve for ambiguity.");
-            return ValueTask.FromResult(matchingDefaultBase.OrderBy(x => x.Identity.Name).First())!;
-        }
-
-        return ValueTask.FromResult(matchingDefaultBase.SingleOrDefault());
     }
 
     protected override async ValueTask<SecretResource?> CreateDesiredResource(SecretResource? existingResource,

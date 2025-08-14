@@ -39,7 +39,7 @@ public abstract class BaseApplier<TKubernetesObject, TResource> : IApplier<TKube
         var resource = await CreateFrom(entity, cancellationToken);
 
         var name = entity.Name();
-        var ns = entity.Namespace();
+        var ns = GetNamespace(entity);
         var operatorAnnotations = entity.GetOperatorAnnotations();
         var metadata = new ResourceMetadata(entity.Uid(), operatorAnnotations);
 
@@ -55,7 +55,7 @@ public abstract class BaseApplier<TKubernetesObject, TResource> : IApplier<TKube
     {
         var entity = request.Entity;
         var name = entity.Name();
-        var ns = entity.Namespace();
+        var ns = GetNamespace(entity);
         var (modified, previous, current) = await _stateContainer.RemoveById<TResource>(name, ns, cancellationToken);
         if (modified)
         {
@@ -65,4 +65,9 @@ public abstract class BaseApplier<TKubernetesObject, TResource> : IApplier<TKube
     }
 
     public abstract ValueTask<TResource> CreateFrom(TKubernetesObject entity, CancellationToken cancellationToken = default);
+
+    protected virtual string GetNamespace(TKubernetesObject entity)
+    {
+        return entity.Namespace();
+    }
 }
