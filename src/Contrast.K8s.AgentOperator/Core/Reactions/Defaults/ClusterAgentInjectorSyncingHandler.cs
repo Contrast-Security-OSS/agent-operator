@@ -86,7 +86,7 @@ public class ClusterAgentInjectorSyncingHandler
             Selector = new V1Beta1AgentInjector.AgentInjectorSelectorSpec
             {
                 Images = desiredResource.Selector.ImagesPatterns,
-                Labels = desiredResource.Selector.LabelPatterns.Select(x => new V1Beta1AgentInjector.LabelSelectorSpec
+                Labels = desiredResource.Selector.LabelPatterns.Select(x => new V1Beta1AgentInjector.AgentInjectorLabelSelectorSpec
                     { Name = x.Key, Value = x.Value }).ToList()
             },
             Connection = new V1Beta1AgentInjector.AgentInjectorConnectionSpec

@@ -9,5 +9,6 @@ namespace Contrast.K8s.AgentOperator.Core.State.Resources;
 
 public record ClusterAgentInjectorResource(
     AgentInjectorTemplate Template,
-    IReadOnlyCollection<string> NamespacePatterns
+    IReadOnlyCollection<string> NamespacePatterns,
+    IReadOnlyCollection<LabelPattern> NamespaceLabelPatterns
 ) : IClusterResource;

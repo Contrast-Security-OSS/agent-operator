@@ -59,8 +59,9 @@ public class ClusterAgentInjectorApplier : BaseApplier<V1Beta1ClusterAgentInject
             pullPolicy
         );
         var namespaces = entity.Spec.Namespaces;
+        var namespaceLabels = entity.Spec.NamespaceLabelSelector.Select(x => new LabelPattern(x.Name, x.Value)).ToList();
 
-        return new ClusterAgentInjectorResource(template, namespaces);
+        return new ClusterAgentInjectorResource(template, namespaces, namespaceLabels);
     }
 
     public static ResourceWithPodSpecSelector GetSelector(V1Beta1ClusterAgentInjector.AgentInjectorTemplateSpec spec)

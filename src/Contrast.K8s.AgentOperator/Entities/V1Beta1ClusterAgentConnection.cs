@@ -1,13 +1,14 @@
 ﻿// Contrast Security, Inc licenses this file to you under the Apache 2.0 License.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
 using Contrast.K8s.AgentOperator.Core.Kube;
+using Contrast.K8s.AgentOperator.Entities.Common;
 using k8s.Models;
 using KubeOps.Abstractions.Entities;
 using KubeOps.Abstractions.Entities.Attributes;
 using KubeOps.Abstractions.Rbac;
+using System;
+using System.Collections.Generic;
 
 namespace Contrast.K8s.AgentOperator.Entities;
 
@@ -18,10 +19,13 @@ public partial class V1Beta1ClusterAgentConnection : CustomKubernetesEntity<V1Be
     public class ClusterAgentConnectionSpec
     {
         [Required]
-        [Description("The default AgentConnection to apply to the namespaces selected by 'spec.namespaces'. Required.")]
+        [Description("The default AgentConnection to apply to the namespaces selected by 'spec.namespaces' or 'spec.namespaceLabelSelector'. Required.")]
         public V1Beta1AgentConnection? Template { get; set; }
 
-        [Description("The namespaces to apply this AgentConnection template to. Glob syntax is supported. Optional, defaults to selecting all namespaces.")]
+        [Description("The namespaces to apply this AgentConnection template to. Glob syntax is supported. Optional, defaults to selecting all namespaces unless 'spec.namespaceLabelSelector' is specified.")]
         public IReadOnlyCollection<string> Namespaces { get; set; } = Array.Empty<string>();
+
+        [Description("The labels to select which namespaces to apply this AgentConnection template to. Optional, defaults to empty.")]
+        public IReadOnlyCollection<ClusterNamespaceLabelSelectorSpec> NamespaceLabelSelector { get; set; } = Array.Empty<ClusterNamespaceLabelSelectorSpec>();
     }
 }

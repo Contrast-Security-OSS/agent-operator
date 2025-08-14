@@ -20,7 +20,7 @@ spec:
           spec:
             properties:
               template:
-                description: The default AgentInjector to apply to the namespaces selected by 'spec.namespaces'. Required.
+                description: The default AgentInjector to apply to the namespaces selected by 'spec.namespaces' or 'spec.namespaceLabelSelector'. Required.
                 nullable: true
                 properties:
                   spec:
@@ -90,6 +90,21 @@ spec:
                 description: The namespaces to apply this AgentInjector template to. Glob syntax is supported. Optional, defaults to none.
                 items:
                   type: string
+                type: array
+              namespaceLabelSelector:
+                description: The labels to select which namespaces to apply this AgentInjector template to. Optional, defaults to empty.
+                items:
+                  properties:
+                    name:
+                      description: The name of the label to match. Required.
+                      type: string
+                    value:
+                      description: The value of the label to match. Glob patterns are supported. Required.
+                      type: string
+                  required:
+                  - name
+                  - value
+                  type: object
                 type: array
             required:
             - template
