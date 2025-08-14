@@ -49,6 +49,14 @@ rules:
   - watch
   - patch
 - apiGroups:
+  - ""
+  resources:
+  - namespaces
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
   - agents.contrastsecurity.com
   resources:
   - agentconfigurations
@@ -67,6 +75,7 @@ rules:
   resources:
   - clusteragentconfigurations
   - clusteragentconnections
+  - clusteragentinjectors
   verbs:
   - get
   - list
@@ -146,6 +155,14 @@ rules:
   - apps
   resources:
   - statefulsets/status
+  verbs:
+  - get
+  - update
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - namespaces/status
   verbs:
   - get
   - update
