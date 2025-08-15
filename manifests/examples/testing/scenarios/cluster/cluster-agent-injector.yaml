@@ -6,6 +6,9 @@ metadata:
 spec:
   namespaces:
     - testing
+  namespaceLabelSelector:
+    - name: testing-label
+      value: dummy-value
   template:
     spec:
       enabled: true
