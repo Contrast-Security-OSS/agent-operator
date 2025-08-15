@@ -5,3 +5,4 @@ resources:
   - cluster-agent-injector.yaml
   - cluster-image-pullsecret.yaml
   - injection-cluster.yaml
+  - injection-namespacelabel.yaml

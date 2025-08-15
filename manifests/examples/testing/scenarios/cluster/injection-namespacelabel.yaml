@@ -1,0 +1,29 @@
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: testing-namespacelabel
+  labels:
+    testing-label: dummy-value
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: injection-namespacelabel
+  namespace: testing-namespacelabel
+  labels:
+    app: injection-cluster
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: injection-cluster
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: injection-cluster
+    spec:
+      containers:
+        - image: k8s.gcr.io/pause:3.3
+          name: pause
