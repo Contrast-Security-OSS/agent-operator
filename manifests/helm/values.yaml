@@ -67,7 +67,7 @@ operator:
     resources:
       limits:
         cpu: 100m
-        memory: 64Mi
+        memory: 256Mi
         ephemeralStorage: 1Gi # Needs to be greater than the size of the largest agent
       requests:
         cpu: 100m

@@ -111,7 +111,7 @@ public class OptionsModule : Module
                 cpuLimit = cpuLimitStr;
             }
 
-            var memoryLimit = "64Mi";
+            var memoryLimit = "256Mi";
             var memoryRequest = "64Mi";
             if (GetEnvironmentVariableAsString("CONTRAST_INITCONTAINER_MEMORY_REQUEST", out var memoryRequestStr))
             {
