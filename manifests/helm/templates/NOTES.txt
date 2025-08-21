@@ -1,7 +1,7 @@
 {{ .Chart.Name }} chart version {{ .Chart.Version }} deployed!
 
 {{- if .Values.agentInjectors.enabled }}
-{{- $namespaces := include "contrast-agent-operator.filterInjectorNamespaces" . | fromJsonArray }}
+{{- $namespaces := .Values.agentInjectors.namespaces }}
 ✅ {{ len .Values.agentInjectors.injectors }} {{ len .Values.agentInjectors.injectors | plural "injector" "injectors" }} {{ len .Values.agentInjectors.injectors | plural "has" "have" }} been deployed to {{ len $namespaces | plural "namespace" "namespaces" }}: {{ join ", " $namespaces}}
   To use with your workloads:
 
