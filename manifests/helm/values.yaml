@@ -111,16 +111,14 @@ clusterDefaults:
 
 agentInjectors:
   enabled: true
-  lookupNamespaces:
-    # If enabled, Helm will lookup namespaces and deploy AgentInjectors to any accessible namespaces.
-    deployToAllAccessibleNamespaces: false
-    # List of namespace patterns to exclude deploying AgentInjectors to only when looking up namespaces.
-    excludePatterns:
-      - gatekeeper*
-      - kube*
-  # Required if lookupNamespaces.deployToAllAccessibleNamespaces is not enabled. All injectors will be created in each specified namespace.
+  useClusterAgentInjectors: true # Create ClusterAgentInjector resources instead of AgentInjectors
+  # Optional, target namespaces for AgentInjectors. Glob syntax is supported if useClusterAgentInjectors is true.
   namespaces:
     - default
+  # Optional, selector namespace labels for AgentInjectors. Only supported if useClusterAgentInjectors is true. Label selections are cumulative using the logical AND operation.
+  # namespaceLabelSelector:
+  #   - name: namespacelabel
+  #     value: labelvalue
   injectors:
     - language: java
       name: contrast-java-injector
@@ -141,9 +139,9 @@ agentInjectors:
       #   pullPolicy: Always
       # Optional image version, defaults to latest
       #imageVersion: 5
-      # Optional name of an AgentConfiguration to use with this injector
+      # Optional name of an AgentConfiguration to use with this injector. Only supported if useClusterAgentInjectors is false.
       #configurationName: custom-config-name
-      # Optional name of an AgentConnection to use with this injector
+      # Optional name of an AgentConnection to use with this injector. Only supported if useClusterAgentInjectors is false.
       #connectionName: custom-connection-name
 
     - language: dotnet-core
