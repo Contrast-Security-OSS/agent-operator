@@ -2,8 +2,18 @@
 
 {{- if .Values.agentInjectors.enabled }}
 {{- $namespaces := .Values.agentInjectors.namespaces }}
-✅ {{ len .Values.agentInjectors.injectors }} {{ len .Values.agentInjectors.injectors | plural "injector" "injectors" }} {{ len .Values.agentInjectors.injectors | plural "has" "have" }} been deployed to {{ len $namespaces | plural "namespace" "namespaces" }}: {{ join ", " $namespaces}}
-  To use with your workloads:
+{{- if .Values.agentInjectors.useClusterAgentInjectors }}
+✅ {{ len .Values.agentInjectors.injectors }} cluster agent {{ len .Values.agentInjectors.injectors | plural "injector" "injectors" }} {{ len .Values.agentInjectors.injectors | plural "has" "have" }} been deployed for {{ len $namespaces | plural "namespace" "namespaces" }}: {{ join ", " $namespaces}}
+{{- if .Values.agentInjectors.namespaceLabelSelector }}
+  To label additional namespaces for injectors:
+
+    ⎈ kubectl label namespace/<your_namespace_name> {{- range $index, $label := .Values.agentInjectors.namespaceLabelSelector }} {{ $label.name }}={{ $label.value }}{{- end -}}
+{{- end }}
+{{- else}}
+✅ {{ len .Values.agentInjectors.injectors }} agent {{ len .Values.agentInjectors.injectors | plural "injector" "injectors" }} {{ len .Values.agentInjectors.injectors | plural "has" "have" }} been deployed to {{ len $namespaces | plural "namespace" "namespaces" }}: {{ join ", " $namespaces}}
+{{- end }}
+
+  To label workloads:
 
   {{- range $injector := $.Values.agentInjectors.injectors }}
 
