@@ -115,10 +115,10 @@ agentInjectors:
   # Optional, target namespaces for AgentInjectors. Glob syntax is supported if useClusterAgentInjectors is true.
   namespaces:
     - default
-  # Optional, selector namespace labels for AgentInjectors. Only supported if useClusterAgentInjectors is true. Label selections are cumulative using the logical AND operation.
-  # namespaceLabelSelector:
-  #   - name: namespacelabel
-  #     value: labelvalue
+  # Optional, label selector to select namespaces to create AgentInjectors in. Only supported if useClusterAgentInjectors is true. Label selections are cumulative using the logical AND operation.
+  namespaceLabelSelector:
+    - name: agents.contrastsecurity.com/agent-injectors
+      value: 'true'
   injectors:
     - language: java
       name: contrast-java-injector
