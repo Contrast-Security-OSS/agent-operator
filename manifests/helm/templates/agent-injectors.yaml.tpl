@@ -42,7 +42,7 @@ spec:
 {{- end }}
 {{ else }} # AgentInjectors
 {{- range $namespace := .Values.agentInjectors.namespaces }}
-{{- range $injector := .Values.agentInjectors.injectors }}
+{{- range $injector := $.Values.agentInjectors.injectors }}
 ---
 apiVersion: agents.contrastsecurity.com/v1beta1
 kind: AgentInjector
