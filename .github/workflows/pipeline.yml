@@ -465,7 +465,7 @@ jobs:
           event-type: oob-update
           client-payload: |
             {
-                "type": "agent-operator",
+                "type": "contrast-agent-operator",
                 "runId": "${{ github.run_id }}",
                 "artifactName": "helm-chart"
             }
