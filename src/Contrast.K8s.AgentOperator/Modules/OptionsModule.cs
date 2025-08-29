@@ -262,8 +262,11 @@ public class OptionsModule : Module
         if (Environment.GetEnvironmentVariable(variable) is { } valueStr)
         {
             var normalizedValueStr = valueStr.Trim();
-            parsedResult = normalizedValueStr;
-            return true;
+            if (!string.IsNullOrEmpty(normalizedValueStr))
+            {
+                parsedResult = normalizedValueStr;
+                return true;
+            }
         }
 
         parsedResult = default;
