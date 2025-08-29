@@ -122,7 +122,7 @@ public class ResourcePatcher : IResourcePatcher
             Logger.Trace("Entity disappeared while patching.");
         }
 
-        Logger.Trace($"Patch complete after {stopwatch.ElapsedMilliseconds}ms.");
+        Logger.Trace($"Patch status complete after {stopwatch.ElapsedMilliseconds}ms.");
 
         return true;
     }
