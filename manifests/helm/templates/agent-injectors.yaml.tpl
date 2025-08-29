@@ -1,5 +1,8 @@
-{{ if .Values.agentInjectors.enabled }}
-{{ if .Values.agentInjectors.useClusterAgentInjectors }} # ClusterAgentInjectors
+{{- if .Values.agentInjectors.enabled }}
+{{- if .Values.agentInjectors.useClusterAgentInjectors }} # ClusterAgentInjectors
+{{- if and .Release.IsUpgrade (not (.Capabilities.APIVersions.Has "agents.contrastsecurity.com/v1beta1/ClusterAgentInjector")) }}
+{{ fail (print "ClusterAgentInjector CRD missing, please upgrade CRDs with 'kubectl apply -f https://github.com/Contrast-Security-OSS/agent-operator/releases/download/v" .Chart.AppVersion "/crds.yaml'")}}
+{{- end }} #Capabilities
 {{- range $injector := .Values.agentInjectors.injectors }}
 ---
 apiVersion: agents.contrastsecurity.com/v1beta1
@@ -26,7 +29,7 @@ spec:
       {{- if $injector.image }}
       image:
         {{- $injector.image | toYaml | nindent 8 }}
-      {{- end}}
+      {{- end }}
       {{- if or $injector.selector $injector.images }}
       {{ $selector := $injector.selector | default dict -}}
       selector:
@@ -40,7 +43,7 @@ spec:
       {{- end }}
       {{- end }}
 {{- end }}
-{{ else }} # AgentInjectors
+{{- else }} # AgentInjectors
 {{- range $namespace := .Values.agentInjectors.namespaces }}
 {{- range $injector := $.Values.agentInjectors.injectors }}
 ---
