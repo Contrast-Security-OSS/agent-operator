@@ -15,9 +15,13 @@ image:
 
 agentInjectors:
   enabled: true
+  useClusterAgentInjectors: true
   namespaces:
     - test1
     - test2
+  namespaceLabelSelector:
+    - name: agents.contrastsecurity.com/agent-injectors
+      value: 'true'
   injectors:
     - language: java
       name: helm-java-injector

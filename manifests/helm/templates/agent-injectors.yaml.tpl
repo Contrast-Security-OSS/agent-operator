@@ -1,5 +1,50 @@
-{{ if .Values.agentInjectors.enabled }}
-{{- range $namespace := include "contrast-agent-operator.filterInjectorNamespaces" . | fromJsonArray }}
+{{- if .Values.agentInjectors.enabled }}
+{{- if .Values.agentInjectors.useClusterAgentInjectors }} # ClusterAgentInjectors
+{{- if and .Release.IsUpgrade (not (.Capabilities.APIVersions.Has "agents.contrastsecurity.com/v1beta1/ClusterAgentInjector")) }}
+{{ fail (print "ClusterAgentInjector CRD missing, please upgrade CRDs with 'kubectl apply -f https://github.com/Contrast-Security-OSS/agent-operator/releases/download/v" .Chart.AppVersion "/crds.yaml'")}}
+{{- end }} #Capabilities
+{{- range $injector := .Values.agentInjectors.injectors }}
+---
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: ClusterAgentInjector
+metadata:
+  name: {{ $injector.name }}
+  namespace: '{{ default $.Release.Namespace $.Values.namespace }}'
+spec:
+  {{- if $.Values.agentInjectors.namespaces }}
+  namespaces: {{- $.Values.agentInjectors.namespaces | toYaml | nindent 4 }}
+  {{- end }}
+  {{- if $.Values.agentInjectors.namespaceLabelSelector }}
+  namespaceLabelSelector: {{- $.Values.agentInjectors.namespaceLabelSelector | toYaml | nindent 4 }}
+  {{- end }}
+  template:
+    spec:
+      {{- if eq $injector.enabled false}}
+      enabled: false
+      {{- end }}
+      {{- if $injector.imageVersion }}
+      version: {{ quote $injector.imageVersion }}
+      {{- end }}
+      type: {{ $injector.language }}
+      {{- if $injector.image }}
+      image:
+        {{- $injector.image | toYaml | nindent 8 }}
+      {{- end }}
+      {{- if or $injector.selector $injector.images }}
+      {{ $selector := $injector.selector | default dict -}}
+      selector:
+      {{- if $selector.labels }}
+        labels:
+          {{- $selector.labels | toYaml | nindent 10 }}
+      {{- end }}
+      {{- if $selector.images }}
+        images:
+          {{- $selector.images | toYaml | nindent 10 }}
+      {{- end }}
+      {{- end }}
+{{- end }}
+{{- else }} # AgentInjectors
+{{- range $namespace := .Values.agentInjectors.namespaces }}
 {{- range $injector := $.Values.agentInjectors.injectors }}
 ---
 apiVersion: agents.contrastsecurity.com/v1beta1
@@ -41,4 +86,5 @@ spec:
   {{- end }}
 {{- end }}
 {{- end }}
+{{ end }}
 {{ end }}
