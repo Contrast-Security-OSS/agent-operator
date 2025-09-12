@@ -51,9 +51,7 @@ Kubernetes secrets are used to store connection authentication keys. Note that t
 ```bash
 % kubectl -n contrast-agent-operator \
         create secret generic default-agent-connection-secret \
-        --from-literal=apiKey=TODO \
-        --from-literal=serviceKey=TODO \
-        --from-literal=userName=TODO
+        --from-literal=token=TODO
 
 secret/default-agent-connection-secret created
 ```
@@ -72,16 +70,9 @@ metadata:
 spec:
   template:
     spec:
-      url: https://app.contrastsecurity.com/Contrast
-      apiKey:
+      token:
         secretName: default-agent-connection-secret
-        secretKey: apiKey
-      serviceKey:
-        secretName: default-agent-connection-secret
-        secretKey: serviceKey
-      userName:
-        secretName: default-agent-connection-secret
-        secretKey: userName
+        secretKey: token
 EOF
 
 clusteragentconnection.agents.contrastsecurity.com/default-agent-connection created
