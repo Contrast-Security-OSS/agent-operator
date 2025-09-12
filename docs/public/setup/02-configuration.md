@@ -10,7 +10,7 @@ Tooling such as VSCode's Kubernetes [extension](https://code.visualstudio.com/do
 
 For a minimum setup, 3 manifests are required.
 
-First a standard Kubernetes Secret. The Secret contains the necessary connection keys to authenticate to your Contrast server instance. The Secret must be deployed into the same namespace as the ClusterAgentConnection entity.
+First a standard Kubernetes Secret. The Secret contains the necessary connection token to authenticate to your Contrast server instance. The Secret must be deployed into the same namespace as the ClusterAgentConnection entity.
 
 ```yaml
 apiVersion: v1
@@ -20,14 +20,14 @@ metadata:
   namespace: contrast-agent-operator
 type: Opaque
 stringData:
-  apiKey: TODO
-  serviceKey: TODO
-  userName: TODO
+  token: TODO
 ```
 
-> Finding your server keys is documented in the "[Find the agent keys](https://docs.contrastsecurity.com/en/find-the-agent-keys.html)" section.
+> Finding your server token is documented in the "[Find the agent keys](https://docs.contrastsecurity.com/en/find-the-agent-keys.html)" section.
 
-Second, a ClusterAgentConnection configuration entity. The ClusterAgentConnection provides the default connection settings for agents within the cluster and maps to the above mentioned Secret containing connection authentication keys. For security, ClusterAgentConnection entities must be deployed into the same namespace as the operator to be used. This example assumes that the default namespace `contrast-agent-operator` hasn't been customized.
+> The minimum agent version for token support is: java 6.10.1, dotnet-core 4.3.2, nodejs 5.15.0, python 8.6.0, php 1.34.0
+
+Second, a ClusterAgentConnection configuration entity. The ClusterAgentConnection provides the default connection settings for agents within the cluster and maps to the above mentioned Secret containing connection authentication token. For security, ClusterAgentConnection entities must be deployed into the same namespace as the operator to be used. This example assumes that the default namespace `contrast-agent-operator` hasn't been customized.
 
 ```yaml
 apiVersion: agents.contrastsecurity.com/v1beta1
@@ -38,16 +38,9 @@ metadata:
 spec:
   template:
     spec:
-      url: https://app.contrastsecurity.com/Contrast
-      apiKey:
+      token:
         secretName: default-agent-connection-secret
-        secretKey: apiKey
-      serviceKey:
-        secretName: default-agent-connection-secret
-        secretKey: serviceKey
-      userName:
-        secretName: default-agent-connection-secret
-        secretKey: userName
+        secretKey: token
 ```
 
 Finally, a AgentInjector configuration entity. The AgentInjector selects workloads eligible for automatic injection using workload labels e.g. `metadata.labels` within the namespace in which the AgentInjector is deployed.
@@ -69,10 +62,7 @@ spec:
 In this example manifest, the Contrast Agent Operator will automatically inject the .NET Contrast agent into workloads (e.g. Deployments, DeploymentConfigs, etc.) that have the label `app=dotnet-hello-world` in the namespace `default`.
 
 
-## Agent Token auth configuration
-
-The Agent Token is a base64 encoded JSON object containing the url, api_key, service_key, and user_name configuration settings, allowing you to set them in a single value. The minimum agent version for token support is: java 6.10.1, dotnet-core 4.3.2, nodejs 5.15.0, python 8.6.0, php 1.34.0
-
+## Legacy Agent Key Configuration
 
 ```yaml
 apiVersion: v1
@@ -82,10 +72,13 @@ metadata:
   namespace: contrast-agent-operator
 type: Opaque
 stringData:
-  token: TODO
+  apiKey: TODO
+  serviceKey: TODO
+  userName: TODO
 ```
 
-> Finding your token is documented in the "[Find the agent keys](https://docs.contrastsecurity.com/en/find-the-agent-keys.html)" section.
+> Finding your server keys is documented in the "[Find the agent keys](https://docs.contrastsecurity.com/en/find-the-agent-keys.html)" section.
+
 
 ```yaml
 apiVersion: agents.contrastsecurity.com/v1beta1
@@ -96,7 +89,14 @@ metadata:
 spec:
   template:
     spec:
-      token:
+      url: https://app.contrastsecurity.com/Contrast
+      apiKey:
         secretName: default-agent-connection-secret
-        secretKey: token
+        secretKey: apiKey
+      serviceKey:
+        secretName: default-agent-connection-secret
+        secretKey: serviceKey
+      userName:
+        secretName: default-agent-connection-secret
+        secretKey: userName
 ```
