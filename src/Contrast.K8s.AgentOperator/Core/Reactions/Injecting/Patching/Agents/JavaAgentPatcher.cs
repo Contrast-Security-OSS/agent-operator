@@ -30,10 +30,10 @@ public class JavaAgentPatcher : IAgentPatcher
 
     public void PatchContainer(V1Container container, PatchingContext context)
     {
-        if (GetFirstOrDefaultEnvVar(container.Env, "JAVA_TOOL_OPTIONS") is { Value: { } currentJavaToolOptions }
+        if (container.Env.FirstOrDefault("JAVA_TOOL_OPTIONS") is { Value: { } currentJavaToolOptions }
             && !string.IsNullOrWhiteSpace(currentJavaToolOptions)
             && !currentJavaToolOptions.EndsWith("contrast-agent.jar", StringComparison.OrdinalIgnoreCase)
-            && GetFirstOrDefaultEnvVar(container.Env, "CONTRAST_EXISTING_JAVA_TOOL_OPTIONS") is null)
+            && container.Env.FirstOrDefault("CONTRAST_EXISTING_JAVA_TOOL_OPTIONS") is null)
         {
             var contrastAgentArgument = GetContrastAgentArgument(context);
 
@@ -63,11 +63,6 @@ public class JavaAgentPatcher : IAgentPatcher
                 Logger.Warn(e, "Failed to parse existing JAVA_TOOL_OPTIONS, unable to patch!");
             }
         }
-    }
-
-    private static V1EnvVar? GetFirstOrDefaultEnvVar(IEnumerable<V1EnvVar> collection, string name)
-    {
-        return collection.FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase));
     }
 
     private static string GetContrastAgentArgument(PatchingContext context) => $"-javaagent:{context.AgentMountPath}/contrast-agent.jar";
