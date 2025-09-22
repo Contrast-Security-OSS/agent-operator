@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Utility;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
 using Contrast.K8s.AgentOperator.Options;
 using k8s.Models;
@@ -24,8 +24,7 @@ public class DotNetAgentPatcher : IAgentPatcher
     {
         if (_injectorOptions.EnableEarlyChaining)
         {
-            yield return new V1EnvVar("LD_PRELOAD",
-                $"{context.AgentMountPath}/runtimes/linux/native/ContrastChainLoader.so");
+            yield return new V1EnvVar("LD_PRELOAD", GetAgentPreloadPath(context));
         }
         else
         {
@@ -49,26 +48,24 @@ public class DotNetAgentPatcher : IAgentPatcher
         // Either the users sets this on the pod manually, or we set it from our config file.
         // We also assume the default is true.
         var chainingEnabled = !string.Equals(
-            GetFirstOrDefaultEnvVar(container.Env, "CONTRAST__AGENT__DOTNET__ENABLE_CHAINING")?.Value,
+            container.Env.FirstOrDefault("CONTRAST__AGENT__DOTNET__ENABLE_CHAINING")?.Value,
             "false",
             StringComparison.OrdinalIgnoreCase
         );
 
         // Only modify this if CONTRAST_EXISTING_LD_PRELOAD isn't already set, or we are not already set from early chaining. This is to prevent infinite loops.
         if (chainingEnabled
-            && GetFirstOrDefaultEnvVar(container.Env, "LD_PRELOAD") is { Value: { } currentLdPreloadValue }
+            && container.Env.FirstOrDefault("LD_PRELOAD") is { Value: { } currentLdPreloadValue }
             && !string.IsNullOrWhiteSpace(currentLdPreloadValue)
             && !currentLdPreloadValue.Contains("ContrastChainLoader.so", StringComparison.OrdinalIgnoreCase)
-            && GetFirstOrDefaultEnvVar(container.Env, "CONTRAST_EXISTING_LD_PRELOAD") is null)
+            && container.Env.FirstOrDefault("CONTRAST_EXISTING_LD_PRELOAD") is null)
         {
             container.Env.AddOrUpdate(new V1EnvVar("CONTRAST_EXISTING_LD_PRELOAD", currentLdPreloadValue));
             container.Env.AddOrUpdate(new V1EnvVar("LD_PRELOAD",
-                $"{context.AgentMountPath}/runtimes/linux/native/ContrastChainLoader.so:{currentLdPreloadValue}"));
+                $"{GetAgentPreloadPath(context)}:{currentLdPreloadValue}"));
         }
     }
 
-    private static V1EnvVar? GetFirstOrDefaultEnvVar(IEnumerable<V1EnvVar> collection, string name)
-    {
-        return collection.FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase));
-    }
+    private static string GetAgentPreloadPath(PatchingContext context) => $"{context.AgentMountPath}/runtimes/linux/native/ContrastChainLoader.so";
+
 }
