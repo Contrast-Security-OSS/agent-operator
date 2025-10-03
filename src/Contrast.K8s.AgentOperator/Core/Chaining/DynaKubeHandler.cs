@@ -31,7 +31,7 @@ public class DynaKubeHandler : INotificationHandler<EntityReconciled<V1Beta1Dyna
             if (oneAgentSpec?.ClassicFullStack != null)
             {
                 Logger.Warn("Dynatrace Operator is present and in classicFullStack mode. "
-                            + "Please set the environment variable 'CONTRAST_ENABLE_EARLY_CHAINING=true' on the operator and restart the affected pods.");
+                            + "If you are using a 'dotnet-core' AgentInjector, please set the environment variable 'CONTRAST_ENABLE_EARLY_CHAINING=true' on the agent-operator and restart the affected pods.");
             }
         }
 

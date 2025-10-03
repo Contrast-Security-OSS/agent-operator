@@ -43,7 +43,7 @@ operator:
   # The name of the webhook to patch after certificate generation occurs.
   # Should not normally need to change.
   webhookConfiguration: contrast-web-hook-configuration
-  # Enable early chaining. Should normally be disabled unless DynaKube is used in classicStack mode.
+  # Enable early chaining. Should only be enabled if you are using a dotnet-core AgentInjector and DynaKube is used in classicStack mode.
   enableEarlyChaining: false
   # Metadata for the operator deployment.
   labels: {}
