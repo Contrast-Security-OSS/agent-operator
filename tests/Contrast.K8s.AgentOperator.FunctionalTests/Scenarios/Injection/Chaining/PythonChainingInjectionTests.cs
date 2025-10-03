@@ -8,15 +8,15 @@ using FluentAssertions.Execution;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection.Agents;
+namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection.Chaining;
 
-public class FlexChainingInjectionTests : IClassFixture<TestingContext>
+public class PythonChainingInjectionTests : IClassFixture<TestingContext>
 {
-    private const string ScenarioName = "injection-flexchaining";
+    private const string ScenarioName = "chaining-python";
 
     private readonly TestingContext _context;
 
-    public FlexChainingInjectionTests(TestingContext context, ITestOutputHelper outputHelper)
+    public PythonChainingInjectionTests(TestingContext context, ITestOutputHelper outputHelper)
     {
         _context = context;
         _context.RegisterOutput(outputHelper);
@@ -35,9 +35,9 @@ public class FlexChainingInjectionTests : IClassFixture<TestingContext>
         {
             var container = result.Spec.Containers.Should().ContainSingle().Subject;
 
-            container.Env.Should().Contain(x => x.Name == "LD_PRELOAD")
-                .Which.Value.Should().Be("/contrast/agent/injector/agent_injector.so:something");
-            container.Env.Should().Contain(x => x.Name == "CONTRAST_EXISTING_LD_PRELOAD")
+            container.Env.Should().Contain(x => x.Name == "PYTHONPATH")
+                .Which.Value.Should().Be("/contrast/agent:/contrast/agent/contrast/loader:something");
+            container.Env.Should().Contain(x => x.Name == "CONTRAST_EXISTING_PYTHONPATH")
                 .Which.Value.Should().Be("something");
         }
     }
