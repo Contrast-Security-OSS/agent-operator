@@ -11,16 +11,13 @@ resources:
   - ./glob-selecting.yaml
   - ./init-container-overrides.yaml
   - ./injection-dotnet.yaml
-  - ./injection-dotnetchaining.yaml
   - ./injection-dummy.yaml
   - ./injection-java.yaml
-  - ./injection-javatooloptions.yaml
   - ./injection-nodejs-require.yaml
   - ./injection-nodejs-import.yaml
   - ./injection-php.yaml
   - ./injection-python.yaml
   - ./injection-flex.yaml
-  - ./injection-flexchaining.yaml
   - ./missing-deps.yaml
   - ./multiple-images.yaml
   - ./namespace.yaml
@@ -28,3 +25,7 @@ resources:
   - ./type-deployment.yaml
   - ./type-statefulset.yaml
   - ./unmatched.yaml
+  - ./chaining-dotnet.yaml
+  - ./chaining-flex.yaml
+  - ./chaining-java.yaml
+  - ./chaining-python.yaml

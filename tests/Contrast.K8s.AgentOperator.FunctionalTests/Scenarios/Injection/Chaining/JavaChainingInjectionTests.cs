@@ -8,22 +8,22 @@ using FluentAssertions.Execution;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection.Agents;
+namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection.Chaining;
 
-public class DotnetChainingInjectionTests : IClassFixture<TestingContext>
+public class JavaChainingInjectionTests : IClassFixture<TestingContext>
 {
-    private const string ScenarioName = "injection-dotnetchaining";
+    private const string ScenarioName = "chaining-java";
 
     private readonly TestingContext _context;
 
-    public DotnetChainingInjectionTests(TestingContext context, ITestOutputHelper outputHelper)
+    public JavaChainingInjectionTests(TestingContext context, ITestOutputHelper outputHelper)
     {
         _context = context;
         _context.RegisterOutput(outputHelper);
     }
 
     [Fact]
-    public async Task When_injected_then_pod_should_have_agent_injection_chaining_environment_variables()
+    public async Task When_injected_then_pod_should_have_patched_java_tool_options_environment_variable()
     {
         var client = await _context.GetClient();
 
@@ -35,10 +35,10 @@ public class DotnetChainingInjectionTests : IClassFixture<TestingContext>
         {
             var container = result.Spec.Containers.Should().ContainSingle().Subject;
 
-            container.Env.Should().Contain(x => x.Name == "LD_PRELOAD")
-                     .Which.Value.Should().Be("/contrast/agent/runtimes/linux/native/ContrastChainLoader.so:something");
-            container.Env.Should().Contain(x => x.Name == "CONTRAST_EXISTING_LD_PRELOAD")
-                     .Which.Value.Should().Be("something");
+            container.Env.Should().Contain(x => x.Name == "JAVA_TOOL_OPTIONS")
+                .Which.Value.Should().Be("-javaagent:/opt/contrast/contrast-agent.jar something");
+            container.Env.Should().Contain(x => x.Name == "CONTRAST_EXISTING_JAVA_TOOL_OPTIONS")
+                .Which.Value.Should().Be("something");
         }
     }
 }

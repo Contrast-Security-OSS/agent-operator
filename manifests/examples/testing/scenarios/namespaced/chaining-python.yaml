@@ -1,14 +1,14 @@
 apiVersion: agents.contrastsecurity.com/v1beta1
 kind: AgentInjector
 metadata:
-  name: injection-flexchaining
+  name: chaining-python
 spec:
   enabled: true
-  type: flex
+  type: python
   selector:
     labels:
       - name: app
-        value: injection-flexchaining
+        value: chaining-python
   image:
     pullPolicy: Never
   connection:
@@ -19,24 +19,24 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: injection-flexchaining
+  name: chaining-python
   labels:
-    app: injection-flexchaining
+    app: chaining-python
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: injection-flexchaining
+      app: chaining-python
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app: injection-flexchaining
+        app: chaining-python
     spec:
       containers:
         - image: k8s.gcr.io/pause:3.3
           name: pause
           env:
-            - name: LD_PRELOAD
+            - name: PYTHONPATH
               value: something

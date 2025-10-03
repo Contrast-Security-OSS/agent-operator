@@ -14,7 +14,7 @@ using Xunit;
 
 namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting.Patching.Agents
 {
-    public class DotNetPatcherTests
+    public class DotNetAgentPatcherTests
     {
         private static readonly Fixture AutoFixture = new();
 

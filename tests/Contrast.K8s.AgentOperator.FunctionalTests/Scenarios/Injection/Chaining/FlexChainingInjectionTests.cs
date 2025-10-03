@@ -8,22 +8,22 @@ using FluentAssertions.Execution;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection.Agents;
+namespace Contrast.K8s.AgentOperator.FunctionalTests.Scenarios.Injection.Chaining;
 
-public class JavaToolOptionsInjectionTests : IClassFixture<TestingContext>
+public class FlexChainingInjectionTests : IClassFixture<TestingContext>
 {
-    private const string ScenarioName = "injection-javatooloptions";
+    private const string ScenarioName = "chaining-flex";
 
     private readonly TestingContext _context;
 
-    public JavaToolOptionsInjectionTests(TestingContext context, ITestOutputHelper outputHelper)
+    public FlexChainingInjectionTests(TestingContext context, ITestOutputHelper outputHelper)
     {
         _context = context;
         _context.RegisterOutput(outputHelper);
     }
 
     [Fact]
-    public async Task When_injected_then_pod_should_have_patched_java_tool_options_environment_variable()
+    public async Task When_injected_then_pod_should_have_agent_injection_chaining_environment_variables()
     {
         var client = await _context.GetClient();
 
@@ -35,9 +35,9 @@ public class JavaToolOptionsInjectionTests : IClassFixture<TestingContext>
         {
             var container = result.Spec.Containers.Should().ContainSingle().Subject;
 
-            container.Env.Should().Contain(x => x.Name == "JAVA_TOOL_OPTIONS")
-                .Which.Value.Should().Be("-javaagent:/opt/contrast/contrast-agent.jar something");
-            container.Env.Should().Contain(x => x.Name == "CONTRAST_EXISTING_JAVA_TOOL_OPTIONS")
+            container.Env.Should().Contain(x => x.Name == "LD_PRELOAD")
+                .Which.Value.Should().Be("/contrast/agent/injector/agent_injector.so:something");
+            container.Env.Should().Contain(x => x.Name == "CONTRAST_EXISTING_LD_PRELOAD")
                 .Which.Value.Should().Be("something");
         }
     }
