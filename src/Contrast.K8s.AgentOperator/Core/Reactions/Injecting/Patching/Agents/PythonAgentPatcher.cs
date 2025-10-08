@@ -7,6 +7,7 @@ using Contrast.K8s.AgentOperator.Options;
 using k8s.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents;
 
@@ -27,6 +28,7 @@ public class PythonAgentPatcher : IAgentPatcher
         {
             yield return new V1EnvVar("CONTRAST__AGENT__PYTHON__REWRITE", "true");
         }
+
         yield return new V1EnvVar("__CONTRAST_USING_RUNNER", "true");
         yield return new V1EnvVar("CONTRAST__AGENT__LOGGER__PATH", $"{context.WritableMountPath}/logs/contrast_agent.log");
         yield return new V1EnvVar("CONTRAST_INSTALLATION_TOOL", "KUBERNETES_OPERATOR");
@@ -37,15 +39,21 @@ public class PythonAgentPatcher : IAgentPatcher
         // Only modify this if CONTRAST_EXISTING_PYTHONPATH isn't already set. This is to prevent infinite loops.
         if (container.Env.FirstOrDefault("PYTHONPATH") is { Value: { } currentPath }
             && !string.IsNullOrWhiteSpace(currentPath)
-            && !currentPath.Contains("contrast/loader", StringComparison.OrdinalIgnoreCase)
+            && !currentPath.EndsWith("contrast/loader", StringComparison.OrdinalIgnoreCase)
             && container.Env.FirstOrDefault("CONTRAST_EXISTING_PYTHONPATH") is null)
         {
             container.Env.AddOrUpdate(new V1EnvVar("CONTRAST_EXISTING_PYTHONPATH", currentPath));
+
+            //Some operators add the existing PYTHONPATH to the middle of the new PYTHONPATH so remove our existing one and prefix it
+            var splitPath = currentPath.Split(':').ToList();
+            splitPath.Remove(context.AgentMountPath);
+            splitPath.Remove($"{context.AgentMountPath}/contrast/loader");
+
             container.Env.AddOrUpdate(new V1EnvVar("PYTHONPATH",
-                $"{GetAgentPythonPath(context)}:{currentPath}"));
+                $"{GetAgentPythonPath(context)}:{string.Join(':', splitPath)}"));
         }
     }
 
-    private static string GetAgentPythonPath(PatchingContext context) => $"{context.AgentMountPath}:{context.AgentMountPath}/contrast/loader";
-
+    private static string GetAgentPythonPath(PatchingContext context) =>
+        $"{context.AgentMountPath}:{context.AgentMountPath}/contrast/loader";
 }

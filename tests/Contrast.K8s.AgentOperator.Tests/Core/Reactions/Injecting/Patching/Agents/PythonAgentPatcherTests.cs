@@ -103,5 +103,28 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting.Patching.Age
             }
         }
 
+        [Fact]
+        public void PatchContainer_should_move_contrast_injection_to_the_start()
+        {
+            var patcher = new PythonAgentPatcher(new InjectorOptions(false, false));
+            var context = AutoFixture.Create<PatchingContext>();
+            var existingPath = $"bleh:{context.AgentMountPath}:{context.AgentMountPath}/contrast/loader:bleh2";
+            var container = AutoFixture.Build<V1Container>()
+                .With(x => x.Env, new List<V1EnvVar> { new("PYTHONPATH", existingPath) }).Create();
+
+            // Act
+            patcher.PatchContainer(container, context);
+
+            // Assert
+            using (new AssertionScope())
+            {
+                container.Env.Should()
+                    .Contain(x => x.Name == "CONTRAST_EXISTING_PYTHONPATH" && x.Value == existingPath);
+                container.Env.Should().Contain(x =>
+                    x.Name == "PYTHONPATH" && x.Value ==
+                    $"{context.AgentMountPath}:{context.AgentMountPath}/contrast/loader:bleh:bleh2");
+            }
+        }
+
     }
 }
