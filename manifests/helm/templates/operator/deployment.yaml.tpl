@@ -70,13 +70,10 @@ spec:
         - name: contrast-agent-operator
           image: '{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ default .Chart.AppVersion .Values.image.tag }}'
           imagePullPolicy: Always
+          {{- if .Values.operator.securityContext }}
           securityContext:
-            allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true
-            runAsNonRoot: true
-            capabilities:
-              drop:
-              - ALL
+            {{- toYaml .Values.operator.securityContext | nindent 12 }}
+          {{- end }}
           ports:
             - containerPort: 5001
               name: https
