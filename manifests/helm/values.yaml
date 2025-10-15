@@ -51,6 +51,14 @@ operator:
   # Metadata for the operator pod(s).
   podLabels: {}
   podAnnotations: {}
+  # securityContext for operator pod.
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    capabilities:
+      drop:
+      - ALL
   # Resource management for the operator container.
   replicas: 1
   resources:
@@ -88,6 +96,8 @@ clusterDefaults:
     enable: true
   # If true, mount the connection secret as a volume. This will override CONTRAST_CONFIG_PATH on the pod.
   mountConnectionAsVolume: false
+  # Optional. securityContext for init containers.
+  initContainerSecurityContext: {}
   ### Token Authentication ##
   # Name of a secret to retrieve the cluster-wide connection token from.
   # The secret should contain a key named 'token' (the agent token from the Contrast UI).

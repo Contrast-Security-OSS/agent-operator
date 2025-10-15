@@ -10,6 +10,11 @@ spec:
       enableYamlVariableReplacement: {{ .Values.clusterDefaults.enableYamlVariableReplacement | default false }}
       suppressDefaultApplicationName: {{ .Values.clusterDefaults.suppressDefaultApplicationName | default false }}
       suppressDefaultServerName: {{ .Values.clusterDefaults.suppressDefaultServerName | default false }}
+      {{- if .Values.clusterDefaults.initContainerSecurityContext }}
+      initContainer:
+        securityContext:
+          {{- toYaml .Values.clusterDefaults.initContainerSecurityContext | nindent 10 }}
+      {{- end }}
       yaml: |-
 {{ .Values.clusterDefaults.yaml | indent 8 }}
 ---
@@ -22,11 +27,11 @@ spec:
   template:
     spec:
       mountAsVolume: {{ .Values.clusterDefaults.mountConnectionAsVolume | default false }}
-{{ if or .Values.clusterDefaults.existingTokenSecret .Values.clusterDefaults.tokenValue }}
+      {{- if or .Values.clusterDefaults.existingTokenSecret .Values.clusterDefaults.tokenValue }}
       token:
         secretName: {{ .Values.clusterDefaults.existingTokenSecret | default "default-agent-connection-token-secret" }}
         secretKey: token
-{{ else }}
+      {{- else }}
       url: >-
         {{ required "The key clusterDefaults.clusterDefaults must be set if clusterDefaults.enabled is true" .Values.clusterDefaults.url }}
       apiKey:
