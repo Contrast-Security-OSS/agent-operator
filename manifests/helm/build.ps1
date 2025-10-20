@@ -2,7 +2,8 @@
 
 param(
     [string]$ChartVersion = "0.0.2",
-    [string]$AppVersion = "0.0.2"
+    [string]$AppVersion = "0.0.2",
+    [switch]$WriteSchemaUrl
 )
 
 function Invoke-Kustomize([string] $BasePath, [string] $OutputFilePath)
@@ -15,6 +16,19 @@ $root = $PSScriptRoot
 # Generate CRDs
 Write-Host "Generating CRDs..."
 Invoke-Kustomize -BasePath "$root/build/crds" -OutputFilePath "$root/crds/generated.yaml"
+
+# Schema
+if($WriteSchemaUrl)
+{
+    Write-Host "Updating values.yaml schema url"
+    $content = Get-Content -Path "$root/values.yaml"
+    $schemaText = [string]::Format('# yaml-language-server: $schema=https://contrastsecurity.dev/helm-charts/schemas/contrast-agent-operator-{0}.schema.json',$ChartVersion)
+    $content = $content.Replace('# yaml-language-server: $schema=values.schema.json', $schemaText)
+    Set-Content -Path "$root/values.yaml" -Value $content
+}
+
+Write-Host "Copying schema."
+Copy-Item "$root/values.schema.json" -Destination "$root/dist/contrast-agent-operator-$ChartVersion.schema.json"
 
 # Package
 Write-Host "Linting chart."
@@ -34,3 +48,5 @@ if (-Not $?)
 {
     throw "Packing failed."
 }
+
+

@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=values.schema.json
 clusterDefaults:
   enabled: true
   url: https://app-agents.contrastsecurity.com/Contrast

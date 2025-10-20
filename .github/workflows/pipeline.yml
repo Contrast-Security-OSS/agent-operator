@@ -162,7 +162,8 @@ jobs:
           set -xe
           pwsh ./manifests/helm/build.ps1 \
             -AppVersion ${{ env.BUILD_VERSION }} \
-            -ChartVersion ${{ env.BUILD_VERSION }}
+            -ChartVersion ${{ env.BUILD_VERSION }} \
+            -WriteSchemaUrl
         shell: bash
       - name: Render Manifests
         run: |
@@ -179,6 +180,7 @@ jobs:
           name: helm-chart
           path: |
             manifests/helm/dist/*.tgz
+            manifests/helm/dist/*.schema.json
           retention-days: 7
       - name: Publish (Manifests)
         uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
