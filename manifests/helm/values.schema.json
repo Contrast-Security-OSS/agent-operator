@@ -1,0 +1,511 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "Contrast Agent Operator Helm Schema",
+    "type": "object",
+    "properties": {
+        "agentInjectors": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "description": "If enabled, configure AgentInjectors.",
+                    "default": true,
+                    "type": "boolean"
+                },
+                "injectors": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": [
+                            "language",
+                            "name"
+                        ],
+                        "properties": {
+                            "configurationName": {
+                                "description": "Optional name of an AgentConfiguration to use with this injector. Only supported if useClusterAgentInjectors is false.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "connectionName": {
+                                "description": "Optional name of an AgentConnection to use with this injector. Only supported if useClusterAgentInjectors is false.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "enabled": {
+                                "default": true,
+                                "type": "boolean"
+                            },
+                            "image": {
+                                "description": "Optional image configuration.",
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "pullPolicy": {
+                                        "type": "string",
+                                        "enum": [
+                                            "IfNotPresent",
+                                            "Always",
+                                            "Never"
+                                        ]
+                                    },
+                                    "registry": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    }
+                                }
+                            },
+                            "imageVersion": {
+                                "description": "Optional image version, defaults to latest",
+                                "default": "latest",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "language": {
+                                "type": "string",
+                                "pattern": "^(dotnet-core|dotnet|java|node|nodejs|node-esm|nodejs-esm|nodejs-legacy|php|personal-home-page|python|flex|dummy)$"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "selector": {
+                                "description": "Optional, specify labels and/or image names to inject. If omitted, all workloads will be injected. Label selections are cumulative using the logical AND operation.",
+                                "type": "object",
+                                "properties": {
+                                    "images": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "labels": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "required": [
+                                                "name",
+                                                "value"
+                                            ],
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "namespaceLabelSelector": {
+                    "description": "Optional, label selector to select namespaces to create AgentInjectors in. Only supported if useClusterAgentInjectors is true. Label selections are cumulative using the logical AND operation.",
+                    "default": [
+                        {
+                            "name": "agents.contrastsecurity.com/agent-injectors",
+                            "value": "true"
+                        }
+                    ],
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": [
+                            "name",
+                            "value"
+                        ],
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "value": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "namespaces": {
+                    "description": "Optional, target namespaces for AgentInjectors. Glob syntax is supported if useClusterAgentInjectors is true.",
+                    "default": [
+                        "default"
+                    ],
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "useClusterAgentInjectors": {
+                    "description": "Create ClusterAgentInjector resources instead of AgentInjectors",
+                    "default": true,
+                    "type": "boolean"
+                }
+            }
+        },
+        "clusterDefaults": {
+            "type": "object",
+            "properties": {
+                "apiKeyValue": {
+                    "description": "Required if existingSecret is not set. The API Key from the Contrast UI.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "enableYamlVariableReplacement": {
+                    "description": "If true, parse and replace %variables% in the yaml.",
+                    "default": false,
+                    "type": "boolean"
+                },
+                "enabled": {
+                    "description": "If enabled, configure cluster-wide defaults.",
+                    "default": false,
+                    "type": "boolean"
+                },
+                "existingSecret": {
+                    "description": "Name of a secret to retrieve the cluster-wide connection details from. The secret should contain keys named 'apiKey', 'serviceKey' and 'userName'. Leave blank if you want the chart to create a secret using the subsequent apiKeyValue, serviceKeyValue and userNameValue values.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "existingTokenSecret": {
+                    "description": "Name of a secret to retrieve the cluster-wide connection token from. The secret should contain a key named 'token' (the agent token from the Contrast UI). Leave blank if you want the chart to create a secret using the subsequent tokenValue.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "initContainerSecurityContext": {
+                    "description": "Optional. securityContext for init containers.",
+                    "type": "object"
+                },
+                "mountConnectionAsVolume": {
+                    "description": "If true, mount the connection secret as a volume. This will override CONTRAST_CONFIG_PATH on the pod.",
+                    "default": false,
+                    "type": "boolean"
+                },
+                "serviceKeyValue": {
+                    "description": "Required if existingSecret is not set. The Service Key from the Contrast UI.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "suppressDefaultApplicationName": {
+                    "description": "If false, automatically set the Contrast application name on injected workloads (the workload name), rather than use the default (generated by the agent).",
+                    "default": false,
+                    "type": "boolean"
+                },
+                "suppressDefaultServerName": {
+                    "description": "If false, automatically set the Contrast server name on injected workloads ('kubernetes-{namespace}'), rather than use the default (normally the pod name).",
+                    "default": false,
+                    "type": "boolean"
+                },
+                "tokenValue": {
+                    "description": "Required if existingTokenSecret is not set. The Agent Token from the Contrast UI.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "url": {
+                    "description": "Required. The Contrast UI instance to use. Defaults at the general SAAS instance.",
+                    "default": "https://app-agents.contrastsecurity.com/Contrast",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "userNameValue": {
+                    "description": "Required if existingSecret  is not set. The User Name from the Contrast UI.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "yaml": {
+                    "description": "Optional. Any custom configuration to use. Must be in the format of the standard YAML file.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            }
+        },
+        "image": {
+            "type": "object",
+            "properties": {
+                "registry": {
+                    "description": "agent-operator registry",
+                    "default": "contrast",
+                    "type": "string"
+                },
+                "repository": {
+                    "description": "agent-operator repository",
+                    "default": "agent-operator",
+                    "type": "string"
+                },
+                "tag": {
+                    "description": "agent-operator tag. Defaults to Chart.AppVersion",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            }
+        },
+        "imageCredentials": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "description": "Image Email",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "enabled": {
+                    "description": "If enabled, a registry credential secret will be created.",
+                    "default": false,
+                    "type": "boolean"
+                },
+                "password": {
+                    "description": "Image Password",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "pullSecretName": {
+                    "description": "Name of the registry credential secret that should be used to pull agent-operator image.",
+                    "default": "image-credentials",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "registry": {
+                    "description": "Image Registry",
+                    "default": "contrast",
+                    "type": "string"
+                },
+                "username": {
+                    "description": "Image Username",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            }
+        },
+        "namespace": {
+            "description": "Namespace for the agent-operator, will be created if specified. When left blank the Helm namespace will be used and can be changed using `helm -n \u003cnamespace\u003e`. Helm's `--create-namespace` option should be used when the Helm namespace does not exist and should be created.",
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "operator": {
+            "type": "object",
+            "properties": {
+                "annotations": {
+                    "type": "object"
+                },
+                "defaultRegistry": {
+                    "description": "The default registry to use, defaults to docker.io/contrast.",
+                    "default": "contrast",
+                    "type": "string"
+                },
+                "enableEarlyChaining": {
+                    "description": "Enable early chaining. Should only be enabled if you are using a dotnet-core AgentInjector and DynaKube is used in classicStack mode.",
+                    "default": false,
+                    "type": "boolean"
+                },
+                "enabled": {
+                    "description": "If enabled, deploy the operator. Disable if you want to deploy only configuration resources (injectors, cluster defaults).",
+                    "default": true,
+                    "type": "boolean"
+                },
+                "eventQueueFullMode": {
+                    "description": "The action to perform when the event queue is full, and the operator is unable to process events fast enough. Wait: Waits for space to be available in order to complete the write operation. This might be useful for larger clusters, allow the queue to create back pressure on the \"get the world\" calls during startup. DropOldest: Removes and ignores the oldest item in the channel in order to make room for the item being written.",
+                    "default": "DropOldest",
+                    "type": "string",
+                    "enum": [
+                        "Wait",
+                        "DropOldest"
+                    ]
+                },
+                "eventQueueSize": {
+                    "description": "Max number of events to queue from the K8s event stream.",
+                    "default": 10000,
+                    "type": "integer"
+                },
+                "initContainer": {
+                    "description": "Resource management for the agent initContainers",
+                    "type": "object",
+                    "properties": {
+                        "resources": {
+                            "type": "object",
+                            "properties": {
+                                "limits": {
+                                    "type": "object",
+                                    "properties": {
+                                        "cpu": {
+                                            "default": "100m",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "ephemeralStorage": {
+                                            "description": "Needs to be greater than the size of the largest agent",
+                                            "default": "1Gi",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "memory": {
+                                            "default": "256Mi",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    }
+                                },
+                                "requests": {
+                                    "type": "object",
+                                    "properties": {
+                                        "cpu": {
+                                            "default": "100m",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "ephemeralStorage": {
+                                            "description": "Needs to be greater than the size of the largest agent",
+                                            "default": "1Gi",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "memory": {
+                                            "default": "64Mi",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "labels": {
+                    "type": "object"
+                },
+                "podAnnotations": {
+                    "type": "object"
+                },
+                "podLabels": {
+                    "type": "object"
+                },
+                "replicas": {
+                    "default": 1,
+                    "type": "integer"
+                },
+                "resources": {
+                    "type": "object",
+                    "properties": {
+                        "limits": {
+                            "type": "object",
+                            "properties": {
+                                "cpu": {
+                                    "default": "2000m",
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "ephemeralStorage": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "memory": {
+                                    "default": "512Mi",
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                }
+                            }
+                        },
+                        "requests": {
+                            "type": "object",
+                            "properties": {
+                                "cpu": {
+                                    "default": "500m",
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "ephemeralStorage": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "memory": {
+                                    "default": "256Mi",
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                "securityContext": {
+                    "description": "SecurityContext for operator pod.",
+                    "type": "object"
+                },
+                "settleDuration": {
+                    "description": "The settle duration in seconds. The time to wait to sync with the cluster before making changes.",
+                    "default": 10,
+                    "type": "integer"
+                },
+                "webhookConfiguration": {
+                    "description": "The name of the webhook to patch after certificate generation occurs.",
+                    "default": "contrast-web-hook-configuration",
+                    "type": "string"
+                },
+                "webhookSecretName": {
+                    "description": "The secret containing the TLS certificates used for the webhook. Used for to cache TLS certificate generation across restarts, and to share the same certificate across operator instances (when running in HA mode).",
+                    "default": "contrast-web-hook-secret",
+                    "type": "string"
+                }
+            }
+        }
+    }
+}
