@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=values.schema.json
 # Namespace for the agent-operator, will be created if specified.
 # When left blank the Helm namespace will be used and can be changed using `helm -n <namespace>`. Helm's `--create-namespace` option should be used when the Helm namespace does not exist and should be created.
 namespace:
@@ -120,8 +121,10 @@ clusterDefaults:
   userNameValue:
 
 agentInjectors:
+  # If enabled, configure AgentInjectors.
   enabled: true
-  useClusterAgentInjectors: true # Create ClusterAgentInjector resources instead of AgentInjectors
+  # Create ClusterAgentInjector resources instead of AgentInjectors
+  useClusterAgentInjectors: true
   # Optional, target namespaces for AgentInjectors. Glob syntax is supported if useClusterAgentInjectors is true.
   namespaces:
     - default
