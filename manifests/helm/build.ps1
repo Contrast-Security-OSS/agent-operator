@@ -22,7 +22,7 @@ if($WriteSchemaUrl)
 {
     Write-Host "Updating values.yaml schema url"
     $content = Get-Content -Path "$root/values.yaml"
-    $schemaText = [string]::Format('# yaml-language-server: $schema=https://contrastsecurity.dev/helm-charts/schemas/contrast-agent-operator-{0}.schema.json',$ChartVersion)
+    $schemaText = [string]::Format('# yaml-language-server: $schema=https://github.com/Contrast-Security-OSS/agent-operator/releases/download/v{0}/values.schema.json',$AppVersion)
     $content = $content.Replace('# yaml-language-server: $schema=values.schema.json', $schemaText)
     Set-Content -Path "$root/values.yaml" -Value $content
 }
