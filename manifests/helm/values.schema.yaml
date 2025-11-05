@@ -45,11 +45,15 @@ operator:
   webhookConfiguration: # @schema type:[string];default:contrast-web-hook-configuration
   # -- Enable early chaining. Should only be enabled if you are using a dotnet-core AgentInjector and DynaKube is used in classicStack mode.
   enableEarlyChaining: # @schema type:[boolean];default:false
-  # Metadata for the operator deployment.
+  # -- Globally enable agents logging to stdout
+  enableAgentStdout: # @schema type:[boolean];default:false
+  # -- Deployment Labels for the operator deployment.
   labels: {}
+  # -- Deployment Annotations for the operator deployment.
   annotations: {}
-  # Metadata for the operator pod(s).
+  # -- Pod Labels for the operator pod(s).
   podLabels: {}
+  # -- Pod Annotations for the operator pod(s).
   podAnnotations: {}
   # -- SecurityContext for operator pod.
   securityContext: {}

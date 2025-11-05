@@ -322,12 +322,18 @@
             "type": "object",
             "properties": {
                 "annotations": {
+                    "description": "Deployment Annotations for the operator deployment.",
                     "type": "object"
                 },
                 "defaultRegistry": {
                     "description": "The default registry to use, defaults to docker.io/contrast.",
                     "default": "contrast",
                     "type": "string"
+                },
+                "enableAgentStdout": {
+                    "description": "Globally enable agents logging to stdout",
+                    "default": false,
+                    "type": "boolean"
                 },
                 "enableEarlyChaining": {
                     "description": "Enable early chaining. Should only be enabled if you are using a dotnet-core AgentInjector and DynaKube is used in classicStack mode.",
@@ -419,12 +425,15 @@
                     }
                 },
                 "labels": {
+                    "description": "Deployment Labels for the operator deployment.",
                     "type": "object"
                 },
                 "podAnnotations": {
+                    "description": "Pod Annotations for the operator pod(s).",
                     "type": "object"
                 },
                 "podLabels": {
+                    "description": "Pod Labels for the operator pod(s).",
                     "type": "object"
                 },
                 "replicas": {

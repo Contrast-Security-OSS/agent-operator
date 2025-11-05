@@ -65,11 +65,14 @@ public class OptionsModule : Module
             }
 
             // Users may override this on a per AgentConfiguration bases via the InitContainer override field.
-            var runInitContainersAsNonRoot = GetEnvironmentOptionFlag(logger, "CONTRAST_RUN_INIT_CONTAINER_AS_NON_ROOT", "run-init-container-as-non-root", true); ;
+            var runInitContainersAsNonRoot = GetEnvironmentOptionFlag(logger, "CONTRAST_RUN_INIT_CONTAINER_AS_NON_ROOT", "run-init-container-as-non-root", true);
 
             // This is needed for OpenShift < 4.11 (Assumed per the change log, unable to test at the time of writing).
             // See: https://github.com/openshift/cluster-kube-apiserver-operator/issues/1325
             var suppressSeccompProfile = GetEnvironmentOptionFlag(logger, "CONTRAST_SUPPRESS_SECCOMP_PROFILE", "suppress-seccomp-profile", false);
+
+            // Users may override this on a per AgentConfiguration bases in the yaml section with the key agent.logger.stdout
+            var enableAgentStdout = GetEnvironmentOptionFlag(logger, "CONTRAST_ENABLE_AGENT_STDOUT", "enable-agent-stdout", false);
 
             // A value from 0-100 to denote how many options the operator should purposely fail in.
             // The goal is to test and correctly handle a non-perfect cluster.
@@ -90,6 +93,7 @@ public class OptionsModule : Module
                 eventQueueMergeWindowSeconds,
                 runInitContainersAsNonRoot,
                 suppressSeccompProfile,
+                enableAgentStdout,
                 chaosPercent / 100m);
         }).SingleInstance();
 

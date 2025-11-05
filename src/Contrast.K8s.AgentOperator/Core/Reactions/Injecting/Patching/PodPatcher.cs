@@ -298,6 +298,11 @@ public class PodPatcher : IPodPatcher
         yield return new V1EnvVar("CONTRAST_MOUNT_AGENT_PATH", agentMountPath);
         yield return new V1EnvVar("CONTRAST_MOUNT_WRITABLE_PATH", writableMountPath);
 
+        if (_operatorOptions.EnableAgentStdout)
+        {
+            yield return new V1EnvVar("CONTRAST__AGENT__LOGGER__STDOUT", "true");
+        }
+
         if (connection.TeamServerUri != null)
         {
             yield return new V1EnvVar("CONTRAST__API__URL", connection.TeamServerUri);

@@ -12,5 +12,6 @@ public record OperatorOptions(string Namespace,
                               int EventQueueMergeWindowSeconds,
                               bool RunInitContainersAsNonRoot,
                               bool SuppressSeccompProfile,
+                              bool EnableAgentStdout,
                               decimal ChaosRatio,
                               string FieldManagerName = "agents.contrastsecurity.com");

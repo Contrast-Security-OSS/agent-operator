@@ -100,6 +100,8 @@ spec:
               value: '{{ .Values.operator.webhookConfiguration }}'
             - name: CONTRAST_ENABLE_EARLY_CHAINING
               value: '{{ .Values.operator.enableEarlyChaining }}'
+            - name: CONTRAST_ENABLE_AGENT_STDOUT
+              value: '{{ .Values.operator.enableAgentStdout }}'
             - name: CONTRAST_INSTALL_SOURCE
               value: helm
             - name: CONTRAST_INITCONTAINER_CPU_REQUEST
