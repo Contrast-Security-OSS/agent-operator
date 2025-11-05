@@ -46,6 +46,8 @@ operator:
   webhookConfiguration: contrast-web-hook-configuration
   # Enable early chaining. Should only be enabled if you are using a dotnet-core AgentInjector and DynaKube is used in classicStack mode.
   enableEarlyChaining: false
+  # Globally enable agents logging to stdout
+  enableAgentStdout: false
   # Metadata for the operator deployment.
   labels: {}
   annotations: {}
