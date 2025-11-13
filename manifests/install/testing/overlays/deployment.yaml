@@ -16,3 +16,5 @@ spec:
               value: "true"
             - name: "CONTRAST_LOG_LEVEL"
               value: "TRACE"
+            - name: "CONTRAST_ENABLE_AGENT_STDOUT"
+              value: "true"
