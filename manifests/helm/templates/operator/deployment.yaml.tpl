@@ -64,8 +64,10 @@ spec:
                         - contrast-agent-operator
                 topologyKey: kubernetes.io/hostname
       serviceAccountName: contrast-agent-operator-service-account
+      {{- if .Values.imageCredentials.pullSecretName }}
       imagePullSecrets:
         - name: '{{ .Values.imageCredentials.pullSecretName }}'
+      {{- end }}
       containers:
         - name: contrast-agent-operator
           image: '{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ default .Chart.AppVersion .Values.image.tag }}'
