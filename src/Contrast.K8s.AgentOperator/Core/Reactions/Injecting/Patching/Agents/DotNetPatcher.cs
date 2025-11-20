@@ -1,12 +1,13 @@
 ﻿// Contrast Security, Inc licenses this file to you under the Apache 2.0 License.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
 using Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Utility;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
 using Contrast.K8s.AgentOperator.Options;
 using k8s.Models;
+using NLog;
+using System;
+using System.Collections.Generic;
 
 namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents;
 
@@ -14,6 +15,8 @@ public class DotNetAgentPatcher : IAgentPatcher
 {
     private readonly InjectorOptions _injectorOptions;
     public AgentInjectionType Type => AgentInjectionType.DotNetCore;
+
+    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public DotNetAgentPatcher(InjectorOptions injectorOptions)
     {
@@ -44,6 +47,14 @@ public class DotNetAgentPatcher : IAgentPatcher
 
     public void PatchContainer(V1Container container, PatchingContext context)
     {
+        //Log a warning if we detect DOTNET_EnableDiagnostics=0 or COMPlus_EnableDiagnostics=0
+        //We cant patch these to enable them because it will break a .NET 6.0 read-only container because it will attempt to create the IPC socket
+        if (container.Env.FirstOrDefault("DOTNET_EnableDiagnostics")?.Value == "0" ||
+            container.Env.FirstOrDefault("COMPlus_EnableDiagnostics")?.Value == "0")
+        {
+            Logger.Warn($"Detected 'DOTNET_EnableDiagnostics=0' or 'COMPlus_EnableDiagnostics=0' environment variable on '{context.WorkloadNamespace}/{context.WorkloadName}', dotnet-core agent may not attach correctly.");
+        }
+
         // This assumes this patch occurs after our generic patches.
         // Either the users sets this on the pod manually, or we set it from our config file.
         // We also assume the default is true.
