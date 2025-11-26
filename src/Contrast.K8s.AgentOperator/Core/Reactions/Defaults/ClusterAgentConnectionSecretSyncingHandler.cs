@@ -133,14 +133,15 @@ public class ClusterAgentConnectionSecretSyncingHandler
             }
         }
 
-        return new V1Secret(
-            metadata: new V1ObjectMeta
+        return new V1Secret
+        {
+            Metadata = new V1ObjectMeta
             {
                 Name = targetName,
                 NamespaceProperty = targetNamespace
             },
-            data: data
-        );
+            Data = data
+        };
     }
 
     protected override string GetTargetEntityName(string targetNamespace)

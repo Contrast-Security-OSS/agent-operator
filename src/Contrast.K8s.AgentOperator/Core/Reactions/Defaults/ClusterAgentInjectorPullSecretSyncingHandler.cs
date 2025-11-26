@@ -78,15 +78,16 @@ public class ClusterAgentInjectorPullSecretSyncingHandler
             return null;
         }
 
-        return new V1Secret(
-            metadata: new V1ObjectMeta
+        return new V1Secret
+        {
+            Metadata = new V1ObjectMeta
             {
                 Name = targetName,
                 NamespaceProperty = targetNamespace,
             },
-            data: new Dictionary<string, byte[]> { { ".dockerconfigjson", pullSecretData } },
-            type: "kubernetes.io/dockerconfigjson"
-        );
+            Data = new Dictionary<string, byte[]> { { ".dockerconfigjson", pullSecretData } },
+            Type = "kubernetes.io/dockerconfigjson"
+        };
     }
 
     protected override string GetTargetEntityName(string targetNamespace, AgentInjectionType agentType)

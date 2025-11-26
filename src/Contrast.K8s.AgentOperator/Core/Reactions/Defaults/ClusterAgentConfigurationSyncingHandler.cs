@@ -58,7 +58,7 @@ public class ClusterAgentConfigurationSyncingHandler
 
         return ValueTask.FromResult(new V1Beta1AgentConfiguration
         {
-            Metadata = new V1ObjectMeta(name: targetName, namespaceProperty: targetNamespace),
+            Metadata = new V1ObjectMeta { Name = targetName, NamespaceProperty = targetNamespace },
             Spec = new V1Beta1AgentConfiguration.AgentConfigurationSpec
             {
                 Yaml = yaml,

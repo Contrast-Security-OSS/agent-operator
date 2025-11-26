@@ -1,25 +1,24 @@
 ﻿// Contrast Security, Inc licenses this file to you under the Apache 2.0 License.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using System.Text.Json.Nodes;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 using k8s;
 using k8s.Models;
 using KubeOps.KubernetesClient;
+using System;
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 
 namespace Contrast.K8s.AgentOperator.Core.Kube;
 
 public static class KubernetesClientExtensions
 {
-    public static async ValueTask Patch<T>(this IKubernetesClient client, T resource, JsonNode patchDocument, string fieldManager)
+    public static async ValueTask PatchEntity<T>(this IKubernetesClient client, T resource, string patch, string fieldManager)
         where T : IKubernetesObject<V1ObjectMeta>
     {
         var apiClient = client.ApiClient;
-        var crd = resource.CreateResourceDefinition();
-        var crPatch = new V1Patch(patchDocument.ToJsonString(), V1Patch.PatchType.JsonPatch);
+        var crd = EntityMetadataCache.GetMetadata<T>();
+        var crPatch = new V1Patch(patch, V1Patch.PatchType.JsonPatch);
 
         if (string.IsNullOrWhiteSpace(resource.Metadata.NamespaceProperty))
         {
@@ -46,38 +45,6 @@ public static class KubernetesClientExtensions
         }
     }
 
-    public static async ValueTask PatchStatus<T>(this IKubernetesClient client, T resource, JsonNode patchDocument, string fieldManager)
-        where T : IKubernetesObject<V1ObjectMeta>
-    {
-        var apiClient = client.ApiClient;
-        var crd = resource.CreateResourceDefinition();
-        var crPatch = new V1Patch(patchDocument.ToString(), V1Patch.PatchType.JsonPatch);
-
-        if (string.IsNullOrWhiteSpace(resource.Metadata.NamespaceProperty))
-        {
-            using var result = await apiClient.CustomObjects.PatchClusterCustomObjectStatusWithHttpMessagesAsync(
-                crPatch,
-                crd.Group,
-                crd.Version,
-                crd.Plural,
-                resource.Metadata.Name,
-                fieldManager: fieldManager
-            );
-        }
-        else
-        {
-            using var result = await apiClient.CustomObjects.PatchNamespacedCustomObjectStatusWithHttpMessagesAsync(
-                crPatch,
-                crd.Group,
-                crd.Version,
-                resource.Metadata.NamespaceProperty,
-                crd.Plural,
-                resource.Metadata.Name,
-                fieldManager: fieldManager
-            );
-        }
-    }
-
     public static async ValueTask PatchStatus<T>(this IKubernetesClient client,
                                                  string name,
                                                  string? @namespace,
@@ -86,24 +53,7 @@ public static class KubernetesClientExtensions
         where T : IKubernetesObject<V1ObjectMeta>
     {
         var apiClient = client.ApiClient;
-        var crd = CustomEntityDefinitionExtensions.CreateResourceDefinition<T>();
-
-        //var headers = new Dictionary<string, IReadOnlyList<string>>();
-        //if (typeof(T).Assembly == typeof(V1Pod).Assembly)
-        //{
-        //    headers.Add("content-type", new List<string>
-        //    {
-        //        "application/strategic-merge-patch+json"
-        //    });
-        //}
-        //else
-        //{
-        //    // Strategic merge patch is only support for core types.
-        //    headers.Add("content-type", new List<string>
-        //    {
-        //        "application/merge-patch+json"
-        //    });
-        //}
+        var crd = EntityMetadataCache.GetMetadata<T>();
 
         var body = new StrategicMergePatchBase
         {

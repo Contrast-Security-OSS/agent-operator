@@ -4,6 +4,7 @@
 using Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Utility;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
 using Contrast.K8s.AgentOperator.Options;
+using JetBrains.Annotations;
 using k8s.Models;
 using NLog;
 using System;
@@ -11,6 +12,7 @@ using System.Collections.Generic;
 
 namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents;
 
+[UsedImplicitly]
 public class DotNetAgentPatcher : IAgentPatcher
 {
     private readonly InjectorOptions _injectorOptions;
@@ -27,22 +29,22 @@ public class DotNetAgentPatcher : IAgentPatcher
     {
         if (_injectorOptions.EnableEarlyChaining)
         {
-            yield return new V1EnvVar("LD_PRELOAD", GetAgentPreloadPath(context));
+            yield return new V1EnvVar { Name = "LD_PRELOAD", Value = GetAgentPreloadPath(context) };
         }
         else
         {
-            yield return new V1EnvVar("CORECLR_PROFILER", "{8B2CE134-0948-48CA-A4B2-80DDAD9F5791}");
-            yield return new V1EnvVar("CORECLR_PROFILER_PATH", $"{context.AgentMountPath}/runtimes/linux-x64/native/ContrastProfiler.so");
-            yield return new V1EnvVar("CORECLR_PROFILER_PATH_ARM64", $"{context.AgentMountPath}/runtimes/linux-arm64/native/ContrastProfiler.so");
-            yield return new V1EnvVar("CORECLR_ENABLE_PROFILING", "1");
+            yield return new V1EnvVar { Name = "CORECLR_PROFILER", Value = "{8B2CE134-0948-48CA-A4B2-80DDAD9F5791}" };
+            yield return new V1EnvVar { Name = "CORECLR_PROFILER_PATH", Value = $"{context.AgentMountPath}/runtimes/linux-x64/native/ContrastProfiler.so" };
+            yield return new V1EnvVar { Name = "CORECLR_PROFILER_PATH_ARM64", Value = $"{context.AgentMountPath}/runtimes/linux-arm64/native/ContrastProfiler.so" };
+            yield return new V1EnvVar { Name = "CORECLR_ENABLE_PROFILING", Value = "1" };
         }
 
-        yield return new V1EnvVar("CONTRAST_INSTALL_SOURCE", "kubernetes-operator"); //For backwards compatibility
-        yield return new V1EnvVar("CONTRAST_INSTALLATION_TOOL", "KUBERNETES_OPERATOR");
-        yield return new V1EnvVar("CONTRAST_CORECLR_INSTALL_DIRECTORY", context.AgentMountPath);
-        yield return new V1EnvVar("CONTRAST_CORECLR_DATA_DIRECTORY", context.WritableMountPath);
-        yield return new V1EnvVar("CONTRAST_CORECLR_LOGS_DIRECTORY", $"{context.WritableMountPath}/logs");
-        yield return new V1EnvVar("CONTRAST__AGENT__DOTNET__ENABLE_FILE_WATCHING", "false");
+        yield return new V1EnvVar { Name = "CONTRAST_INSTALL_SOURCE", Value = "kubernetes-operator" }; //For backwards compatibility
+        yield return new V1EnvVar { Name = "CONTRAST_INSTALLATION_TOOL", Value = "KUBERNETES_OPERATOR" };
+        yield return new V1EnvVar { Name = "CONTRAST_CORECLR_INSTALL_DIRECTORY", Value = context.AgentMountPath };
+        yield return new V1EnvVar { Name = "CONTRAST_CORECLR_DATA_DIRECTORY", Value = context.WritableMountPath };
+        yield return new V1EnvVar { Name = "CONTRAST_CORECLR_LOGS_DIRECTORY", Value = $"{context.WritableMountPath}/logs" };
+        yield return new V1EnvVar { Name = "CONTRAST__AGENT__DOTNET__ENABLE_FILE_WATCHING", Value = "false" };
     }
 
     public void PatchContainer(V1Container container, PatchingContext context)
@@ -71,9 +73,8 @@ public class DotNetAgentPatcher : IAgentPatcher
             && !currentLdPreloadValue.Contains("ContrastChainLoader.so", StringComparison.OrdinalIgnoreCase)
             && container.Env.FirstOrDefault("CONTRAST_EXISTING_LD_PRELOAD") is null)
         {
-            container.Env.AddOrUpdate(new V1EnvVar("CONTRAST_EXISTING_LD_PRELOAD", currentLdPreloadValue));
-            container.Env.AddOrUpdate(new V1EnvVar("LD_PRELOAD",
-                $"{GetAgentPreloadPath(context)}:{currentLdPreloadValue}"));
+            container.Env.AddOrUpdate(new V1EnvVar { Name = "CONTRAST_EXISTING_LD_PRELOAD", Value = currentLdPreloadValue });
+            container.Env.AddOrUpdate(new V1EnvVar { Name = "LD_PRELOAD", Value = $"{GetAgentPreloadPath(context)}:{currentLdPreloadValue}" });
         }
     }
 
