@@ -6,6 +6,7 @@ using k8s.Models;
 using KubeOps.Abstractions.Entities;
 using KubeOps.Abstractions.Entities.Attributes;
 using KubeOps.Abstractions.Rbac;
+using System.Text.Json.Serialization;
 
 namespace Contrast.K8s.AgentOperator.Entities.Argo;
 
@@ -15,7 +16,12 @@ namespace Contrast.K8s.AgentOperator.Entities.Argo;
 public partial class V1Alpha1Rollout : CustomKubernetesEntity<V1Alpha1Rollout.RolloutSpec>
 {
     //Drop-in replacement for Deployment (with additional fields for the rollout info)
-    public record RolloutSpec : V1DeploymentSpec
+    public class RolloutSpec
     {
+        [JsonPropertyName("selector")]
+        public V1LabelSelector? Selector { get; set; }
+
+        [JsonPropertyName("template")]
+        public V1PodTemplateSpec? Template { get; set; }
     }
 }
