@@ -31,8 +31,8 @@ public class TlsCertificateChainConverter : ITlsCertificateChainConverter
 
     public TlsCertificateChain Import(TlsCertificateChainExport export)
     {
-        var caCertificate = new X509Certificate2(export.CaCertificatePfx, (string?)null, X509KeyStorageFlags.Exportable);
-        var serverCertificate = new X509Certificate2(export.ServerCertificatePfx, (string?)null, X509KeyStorageFlags.Exportable);
+        var caCertificate = X509CertificateLoader.LoadPkcs12(export.CaCertificatePfx, null, X509KeyStorageFlags.Exportable);
+        var serverCertificate = X509CertificateLoader.LoadPkcs12(export.ServerCertificatePfx, null, X509KeyStorageFlags.Exportable);
 
         return new TlsCertificateChain(caCertificate, serverCertificate, export.SansHash, export.Version);
     }
