@@ -53,11 +53,11 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting.Patching.Age
             // Assert
             result.Should().BeEquivalentTo(new List<V1EnvVar>
             {
-                new("JAVA_TOOL_OPTIONS", $"-javaagent:{contextFake.AgentMountPath}/contrast-agent.jar"),
-                new("CONTRAST__AGENT__CONTRAST_WORKING_DIR", contextFake.WritableMountPath),
-                new("CONTRAST__AGENT__LOGGER__PATH", $"{contextFake.WritableMountPath}/logs/contrast_agent.log"),
-                new("CONTRAST_INSTALLATION_TOOL", "KUBERNETES_OPERATOR"),
-                new("CONTRAST__ASSESS__CACHE__HIERARCHY_ENABLE", "false"),
+                new() { Name = "JAVA_TOOL_OPTIONS", Value = $"-javaagent:{contextFake.AgentMountPath}/contrast-agent.jar" },
+                new() { Name = "CONTRAST__AGENT__CONTRAST_WORKING_DIR", Value = contextFake.WritableMountPath },
+                new() { Name = "CONTRAST__AGENT__LOGGER__PATH", Value = $"{contextFake.WritableMountPath}/logs/contrast_agent.log" },
+                new() { Name = "CONTRAST_INSTALLATION_TOOL", Value = "KUBERNETES_OPERATOR" },
+                new() { Name = "CONTRAST__ASSESS__CACHE__HIERARCHY_ENABLE", Value = "false" },
             });
         }
 
@@ -68,7 +68,8 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting.Patching.Age
             var context = AutoFixture.Create<PatchingContext>();
             var existingToolOptions = "-javaagent:/somepath/contrast-agent.jar";
             var container = AutoFixture.Build<V1Container>()
-                .With(x => x.Env, new List<V1EnvVar> { new("JAVA_TOOL_OPTIONS", existingToolOptions) }).Create();
+                .Without(x => x.Resources)
+                .With(x => x.Env, new List<V1EnvVar> { new() { Name = "JAVA_TOOL_OPTIONS", Value = existingToolOptions }}).Create();
 
             // Act
             patcher.PatchContainer(container, context);
@@ -88,7 +89,8 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting.Patching.Age
             var context = AutoFixture.Create<PatchingContext>();
             var existingToolOptions = "-javaagent:/somepath/some-tool.jar -Dcontrast.dir=/tmp";
             var container = AutoFixture.Build<V1Container>()
-                .With(x => x.Env, new List<V1EnvVar> { new("JAVA_TOOL_OPTIONS", existingToolOptions) }).Create();
+                .Without(x => x.Resources)
+                .With(x => x.Env, new List<V1EnvVar> { new() { Name = "JAVA_TOOL_OPTIONS", Value = existingToolOptions } }).Create();
 
             // Act
             patcher.PatchContainer(container, context);
@@ -111,7 +113,8 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting.Patching.Age
             var context = AutoFixture.Create<PatchingContext>();
             var existingToolOptions = "-javaagent:/somepath/contrast-agent.jar -Dcontrast.dir=/tmp";
             var container = AutoFixture.Build<V1Container>()
-                .With(x => x.Env, new List<V1EnvVar> { new("JAVA_TOOL_OPTIONS", existingToolOptions) }).Create();
+                .Without(x => x.Resources)
+                .With(x => x.Env, new List<V1EnvVar> { new() { Name = "JAVA_TOOL_OPTIONS", Value = existingToolOptions } }).Create();
 
             // Act
             patcher.PatchContainer(container, context);
@@ -134,7 +137,8 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting.Patching.Age
             var context = AutoFixture.Create<PatchingContext>();
             var existingToolOptions = "-Dcontrast.dir=/tmp";
             var container = AutoFixture.Build<V1Container>()
-                .With(x => x.Env, new List<V1EnvVar> { new("JAVA_TOOL_OPTIONS", existingToolOptions) }).Create();
+                .Without(x => x.Resources)
+                .With(x => x.Env, new List<V1EnvVar> { new() { Name = "JAVA_TOOL_OPTIONS", Value = existingToolOptions } }).Create();
 
             // Act
             patcher.PatchContainer(container, context);
@@ -157,7 +161,8 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting.Patching.Age
             var context = AutoFixture.Create<PatchingContext>();
             var existingToolOptions = "-Dcontrast.dir='/tmp";
             var container = AutoFixture.Build<V1Container>()
-                .With(x => x.Env, new List<V1EnvVar> { new("JAVA_TOOL_OPTIONS", existingToolOptions) }).Create();
+                .Without(x => x.Resources)
+                .With(x => x.Env, new List<V1EnvVar> { new() { Name = "JAVA_TOOL_OPTIONS", Value = existingToolOptions } }).Create();
 
             // Act
             patcher.PatchContainer(container, context);

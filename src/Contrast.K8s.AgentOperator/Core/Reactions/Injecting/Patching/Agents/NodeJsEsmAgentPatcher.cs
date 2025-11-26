@@ -3,10 +3,12 @@
 
 using System.Collections.Generic;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
+using JetBrains.Annotations;
 using k8s.Models;
 
 namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents;
 
+[UsedImplicitly]
 public class NodeJsEsmAgentPatcher : IAgentPatcher
 {
     public bool Deprecated => true;
@@ -17,10 +19,10 @@ public class NodeJsEsmAgentPatcher : IAgentPatcher
     public IEnumerable<V1EnvVar> GenerateEnvVars(PatchingContext context)
     {
         // https://nodejs.org/api/cli.html#node_optionsoptions
-        yield return new V1EnvVar("NODE_OPTIONS", $"--import {context.AgentMountPath}/node_modules/@contrast/agent/lib/esm-loader.mjs");
-        yield return new V1EnvVar("CONTRAST__AGENT__LOGGER__PATH", $"{context.WritableMountPath}/logs/contrast_agent.log");
-        yield return new V1EnvVar("CONTRAST__AGENT__SECURITY_LOGGER__PATH", $"{context.WritableMountPath}/logs/contrast_agent_cef.log");
-        yield return new V1EnvVar("CONTRAST__AGENT__NODE__REWRITE__CACHE__PATH", $"{context.WritableMountPath}/cache");
-        yield return new V1EnvVar("CONTRAST_INSTALLATION_TOOL", "KUBERNETES_OPERATOR");
+        yield return new V1EnvVar { Name = "NODE_OPTIONS", Value = $"--import {context.AgentMountPath}/node_modules/@contrast/agent/lib/esm-loader.mjs" };
+        yield return new V1EnvVar { Name = "CONTRAST__AGENT__LOGGER__PATH", Value = $"{context.WritableMountPath}/logs/contrast_agent.log" };
+        yield return new V1EnvVar { Name = "CONTRAST__AGENT__SECURITY_LOGGER__PATH", Value = $"{context.WritableMountPath}/logs/contrast_agent_cef.log" };
+        yield return new V1EnvVar { Name = "CONTRAST__AGENT__NODE__REWRITE__CACHE__PATH", Value = $"{context.WritableMountPath}/cache" };
+        yield return new V1EnvVar { Name = "CONTRAST_INSTALLATION_TOOL", Value = "KUBERNETES_OPERATOR" };
     }
 }

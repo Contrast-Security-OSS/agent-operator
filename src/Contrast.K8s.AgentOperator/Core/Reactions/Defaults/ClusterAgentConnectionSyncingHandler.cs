@@ -84,7 +84,7 @@ public class ClusterAgentConnectionSyncingHandler
 
         return ValueTask.FromResult(new V1Beta1AgentConnection
         {
-            Metadata = new V1ObjectMeta(name: targetName, namespaceProperty: targetNamespace),
+            Metadata = new V1ObjectMeta { Name = targetName, NamespaceProperty = targetNamespace },
             Spec = spec
         })!;
     }

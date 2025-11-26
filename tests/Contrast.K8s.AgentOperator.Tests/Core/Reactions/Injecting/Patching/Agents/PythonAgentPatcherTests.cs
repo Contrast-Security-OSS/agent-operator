@@ -67,7 +67,8 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting.Patching.Age
             var context = AutoFixture.Create<PatchingContext>();
             var existingPath = AutoFixture.Create<string>();
             var container = AutoFixture.Build<V1Container>()
-                                       .With(x => x.Env, new List<V1EnvVar> { new("PYTHONPATH", existingPath) }).Create();
+                .Without(x => x.Resources)
+                .With(x => x.Env, new List<V1EnvVar> { new() { Name = "PYTHONPATH", Value = existingPath }}).Create();
 
             // Act
             patcher.PatchContainer(container, context);
@@ -90,7 +91,8 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting.Patching.Age
             var context = AutoFixture.Create<PatchingContext>();
             var existingPath = AutoFixture.Create<string>() + "/contrast/loader";
             var container = AutoFixture.Build<V1Container>()
-                .With(x => x.Env, new List<V1EnvVar> { new("PYTHONPATH", existingPath) }).Create();
+                .Without(x => x.Resources)
+                .With(x => x.Env, new List<V1EnvVar> { new() { Name = "PYTHONPATH", Value = existingPath } }).Create();
 
             // Act
             patcher.PatchContainer(container, context);
@@ -110,7 +112,8 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting.Patching.Age
             var context = AutoFixture.Create<PatchingContext>();
             var existingPath = $"bleh:{context.AgentMountPath}:{context.AgentMountPath}/contrast/loader:bleh2";
             var container = AutoFixture.Build<V1Container>()
-                .With(x => x.Env, new List<V1EnvVar> { new("PYTHONPATH", existingPath) }).Create();
+                .Without(x => x.Resources)
+                .With(x => x.Env, new List<V1EnvVar> { new() { Name = "PYTHONPATH", Value = existingPath } }).Create();
 
             // Act
             patcher.PatchContainer(container, context);

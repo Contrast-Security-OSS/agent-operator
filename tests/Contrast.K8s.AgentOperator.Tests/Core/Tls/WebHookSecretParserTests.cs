@@ -40,7 +40,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Tls
             using var chainFake = FakeCertificates();
             var secretFake = new V1Secret
             {
-                Metadata = new V1ObjectMeta(name: optionsFake.SecretName, namespaceProperty: optionsFake.SecretNamespace),
+                Metadata = new V1ObjectMeta { Name = optionsFake.SecretName, NamespaceProperty = optionsFake.SecretNamespace },
                 Data = new Dictionary<string, byte[]>
                 {
                     { optionsFake.ServerCertificateName, exportFake.ServerCertificatePfx },

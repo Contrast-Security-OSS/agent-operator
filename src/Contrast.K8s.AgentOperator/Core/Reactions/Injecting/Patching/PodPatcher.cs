@@ -1,13 +1,6 @@
 ﻿// Contrast Security, Inc licenses this file to you under the Apache 2.0 License.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents;
 using Contrast.K8s.AgentOperator.Core.Reactions.Matching;
 using Contrast.K8s.AgentOperator.Core.Reactions.Secrets;
@@ -15,6 +8,13 @@ using Contrast.K8s.AgentOperator.Core.Telemetry.Cluster;
 using Contrast.K8s.AgentOperator.Options;
 using k8s.Models;
 using NLog;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching;
 
@@ -82,22 +82,25 @@ public class PodPatcher : IPodPatcher
 
         // Volumes.
         pod.Spec.Volumes ??= new List<V1Volume>();
-        var agentVolume = new V1Volume("contrast-agent")
+        var agentVolume = new V1Volume
         {
+            Name = "contrast-agent",
             EmptyDir = new V1EmptyDirVolumeSource()
         };
         pod.Spec.Volumes.AddOrUpdate(agentVolume.Name, agentVolume);
 
-        var writableVolume = new V1Volume("contrast-writable")
+        var writableVolume = new V1Volume
         {
+            Name = "contrast-writable",
             EmptyDir = new V1EmptyDirVolumeSource()
         };
         pod.Spec.Volumes.AddOrUpdate(writableVolume.Name, writableVolume);
         var connectionSecretVolumeName = "contrast-connection";
         if (context.Connection.MountAsVolume == true)
         {
-            var secretVolume = new V1Volume(connectionSecretVolumeName)
+            var secretVolume = new V1Volume
             {
+                Name = connectionSecretVolumeName,
                 Secret = new V1SecretVolumeSource
                 {
                     SecretName = VolumeSecrets.GetConnectionVolumeSecretName(context.Injector.ConnectionReference.Name),
@@ -124,7 +127,7 @@ public class PodPatcher : IPodPatcher
             pod.Spec.ImagePullSecrets ??= new List<V1LocalObjectReference>();
             pod.Spec.ImagePullSecrets.AddOrUpdate(
                 x => string.Equals(x.Name, pullSecret.Name, StringComparison.Ordinal),
-                new V1LocalObjectReference(pullSecret.Name)
+                new V1LocalObjectReference{ Name = pullSecret.Name }
             );
         }
 
@@ -133,16 +136,30 @@ public class PodPatcher : IPodPatcher
         {
             container.VolumeMounts ??= new List<V1VolumeMount>();
 
-            var agentVolumeMount = new V1VolumeMount(context.AgentMountPath, agentVolume.Name, readOnlyProperty: true);
+            var agentVolumeMount = new V1VolumeMount
+            {
+                Name = agentVolume.Name,
+                MountPath = context.AgentMountPath,
+                ReadOnlyProperty = true
+            };
             container.VolumeMounts.AddOrUpdate(agentVolumeMount.Name, agentVolumeMount);
 
-            var writableVolumeMount =
-                new V1VolumeMount(context.WritableMountPath, writableVolume.Name, readOnlyProperty: false);
+            var writableVolumeMount = new V1VolumeMount
+            {
+                Name = writableVolume.Name,
+                MountPath = context.WritableMountPath,
+                ReadOnlyProperty = false
+            };
             container.VolumeMounts.AddOrUpdate(writableVolumeMount.Name, writableVolumeMount);
 
             if (context.Connection.MountAsVolume == true)
             {
-                var connectionSecretVolumeMount = new V1VolumeMount(context.ConnectionSecretMountPath, connectionSecretVolumeName, readOnlyProperty: true);
+                var connectionSecretVolumeMount = new V1VolumeMount
+                {
+                    Name = connectionSecretVolumeName,
+                    MountPath = context.ConnectionSecretMountPath,
+                    ReadOnlyProperty = true
+                };
                 container.VolumeMounts.AddOrUpdate(connectionSecretVolumeMount.Name, connectionSecretVolumeMount);
             }
 
@@ -230,20 +247,21 @@ public class PodPatcher : IPodPatcher
         resources.Limits.TryAdd("memory", new ResourceQuantity(_initOptions.MemoryLimit));
         resources.Limits.TryAdd("ephemeral-storage", new ResourceQuantity(_initOptions.EphemeralStorageLimit));
 
-        var initContainer = new V1Container("contrast-init")
+        var initContainer = new V1Container
         {
+            Name = "contrast-init",
             Image = context.Injector.Image.GetFullyQualifiedContainerImageName(),
             VolumeMounts = new List<V1VolumeMount>
             {
-                new(initAgentMountPath, agentVolume.Name),
-                new(initWritableMountPath, writableVolume.Name),
+                new() { MountPath = initAgentMountPath, Name = agentVolume.Name },
+                new() { MountPath = initWritableMountPath, Name = writableVolume.Name },
             },
             ImagePullPolicy = context.Injector.ImagePullPolicy,
             Env = new List<V1EnvVar>
             {
-                new("CONTRAST_MOUNT_PATH", initAgentMountPath),
-                new("CONTRAST_MOUNT_AGENT_PATH", initAgentMountPath),
-                new("CONTRAST_MOUNT_WRITABLE_PATH", initWritableMountPath),
+                new() { Name = "CONTRAST_MOUNT_PATH", Value = initAgentMountPath },
+                new() { Name = "CONTRAST_MOUNT_AGENT_PATH", Value = initAgentMountPath },
+                new() { Name = "CONTRAST_MOUNT_WRITABLE_PATH", Value = initWritableMountPath },
             },
             Resources = resources,
             SecurityContext = securityContent
@@ -252,7 +270,7 @@ public class PodPatcher : IPodPatcher
         // This is for our CS team to aid in debugging, but also for our functional tests.
         if (securityContextTainted)
         {
-            initContainer.Env.Add(new V1EnvVar("CONTRAST_DEBUGGING_SECURITY_CONTEXT_TAINTED", true.ToString()));
+            initContainer.Env.Add(new V1EnvVar { Name = "CONTRAST_DEBUGGING_SECURITY_CONTEXT_TAINTED", Value = "true" });
         }
 
         return initContainer;
@@ -294,61 +312,85 @@ public class PodPatcher : IPodPatcher
         var (workloadName, workloadNamespace, _, connection, configuration, agentMountPath, writableMountPath, secretMountPath) = context;
 
         // This isn't used in modern agent images, but is still used in older images.
-        yield return new V1EnvVar("CONTRAST_MOUNT_PATH", agentMountPath);
-        yield return new V1EnvVar("CONTRAST_MOUNT_AGENT_PATH", agentMountPath);
-        yield return new V1EnvVar("CONTRAST_MOUNT_WRITABLE_PATH", writableMountPath);
+        yield return new V1EnvVar { Name = "CONTRAST_MOUNT_PATH", Value = agentMountPath };
+        yield return new V1EnvVar { Name = "CONTRAST_MOUNT_AGENT_PATH", Value = agentMountPath };
+        yield return new V1EnvVar { Name = "CONTRAST_MOUNT_WRITABLE_PATH", Value = writableMountPath };
 
         if (connection.TeamServerUri != null)
         {
-            yield return new V1EnvVar("CONTRAST__API__URL", connection.TeamServerUri);
+            yield return new V1EnvVar { Name = "CONTRAST__API__URL", Value = connection.TeamServerUri };
         }
 
         if (context.Connection.MountAsVolume == true)
         {
-            yield return new V1EnvVar("CONTRAST_CONFIG_PATH", Path.Join(secretMountPath, "contrast_security.yaml"));
+            yield return new V1EnvVar { Name = "CONTRAST_CONFIG_PATH", Value = Path.Join(secretMountPath, "contrast_security.yaml") };
         }
         else
         {
             // New auth method
             if (connection.Token != null)
             {
-                yield return new V1EnvVar(
-                    "CONTRAST__API__TOKEN",
-                    valueFrom: new V1EnvVarSource(
-                        secretKeyRef: new V1SecretKeySelector(connection.Token.Key, connection.Token.Name)
-                    )
-                );
+                yield return new V1EnvVar
+                {
+                    Name = "CONTRAST__API__TOKEN",
+                    ValueFrom = new V1EnvVarSource
+                    {
+                        SecretKeyRef = new V1SecretKeySelector
+                        {
+                            Key = connection.Token.Key,
+                            Name = connection.Token.Name
+                        }
+                    }
+                };
             }
 
             // Legacy auth method
             if (connection.ApiKey != null)
             {
-                yield return new V1EnvVar(
-                    "CONTRAST__API__API_KEY",
-                    valueFrom: new V1EnvVarSource(
-                        secretKeyRef: new V1SecretKeySelector(connection.ApiKey.Key, connection.ApiKey.Name)
-                    )
-                );
+                yield return new V1EnvVar
+                {
+                    Name = "CONTRAST__API__API_KEY",
+                    ValueFrom = new V1EnvVarSource
+                    {
+                        SecretKeyRef = new V1SecretKeySelector
+                        {
+                            Key = connection.ApiKey.Key,
+                            Name = connection.ApiKey.Name
+                        }
+                    }
+                };
             }
 
             if (connection.ServiceKey != null)
             {
-                yield return new V1EnvVar(
-                    "CONTRAST__API__SERVICE_KEY",
-                    valueFrom: new V1EnvVarSource(
-                        secretKeyRef: new V1SecretKeySelector(connection.ServiceKey.Key, connection.ServiceKey.Name)
-                    )
-                );
+                yield return new V1EnvVar
+                {
+                    Name = "CONTRAST__API__SERVICE_KEY",
+                    ValueFrom = new V1EnvVarSource
+                    {
+                        SecretKeyRef = new V1SecretKeySelector
+                        {
+                            Key = connection.ServiceKey.Key,
+                            Name = connection.ServiceKey.Name
+                        }
+                    }
+                };
             }
 
             if (connection.UserName != null)
             {
-                yield return new V1EnvVar(
-                    "CONTRAST__API__USER_NAME",
-                    valueFrom: new V1EnvVarSource(
-                        secretKeyRef: new V1SecretKeySelector(connection.UserName.Key, connection.UserName.Name)
-                    )
-                );
+                yield return new V1EnvVar
+                {
+                    Name = "CONTRAST__API__USER_NAME",
+                    ValueFrom = new V1EnvVarSource
+                    {
+                        SecretKeyRef = new V1SecretKeySelector
+                        {
+                            Key = connection.UserName.Key,
+                            Name = connection.UserName.Name
+                        }
+                    }
+                };
             }
         }
 
@@ -370,13 +412,12 @@ public class PodPatcher : IPodPatcher
                                 yield return envVar;
                             }
 
-                            yield return new V1EnvVar($"CONTRAST__{key.Replace(".", "__").ToUpperInvariant()}",
-                                replacement.Value);
+                            yield return new V1EnvVar { Name = $"CONTRAST__{key.Replace(".", "__").ToUpperInvariant()}", Value = replacement.Value };
                         }
                     }
                     else
                     {
-                        yield return new V1EnvVar($"CONTRAST__{key.Replace(".", "__").ToUpperInvariant()}", value);
+                        yield return new V1EnvVar { Name = $"CONTRAST__{key.Replace(".", "__").ToUpperInvariant()}", Value = value };
                     }
                 }
             }
@@ -385,24 +426,24 @@ public class PodPatcher : IPodPatcher
         // Order does matter here, YamlKeys values take precedent.
         if (_operatorOptions.EnableAgentStdout)
         {
-            yield return new V1EnvVar("CONTRAST__AGENT__LOGGER__STDOUT", "true");
+            yield return new V1EnvVar { Name = "CONTRAST__AGENT__LOGGER__STDOUT", Value = "true" };
         }
 
         if (configuration?.SuppressDefaultServerName != true
             && !string.IsNullOrWhiteSpace(workloadNamespace))
         {
-            yield return new V1EnvVar("CONTRAST__SERVER__NAME", $"kubernetes-{workloadNamespace}");
+            yield return new V1EnvVar { Name = "CONTRAST__SERVER__NAME", Value = $"kubernetes-{workloadNamespace}" };
         }
 
         if (configuration?.SuppressDefaultApplicationName != true
             && !string.IsNullOrWhiteSpace(workloadName))
         {
-            yield return new V1EnvVar("CONTRAST__APPLICATION__NAME", workloadName);
+            yield return new V1EnvVar { Name = "CONTRAST__APPLICATION__NAME", Value = workloadName };
         }
 
         if (_clusterIdState.GetClusterId() is { } clusterId)
         {
-            yield return new V1EnvVar("CONTRAST_CLUSTER_ID", clusterId.Guid.ToString("D"));
+            yield return new V1EnvVar { Name = "CONTRAST_CLUSTER_ID", Value = clusterId.Guid.ToString("D") };
         }
     }
 
@@ -425,11 +466,15 @@ public class PodPatcher : IPodPatcher
                 var key = match.Groups[1].Value;
                 if (key.Equals("namespace", StringComparison.OrdinalIgnoreCase))
                 {
-                    additionalVars.Add(new V1EnvVar(
-                        "CONTRAST_VAR_POD_NAMESPACE",
-                        valueFrom: new V1EnvVarSource(
-                            fieldRef: new V1ObjectFieldSelector("metadata.namespace")
-                        )));
+                    additionalVars.Add(new V1EnvVar
+                    {
+                        Name = "CONTRAST_VAR_POD_NAMESPACE",
+                        ValueFrom = new V1EnvVarSource
+                        {
+                            FieldRef = new V1ObjectFieldSelector { FieldPath = "metadata.namespace" }
+                        }
+                    });
+
                     value = value.Replace("%namespace%", "$(CONTRAST_VAR_POD_NAMESPACE)");
                 }
                 else if (key.StartsWith("labels", StringComparison.OrdinalIgnoreCase))
@@ -443,11 +488,15 @@ public class PodPatcher : IPodPatcher
                     var labelKey = key.Substring("labels.".Length);
                     var envKey = labelKey.Replace("/", "").Replace("-", "").Replace(".", "").ToUpper();
                     var envVariableName = $"CONTRAST_VAR_LABEL_{envKey}";
-                    additionalVars.Add(new V1EnvVar(
-                        envVariableName,
-                        valueFrom: new V1EnvVarSource(
-                            fieldRef: new V1ObjectFieldSelector($"metadata.labels['{labelKey}']")
-                        )));
+
+                    additionalVars.Add(new V1EnvVar
+                    {
+                        Name = envVariableName,
+                        ValueFrom = new V1EnvVarSource
+                        {
+                            FieldRef = new V1ObjectFieldSelector { FieldPath = $"metadata.labels['{labelKey}']" }
+                        }
+                    });
 
                     value = value.Replace($"%{key}%", $"$({envVariableName})");
                 }
@@ -462,11 +511,15 @@ public class PodPatcher : IPodPatcher
                     var annotationKey = key.Substring("annotations.".Length);
                     var envKey = annotationKey.Replace("/", "").Replace("-", "").Replace(".", "").ToUpper();
                     var envVariableName = $"CONTRAST_VAR_ANNOTATION_{envKey}";
-                    additionalVars.Add(new V1EnvVar(
-                        envVariableName,
-                        valueFrom: new V1EnvVarSource(
-                            fieldRef: new V1ObjectFieldSelector($"metadata.annotations['{annotationKey}']")
-                        )));
+
+                    additionalVars.Add(new V1EnvVar
+                    {
+                        Name = envVariableName,
+                        ValueFrom = new V1EnvVarSource
+                        {
+                            FieldRef = new V1ObjectFieldSelector { FieldPath = $"metadata.annotations['{annotationKey}']" }
+                        }
+                    });
 
                     value = value.Replace($"%{key}%", $"$({envVariableName})");
                 }

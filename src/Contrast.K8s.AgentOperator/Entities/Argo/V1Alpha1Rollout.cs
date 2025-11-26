@@ -15,7 +15,7 @@ namespace Contrast.K8s.AgentOperator.Entities.Argo;
 public partial class V1Alpha1Rollout : CustomKubernetesEntity<V1Alpha1Rollout.RolloutSpec>
 {
     //Drop-in replacement for Deployment (with additional fields for the rollout info)
-    public class RolloutSpec : V1DeploymentSpec
+    public record RolloutSpec : V1DeploymentSpec
     {
     }
 }
