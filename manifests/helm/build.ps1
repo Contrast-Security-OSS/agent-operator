@@ -27,9 +27,6 @@ if($WriteSchemaUrl)
     Set-Content -Path "$root/values.yaml" -Value $content
 }
 
-Write-Host "Copying schema."
-Copy-Item "$root/values.schema.json" -Destination "$root/dist/contrast-agent-operator-$ChartVersion.schema.json"
-
 # Package
 Write-Host "Linting chart."
 helm lint $root --values "$root/values.testing.yaml"
