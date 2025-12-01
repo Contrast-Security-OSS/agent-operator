@@ -445,12 +445,12 @@ jobs:
         id: download-manifests
         with:
           name: manifests
-          path: ./manifests
+          path: ./artifacts/manifests
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         id: download-schema
         with:
           name: helm-schema
-          path: ./schema
+          path: ./artifacts/schema
       - name: Publish
         uses: ncipollo/release-action@cdcc88a9acf3ca41c16c37bb7d21b9ad48560d87 # v1.15.0
         with:
