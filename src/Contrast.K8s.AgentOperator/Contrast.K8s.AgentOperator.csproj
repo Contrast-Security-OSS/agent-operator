@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <LangVersion>11.0</LangVersion>
         <nullable>enable</nullable>
         <IsPackable>false</IsPackable>
@@ -37,14 +37,11 @@
         </PackageReference>
 
         <PackageReference Include="Sigil" Version="5.0.0" />
-        <PackageReference Include="KubeOps.Operator.Web" Version="9.5.0" />
-        <PackageReference Include="KubeOps.Generator" Version="9.5.0">
+        <PackageReference Include="KubeOps.Operator.Web" Version="10.0.0" />
+        <PackageReference Include="KubeOps.Generator" Version="10.0.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
         </PackageReference>
-
-        <!--https://github.com/dotnet/runtime/issues/60393 (can remove after .NET 9)-->
-        <PackageReference Include="HexMate" Version="0.0.3" />
     </ItemGroup>
 
 

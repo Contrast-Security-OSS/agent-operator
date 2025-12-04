@@ -3,13 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.State;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
-using Contrast.K8s.AgentOperator.Core.State.Resources.Interfaces;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
 
 namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults;
@@ -27,29 +24,29 @@ public class ClusterDefaults
 
     public string GetDefaultAgentConfigurationName(string targetNamespace)
     {
-        return "default-agent-configuration-" + GetShortHash(targetNamespace);
+        return "default-agent-configuration-" + HashHelper.GetShortHash(targetNamespace);
     }
 
     public string GetDefaultAgentConnectionName(string targetNamespace)
     {
-        return "default-agent-connection-" + GetShortHash(targetNamespace);
+        return "default-agent-connection-" + HashHelper.GetShortHash(targetNamespace);
     }
 
     public string GetDefaultAgentConnectionSecretName(string targetNamespace)
     {
-        return "default-agent-connection-secret-" + GetShortHash(targetNamespace);
+        return "default-agent-connection-secret-" + HashHelper.GetShortHash(targetNamespace);
     }
 
     public string GetDefaultPullSecretName(string targetNamespace, AgentInjectionType agentType)
     {
         var type = _typeConverter.GetStringFromType(agentType);
-        return $"default-agent-injector-pullsecret-{type}-{GetShortHash(targetNamespace)}";
+        return $"default-agent-injector-pullsecret-{type}-{HashHelper.GetShortHash(targetNamespace)}";
     }
 
     public string GetDefaultAgentInjectorName(string targetNamespace, AgentInjectionType agentType)
     {
         var type = _typeConverter.GetStringFromType(agentType);
-        return $"default-agent-injector-{type}-{GetShortHash(targetNamespace)}";
+        return $"default-agent-injector-{type}-{HashHelper.GetShortHash(targetNamespace)}";
     }
 
     public async ValueTask<IReadOnlyCollection<string>> GetAllNamespaces(CancellationToken cancellationToken = default)
@@ -82,14 +79,4 @@ public class ClusterDefaults
     {
         return new HashSet<string> { "kube-system", "kube-node-lease", "kube-public", "gatekeeper-system" };
     }
-
-    private static string GetShortHash(string text)
-    {
-        using var sha256 = SHA256.Create();
-        var bytes = Encoding.UTF8.GetBytes(text);
-        var hash = sha256.ComputeHash(bytes);
-        return HexConverter.ToLowerHex(hash, 8);
-    }
-
-
 }

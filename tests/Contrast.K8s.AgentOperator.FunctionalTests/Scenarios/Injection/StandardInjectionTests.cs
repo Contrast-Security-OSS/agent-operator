@@ -215,10 +215,10 @@ public class StandardInjectionTests : IClassFixture<TestingContext>
             var resources = container.Resources;
 
             resources.Should().NotBeNull();
-            resources.Limits.Should().ContainKey("cpu").WhoseValue.Value.Should().Be("100m");
-            resources.Limits.Should().ContainKey("memory").WhoseValue.Value.Should().Be("256Mi");
-            resources.Requests.Should().ContainKey("cpu").WhoseValue.Value.Should().Be("100m");
-            resources.Requests.Should().ContainKey("memory").WhoseValue.Value.Should().Be("64Mi");
+            resources.Limits.Should().ContainKey("cpu").WhoseValue.ToString().Should().Be("100m");
+            resources.Limits.Should().ContainKey("memory").WhoseValue.ToString().Should().Be("256Mi");
+            resources.Requests.Should().ContainKey("cpu").WhoseValue.ToString().Should().Be("100m");
+            resources.Requests.Should().ContainKey("memory").WhoseValue.ToString().Should().Be("64Mi");
         }
     }
 }

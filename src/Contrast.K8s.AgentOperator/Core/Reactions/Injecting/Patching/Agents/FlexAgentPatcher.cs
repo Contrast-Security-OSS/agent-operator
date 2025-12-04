@@ -5,22 +5,24 @@ using System;
 using System.Collections.Generic;
 using Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Utility;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
+using JetBrains.Annotations;
 using k8s.Models;
 
 namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents;
 
+[UsedImplicitly]
 public class FlexAgentPatcher : IAgentPatcher
 {
     public AgentInjectionType Type => AgentInjectionType.Flex;
 
     public IEnumerable<V1EnvVar> GenerateEnvVars(PatchingContext context)
     {
-        yield return new V1EnvVar("LD_PRELOAD", GetInjectorPreloadPath(context));
-        yield return new V1EnvVar("CONTRAST_INSTALLATION_TOOL", "KUBERNETES_OPERATOR");
+        yield return new V1EnvVar { Name = "LD_PRELOAD", Value = GetInjectorPreloadPath(context) };
+        yield return new V1EnvVar { Name = "CONTRAST_INSTALLATION_TOOL", Value = "KUBERNETES_OPERATOR" };
 
-        yield return new V1EnvVar("CONTRAST_FLEX_AGENTS_PARENT_DIR", context.AgentMountPath);
-        yield return new V1EnvVar("CONTRAST_FLEX_COMMS_PARENT_DIR", context.AgentMountPath);
-        yield return new V1EnvVar("CONTRAST_FLEX_WRITABLE_DIR", context.WritableMountPath);
+        yield return new V1EnvVar { Name = "CONTRAST_FLEX_AGENTS_PARENT_DIR", Value = context.AgentMountPath };
+        yield return new V1EnvVar { Name = "CONTRAST_FLEX_COMMS_PARENT_DIR", Value = context.AgentMountPath };
+        yield return new V1EnvVar { Name = "CONTRAST_FLEX_WRITABLE_DIR", Value = context.WritableMountPath };
     }
 
     public void PatchContainer(V1Container container, PatchingContext context)
@@ -31,9 +33,8 @@ public class FlexAgentPatcher : IAgentPatcher
             && !currentLdPreloadValue.Contains("agent_injector.so", StringComparison.OrdinalIgnoreCase)
             && container.Env.FirstOrDefault("CONTRAST_EXISTING_LD_PRELOAD") is null)
         {
-            container.Env.AddOrUpdate(new V1EnvVar("CONTRAST_EXISTING_LD_PRELOAD", currentLdPreloadValue));
-            container.Env.AddOrUpdate(new V1EnvVar("LD_PRELOAD",
-                $"{GetInjectorPreloadPath(context)}:{currentLdPreloadValue}"));
+            container.Env.AddOrUpdate(new V1EnvVar { Name = "CONTRAST_EXISTING_LD_PRELOAD", Value = currentLdPreloadValue });
+            container.Env.AddOrUpdate(new V1EnvVar { Name = "LD_PRELOAD", Value = $"{GetInjectorPreloadPath(context)}:{currentLdPreloadValue}" });
         }
     }
 

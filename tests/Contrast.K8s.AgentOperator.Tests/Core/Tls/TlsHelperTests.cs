@@ -26,7 +26,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Tls
             var result = TlsHelper.GenerateSansHash(fake.OrderBy(_ => Random.Shared.Next()));
 
             // Assert
-            HexMate.Convert.ToHexString(result).Should().Be("0C323EACC9F32E549476C7CC3E1ACE33A5DB39870BD19238921FB4CDCB44911D");
+            Convert.ToHexString(result).Should().Be("0C323EACC9F32E549476C7CC3E1ACE33A5DB39870BD19238921FB4CDCB44911D");
         }
 
         [Fact]
@@ -43,7 +43,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Tls
             var result = TlsHelper.GenerateSansHash(fake.OrderBy(_ => Random.Shared.Next()));
 
             // Assert
-            HexMate.Convert.ToHexString(result).Should().Be("0C323EACC9F32E549476C7CC3E1ACE33A5DB39870BD19238921FB4CDCB44911D");
+            Convert.ToHexString(result).Should().Be("0C323EACC9F32E549476C7CC3E1ACE33A5DB39870BD19238921FB4CDCB44911D");
         }
 
         [Fact]
@@ -62,7 +62,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Tls
             var result = TlsHelper.GenerateSansHash(fake.OrderBy(_ => Random.Shared.Next()));
 
             // Assert
-            HexMate.Convert.ToHexString(result).Should().Be("0C323EACC9F32E549476C7CC3E1ACE33A5DB39870BD19238921FB4CDCB44911D");
+            Convert.ToHexString(result).Should().Be("0C323EACC9F32E549476C7CC3E1ACE33A5DB39870BD19238921FB4CDCB44911D");
         }
     }
 }

@@ -113,7 +113,7 @@ public class PodTemplateInjectionHandler : INotificationHandler<InjectorMatched>
     private async ValueTask PatchToDesiredStateRollout(DesiredState desiredState, NamespacedResourceIdentity identity)
     {
         await _state.MarkAsDirty(identity);
-        await _patcher.Patch<V1Alpha1Rollout>(identity.Name, identity.Namespace, o => { PatchAnnotations(desiredState, o.Spec.Template); });
+        await _patcher.Patch<V1Alpha1Rollout>(identity.Name, identity.Namespace, o => { PatchAnnotations(desiredState, o.Spec.Template!); });
     }
 
     private async ValueTask PatchToDesiredStateDeploymentConfig(DesiredState desiredState, NamespacedResourceIdentity identity)

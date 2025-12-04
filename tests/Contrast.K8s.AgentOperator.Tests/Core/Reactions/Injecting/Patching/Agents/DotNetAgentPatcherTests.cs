@@ -75,7 +75,8 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting.Patching.Age
             var context = AutoFixture.Create<PatchingContext>();
             var existingPreload = AutoFixture.Create<string>();
             var container = AutoFixture.Build<V1Container>()
-                                       .With(x => x.Env, new List<V1EnvVar> { new("LD_PRELOAD", existingPreload) }).Create();
+                .Without(x => x.Resources)
+                .With(x => x.Env, new List<V1EnvVar> { new() { Name = "LD_PRELOAD", Value = existingPreload }}).Create();
 
             // Act
             patcher.PatchContainer(container, context);
@@ -96,8 +97,9 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting.Patching.Age
         {
             var patcher = new DotNetAgentPatcher(new InjectorOptions(false, false));
             var context = AutoFixture.Create<PatchingContext>();
-            var container = AutoFixture.Build<V1Container>().With(x => x.Env,
-                new List<V1EnvVar> { new("CONTRAST__AGENT__DOTNET__ENABLE_CHAINING", "false") }).Create();
+            var container = AutoFixture.Build<V1Container>()
+                .Without(x => x.Resources)
+                .With(x => x.Env, new List<V1EnvVar> { new() { Name = "CONTRAST__AGENT__DOTNET__ENABLE_CHAINING", Value = "false" }}).Create();
 
             // Act
             patcher.PatchContainer(container, context);
@@ -117,7 +119,8 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting.Patching.Age
             var context = AutoFixture.Create<PatchingContext>();
             var existingPreload = AutoFixture.Create<string>() + "ContrastChainLoader.so";
             var container = AutoFixture.Build<V1Container>()
-                .With(x => x.Env, new List<V1EnvVar> { new("LD_PRELOAD", existingPreload) }).Create();
+                .Without(x => x.Resources)
+                .With(x => x.Env, new List<V1EnvVar> { new() { Name = "LD_PRELOAD", Value = existingPreload } }).Create();
 
             // Act
             patcher.PatchContainer(container, context);

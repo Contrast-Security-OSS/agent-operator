@@ -1,7 +1,7 @@
 # Contrast Security, Inc licenses this file to you under the Apache 2.0 License.
 # See the LICENSE file in the project root for more information.
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0.22-bookworm-slim AS base
+FROM mcr.microsoft.com/dotnet/aspnet:10.0.0-noble AS base
 
 # To aid in debugging.
 RUN set -xe \
@@ -9,7 +9,7 @@ RUN set -xe \
     && apt-get install -y --no-install-recommends curl jq \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0.416-bookworm-slim AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0.100-noble AS build
 WORKDIR /source
 
 # Restore
@@ -33,8 +33,8 @@ FROM base AS final
 WORKDIR /app
 
 RUN set -xe \
-    && addgroup --gid 1000 operator-group \
-    && useradd -G operator-group --uid 1000 operator-user
+    && groupadd --gid 1001 operator-group \
+    && useradd -G operator-group --uid 1001 operator-user
 
 COPY src/get-info.sh /get-info.sh
 COPY --from=build /app .
@@ -43,7 +43,7 @@ RUN set -xe \
     && chown operator-user:operator-group -R . \
     && chmod +x /get-info.sh
 
-USER 1000
+USER 1001
 
 ENV ASPNETCORE_URLS=https://+:5001 \
     ASPNETCORE_ENVIRONMENT=Production \

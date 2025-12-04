@@ -93,10 +93,11 @@ public class ClusterIdWriter : IClusterIdWriter
 
         await _client.SaveAsync(new V1Secret
         {
-            Metadata = new V1ObjectMeta(
-                name: _options.ClusterIdSecretName,
-                namespaceProperty: _options.ClusterIdSecretNamespace
-            ),
+            Metadata = new V1ObjectMeta
+            {
+                Name = _options.ClusterIdSecretName,
+                NamespaceProperty = _options.ClusterIdSecretNamespace
+            },
             Data = new Dictionary<string, byte[]>
             {
                 { PayloadKey, bytes }

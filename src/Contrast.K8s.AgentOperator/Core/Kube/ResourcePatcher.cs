@@ -3,12 +3,10 @@
 
 using System;
 using System.Diagnostics;
-using System.Linq;
 using System.Net;
-using System.Text.Json.JsonDiffPatch;
-using System.Text.Json.JsonDiffPatch.Diffs.Formatters;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Options;
+using Json.Patch;
 using k8s;
 using k8s.Autorest;
 using k8s.Models;
@@ -27,14 +25,12 @@ public class ResourcePatcher : IResourcePatcher
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    private readonly JsonPatchDeltaFormatter _jsonFormatter;
     private readonly IKubernetesClient _client;
     private readonly KubernetesJsonSerializer _jsonSerializer;
     private readonly OperatorOptions _operatorOptions;
 
-    public ResourcePatcher(JsonPatchDeltaFormatter jsonFormatter, IKubernetesClient client, KubernetesJsonSerializer jsonSerializer, OperatorOptions operatorOptions)
+    public ResourcePatcher(IKubernetesClient client, KubernetesJsonSerializer jsonSerializer, OperatorOptions operatorOptions)
     {
-        _jsonFormatter = jsonFormatter;
         _client = client;
         _jsonSerializer = jsonSerializer;
         _operatorOptions = operatorOptions;
@@ -74,15 +70,18 @@ public class ResourcePatcher : IResourcePatcher
         mutator.Invoke(entityCopy);
         var nextVersion = _jsonSerializer.ToJsonNode(entityCopy);
 
-        var diff = currentVersion.Diff(nextVersion, _jsonFormatter);
-        if (diff != null && diff.AsArray().Any())
+        var patch = currentVersion.CreatePatch(nextVersion);
+
+        if (patch.Operations.Count > 0)
         {
+            var patchJson = _jsonSerializer.ToJsonString(patch);
+
             Logger.Trace(() => $"Preparing to patch '{entity.Namespace()}/{entity.Name()}' ('{entity.Kind}/{entity.ApiVersion}') "
-                               + $"with '{diff.ToJsonString()}'.");
+                               + $"with '{patchJson}'.");
 
             try
             {
-                await _client.Patch(entity, diff, _operatorOptions.FieldManagerName);
+                await _client.PatchEntity(entity, patchJson, _operatorOptions.FieldManagerName);
             }
             catch (HttpOperationException e) when (e.Response.StatusCode == HttpStatusCode.NotFound)
             {
@@ -107,7 +106,7 @@ public class ResourcePatcher : IResourcePatcher
 
         var stopwatch = Stopwatch.StartNew();
 
-        var crd = CustomEntityDefinitionExtensions.CreateResourceDefinition<T>();
+        var crd = EntityMetadataCache.GetMetadata<T>();
 
         Logger.Trace(() =>
             $"Preparing to patch status '{@namespace}/{name}' ('{crd.Kind}/{crd.Version}') "

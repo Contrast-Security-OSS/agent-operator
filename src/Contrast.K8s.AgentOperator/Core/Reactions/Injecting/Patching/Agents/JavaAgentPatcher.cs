@@ -1,16 +1,18 @@
 ﻿// Contrast Security, Inc licenses this file to you under the Apache 2.0 License.
 // See the LICENSE file in the project root for more information.
 
+using Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Utility;
+using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
+using JetBrains.Annotations;
+using k8s.Models;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Utility;
-using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
-using k8s.Models;
-using NLog;
 
 namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents;
 
+[UsedImplicitly]
 public class JavaAgentPatcher : IAgentPatcher
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
@@ -19,13 +21,13 @@ public class JavaAgentPatcher : IAgentPatcher
 
     public IEnumerable<V1EnvVar> GenerateEnvVars(PatchingContext context)
     {
-        yield return new V1EnvVar("JAVA_TOOL_OPTIONS", GetContrastAgentArgument(context));
-        yield return new V1EnvVar("CONTRAST__AGENT__CONTRAST_WORKING_DIR", context.WritableMountPath);
-        yield return new V1EnvVar("CONTRAST__AGENT__LOGGER__PATH", $"{context.WritableMountPath}/logs/contrast_agent.log");
-        yield return new V1EnvVar("CONTRAST_INSTALLATION_TOOL", "KUBERNETES_OPERATOR");
+        yield return new V1EnvVar { Name = "JAVA_TOOL_OPTIONS", Value = GetContrastAgentArgument(context) };
+        yield return new V1EnvVar { Name = "CONTRAST__AGENT__CONTRAST_WORKING_DIR", Value = context.WritableMountPath };
+        yield return new V1EnvVar { Name = "CONTRAST__AGENT__LOGGER__PATH", Value = $"{context.WritableMountPath}/logs/contrast_agent.log" };
+        yield return new V1EnvVar { Name = "CONTRAST_INSTALLATION_TOOL", Value = "KUBERNETES_OPERATOR" };
 
         //Disable hierarchy cache since we are in containers
-        yield return new V1EnvVar("CONTRAST__ASSESS__CACHE__HIERARCHY_ENABLE", "false");
+        yield return new V1EnvVar { Name = "CONTRAST__ASSESS__CACHE__HIERARCHY_ENABLE", Value = "false" };
     }
 
     public void PatchContainer(V1Container container, PatchingContext context)
@@ -38,7 +40,7 @@ public class JavaAgentPatcher : IAgentPatcher
             var contrastAgentArgument = GetContrastAgentArgument(context);
 
             //Parse and patch the existing JAVA_TOOL_OPTIONS
-            container.Env.AddOrUpdate(new V1EnvVar("CONTRAST_EXISTING_JAVA_TOOL_OPTIONS", currentJavaToolOptions));
+            container.Env.AddOrUpdate(new V1EnvVar { Name = "CONTRAST_EXISTING_JAVA_TOOL_OPTIONS", Value = currentJavaToolOptions });
 
             try
             {
@@ -56,7 +58,7 @@ public class JavaAgentPatcher : IAgentPatcher
                     options.Insert(0, contrastAgentArgument);
                 }
 
-                container.Env.AddOrUpdate(new V1EnvVar("JAVA_TOOL_OPTIONS", string.Join(' ', options)));
+                container.Env.AddOrUpdate(new V1EnvVar { Name = "JAVA_TOOL_OPTIONS", Value = string.Join(' ', options) });
             }
             catch (Exception e)
             {

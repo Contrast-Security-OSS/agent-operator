@@ -5,6 +5,7 @@ using Autofac;
 using Contrast.K8s.AgentOperator.Core;
 using Contrast.K8s.AgentOperator.Extensions;
 using JetBrains.Annotations;
+using KubeOps.Abstractions.Builder;
 using KubeOps.Operator;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -27,7 +28,7 @@ public class Startup
     {
         services.AddKubernetesOperator(settings =>
         {
-            settings.EnableLeaderElection = true;
+            settings.LeaderElectionType = LeaderElectionType.Single;
         }).RegisterEntities();
 
         services.AddHealthChecks()

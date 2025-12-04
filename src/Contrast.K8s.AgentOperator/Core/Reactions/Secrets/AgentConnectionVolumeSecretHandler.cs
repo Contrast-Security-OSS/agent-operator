@@ -90,17 +90,18 @@ public class AgentConnectionVolumeSecretHandler : INotificationHandler<DeferredS
 
     private V1Secret CreateEntity(byte[] config, string name, string ns)
     {
-        return new V1Secret(
-            metadata: new V1ObjectMeta
+        return new V1Secret
+        {
+            Metadata = new V1ObjectMeta
             {
                 Name = name,
                 NamespaceProperty = ns
             },
-            data: new Dictionary<string, byte[]>
+            Data = new Dictionary<string, byte[]>
             {
                 { ConfigFilename, config }
             }
-        );
+        };
     }
 
     private async Task<string> CreateDerivedSecretHash(ResourceIdentityPair<AgentConnectionResource> connectionResource)
@@ -148,7 +149,7 @@ public class AgentConnectionVolumeSecretHandler : INotificationHandler<DeferredS
 
         using var sha256 = SHA256.Create();
         var bytes = sha256.ComputeHash(Encoding.ASCII.GetBytes(secretKeyHashes.ToString()));
-        return HexConverter.ToLowerHex(bytes);
+        return Convert.ToHexStringLower(bytes);
     }
 
     private async Task<byte[]?> CreateLiveConfig(ResourceIdentityPair<AgentConnectionResource> connectionResource)
