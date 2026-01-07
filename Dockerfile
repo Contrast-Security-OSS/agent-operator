@@ -34,7 +34,7 @@ WORKDIR /app
 
 RUN set -xe \
     && groupadd --gid 1001 operator-group \
-    && useradd -G operator-group --uid 1001 operator-user
+    && useradd --gid 1001 --uid 1001 operator-user
 
 COPY src/get-info.sh /get-info.sh
 COPY --from=build /app .
