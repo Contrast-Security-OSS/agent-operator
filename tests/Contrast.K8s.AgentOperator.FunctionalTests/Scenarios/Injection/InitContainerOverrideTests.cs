@@ -37,7 +37,7 @@ public class InitContainerOverrideTests : IClassFixture<TestingContext>
             var container = result.Spec.InitContainers.Single(x => x.Name == "contrast-init");
             var env = container.Env;
 
-            env.Should().ContainSingle(x => x.Name == "CONTRAST_DEBUGGING_SECURITY_CONTEXT_TAINTED").Which.Value.Should().Be("True");
+            env.Should().ContainSingle(x => x.Name == "CONTRAST_DEBUGGING_SECURITY_CONTEXT_TAINTED").Which.Value.Should().Be("true");
         }
     }
 
