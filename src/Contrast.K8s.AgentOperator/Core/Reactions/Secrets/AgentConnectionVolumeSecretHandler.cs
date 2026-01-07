@@ -147,9 +147,7 @@ public class AgentConnectionVolumeSecretHandler : INotificationHandler<DeferredS
             }
         }
 
-        using var sha256 = SHA256.Create();
-        var bytes = sha256.ComputeHash(Encoding.ASCII.GetBytes(secretKeyHashes.ToString()));
-        return Convert.ToHexStringLower(bytes);
+        return HashHelper.Sha256(secretKeyHashes.ToString());
     }
 
     private async Task<byte[]?> CreateLiveConfig(ResourceIdentityPair<AgentConnectionResource> connectionResource)

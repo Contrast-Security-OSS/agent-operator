@@ -14,7 +14,7 @@ public static class HashHelper
         using var sha256 = SHA256.Create();
         var bytes = Encoding.UTF8.GetBytes(text);
         var hash = sha256.ComputeHash(bytes);
-        return Convert.ToHexStringLower(hash, 0, 8);
+        return Convert.ToHexStringLower(hash, 0, 5);
     }
 
     public static string Sha256(string text)
