@@ -21,22 +21,20 @@ public class ClusterIdHandler : INotificationHandler<EntityReconciled<V1Secret>>
 
     private readonly IClusterIdWriter _clusterIdWriter;
     private readonly IClusterIdState _state;
-    private readonly ITelemetryOptOut _optOut;
-    private readonly TelemetryOptions _options;
+    private readonly TelemetryOptions _telemetryOptions;
 
-    public ClusterIdHandler(IClusterIdWriter clusterIdWriter, IClusterIdState state, ITelemetryOptOut optOut, TelemetryOptions options)
+    public ClusterIdHandler(IClusterIdWriter clusterIdWriter, IClusterIdState state, TelemetryOptions options)
     {
         _clusterIdWriter = clusterIdWriter;
         _state = state;
-        _optOut = optOut;
-        _options = options;
+        _telemetryOptions = options;
     }
 
     public Task Handle(EntityReconciled<V1Secret> notification, CancellationToken cancellationToken)
     {
-        if (!_optOut.IsOptOutActive()
-            && string.Equals(notification.Entity.Name(), _options.ClusterIdSecretName, StringComparison.OrdinalIgnoreCase)
-            && string.Equals(notification.Entity.Namespace(), _options.ClusterIdSecretNamespace, StringComparison.OrdinalIgnoreCase))
+        if (!_telemetryOptions.OptOut
+            && string.Equals(notification.Entity.Name(), _telemetryOptions.ClusterIdSecretName, StringComparison.OrdinalIgnoreCase)
+            && string.Equals(notification.Entity.Namespace(), _telemetryOptions.ClusterIdSecretNamespace, StringComparison.OrdinalIgnoreCase))
         {
             var clusterId = _clusterIdWriter.ParseClusterId(notification.Entity);
             if (clusterId != null)
@@ -54,7 +52,7 @@ public class ClusterIdHandler : INotificationHandler<EntityReconciled<V1Secret>>
 
     public async Task Handle(LeaderStateChanged notification, CancellationToken cancellationToken)
     {
-        if (!_optOut.IsOptOutActive()
+        if (!_telemetryOptions.OptOut
             && notification.IsLeader)
         {
             var stopwatch = Stopwatch.StartNew();

@@ -3,6 +3,7 @@
 
 namespace Contrast.K8s.AgentOperator.Options;
 
-public record TelemetryOptions(string ClusterIdSecretName,
+public record TelemetryOptions(bool OptOut,
+                               string ClusterIdSecretName,
                                string ClusterIdSecretNamespace,
                                string InstallSource);

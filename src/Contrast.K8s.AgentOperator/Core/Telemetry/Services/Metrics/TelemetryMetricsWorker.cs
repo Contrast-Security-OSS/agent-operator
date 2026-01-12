@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Telemetry.Cluster;
 using Contrast.K8s.AgentOperator.Core.Telemetry.Getters;
 using Contrast.K8s.AgentOperator.Core.Telemetry.Models;
+using Contrast.K8s.AgentOperator.Options;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Hosting;
 using NLog;
@@ -17,19 +18,19 @@ namespace Contrast.K8s.AgentOperator.Core.Telemetry.Services.Metrics;
 public class TelemetryMetricsWorker : BackgroundService
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-    private readonly ITelemetryOptOut _optOut;
+    private readonly TelemetryOptions _options;
     private readonly IClusterIdState _clusterIdState;
     private readonly TelemetryService _telemetryService;
     private readonly StatusReportGenerator _statusReportGenerator;
     private readonly IsPublicTelemetryBuildGetter _isPublicTelemetryBuildGetter;
 
-    public TelemetryMetricsWorker(ITelemetryOptOut optOut,
+    public TelemetryMetricsWorker(TelemetryOptions options,
                                   IClusterIdState clusterIdState,
                                   TelemetryService telemetryService,
                                   StatusReportGenerator statusReportGenerator,
                                   IsPublicTelemetryBuildGetter isPublicTelemetryBuildGetter)
     {
-        _optOut = optOut;
+        _options = options;
         _clusterIdState = clusterIdState;
         _telemetryService = telemetryService;
         _statusReportGenerator = statusReportGenerator;
@@ -43,7 +44,7 @@ public class TelemetryMetricsWorker : BackgroundService
             Logger.Warn("This instance is not running a public build.");
         }
 
-        if (_optOut.IsOptOutActive())
+        if (_options.OptOut)
         {
             await Task.Delay(Timeout.Infinite, stoppingToken);
             return;
