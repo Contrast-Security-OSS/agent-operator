@@ -354,6 +354,11 @@
                         "DropOldest"
                     ]
                 },
+                "eventQueueMergeWindowSeconds": {
+                    "description": "Time window to merge events in the eventQueue",
+                    "default": 10,
+                    "type": "integer"
+                },
                 "eventQueueSize": {
                     "description": "Max number of events to queue from the K8s event stream.",
                     "default": 10000,
@@ -363,6 +368,11 @@
                     "description": "Resource management for the agent initContainers",
                     "type": "object",
                     "properties": {
+                        "nonRoot": {
+                            "description": "Run init-containers as non-root",
+                            "default": true,
+                            "type": "boolean"
+                        },
                         "resources": {
                             "type": "object",
                             "properties": {
@@ -427,6 +437,18 @@
                 "labels": {
                     "description": "Deployment Labels for the operator deployment.",
                     "type": "object"
+                },
+                "operatorLogLevel": {
+                    "description": "Operator Log Level",
+                    "default": "Info",
+                    "type": "string",
+                    "enum": [
+                        "Trace",
+                        "Debug",
+                        "Info",
+                        "Warn",
+                        "Error"
+                    ]
                 },
                 "podAnnotations": {
                     "description": "Pod Annotations for the operator pod(s).",
@@ -503,6 +525,11 @@
                     "description": "The settle duration in seconds. The time to wait to sync with the cluster before making changes.",
                     "default": 10,
                     "type": "integer"
+                },
+                "telemetryOptOut": {
+                    "description": "Opt-Out of telemetry collection",
+                    "default": false,
+                    "type": "boolean"
                 },
                 "webhookConfiguration": {
                     "description": "The name of the webhook to patch after certificate generation occurs.",

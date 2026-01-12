@@ -90,34 +90,76 @@ spec:
               value: $(CONTRAST_WEBHOOK_SERVICENAME),$(CONTRAST_WEBHOOK_SERVICENAME).$(POD_NAMESPACE).svc,$(CONTRAST_WEBHOOK_SERVICENAME).$(POD_NAMESPACE).svc.cluster.local
             - name: CONTRAST_DEFAULT_REGISTRY
               value: '{{ required "operator.defaultRegistry is required." .Values.operator.defaultRegistry }}'
-            - name: CONTRAST_SETTLE_DURATION
-              value: '{{ .Values.operator.settleDuration }}'
-            - name: CONTRAST_EVENT_QUEUE_SIZE
-              value: '{{ .Values.operator.eventQueueSize }}'
-            - name: CONTRAST_EVENT_QUEUE_FULL_MODE
-              value: '{{ .Values.operator.eventQueueFullMode }}'
-            - name: CONTRAST_WEBHOOK_SECRET
-              value: '{{ .Values.operator.webhookSecretName }}'
-            - name: CONTRAST_WEBHOOK_CONFIGURATION
-              value: '{{ .Values.operator.webhookConfiguration }}'
-            - name: CONTRAST_ENABLE_EARLY_CHAINING
-              value: '{{ .Values.operator.enableEarlyChaining }}'
-            - name: CONTRAST_ENABLE_AGENT_STDOUT
-              value: '{{ .Values.operator.enableAgentStdout }}'
             - name: CONTRAST_INSTALL_SOURCE
               value: helm
+            {{- if hasKey .Values.operator "settleDuration" }}
+            - name: CONTRAST_SETTLE_DURATION
+              value: '{{ .Values.operator.settleDuration }}'
+            {{- end }}
+            {{- if hasKey .Values.operator "eventQueueSize" }}
+            - name: CONTRAST_EVENT_QUEUE_SIZE
+              value: '{{ .Values.operator.eventQueueSize }}'
+            {{- end }}
+            {{- if hasKey .Values.operator "eventQueueFullMode" }}
+            - name: CONTRAST_EVENT_QUEUE_FULL_MODE
+              value: '{{ .Values.operator.eventQueueFullMode }}'
+            {{- end }}
+            {{- if hasKey .Values.operator "eventQueueMergeWindowSeconds" }}
+            - name: CONTRAST_EVENT_QUEUE_MERGE_WINDOW_SECONDS
+              value: '{{ .Values.operator.eventQueueMergeWindowSeconds }}'
+            {{- end }}
+            {{- if hasKey .Values.operator "webhookSecretName" }}
+            - name: CONTRAST_WEBHOOK_SECRET
+              value: '{{ .Values.operator.webhookSecretName }}'
+            {{- end }}
+            {{- if hasKey .Values.operator "webhookConfiguration" }}
+            - name: CONTRAST_WEBHOOK_CONFIGURATION
+              value: '{{ .Values.operator.webhookConfiguration }}'
+            {{- end }}
+            {{- if hasKey .Values.operator "enableEarlyChaining" }}
+            - name: CONTRAST_ENABLE_EARLY_CHAINING
+              value: '{{ .Values.operator.enableEarlyChaining }}'
+            {{- end }}
+            {{- if hasKey .Values.operator "enableAgentStdout" }}
+            - name: CONTRAST_ENABLE_AGENT_STDOUT
+              value: '{{ .Values.operator.enableAgentStdout }}'
+            {{- end }}
+            {{- if hasKey .Values.operator "telemetryOptOut" }}
+            - name: CONTRAST_AGENT_TELEMETRY_OPTOUT
+              value: '{{ .Values.operator.telemetryOptOut }}'
+            {{- end }}
+            {{- if hasKey .Values.operator "operatorLogLevel" }}
+            - name: CONTRAST_LOG_LEVEL
+              value: '{{ .Values.operator.operatorLogLevel }}'
+            {{- end }}
+            {{- if hasKey .Values.operator.initContainer "nonRoot" }}
+            - name: CONTRAST_RUN_INIT_CONTAINER_AS_NON_ROOT
+              value: '{{ .Values.operator.initContainer.nonRoot }}'
+            {{- end }}
+            {{- if hasKey .Values.operator.initContainer.resources.requests "cpu" }}
             - name: CONTRAST_INITCONTAINER_CPU_REQUEST
               value: '{{ .Values.operator.initContainer.resources.requests.cpu }}'
+            {{- end }}
+            {{- if hasKey .Values.operator.initContainer.resources.limits "cpu" }}
             - name: CONTRAST_INITCONTAINER_CPU_LIMIT
               value: '{{ .Values.operator.initContainer.resources.limits.cpu }}'
+            {{- end }}
+            {{- if hasKey .Values.operator.initContainer.resources.requests "memory" }}
             - name: CONTRAST_INITCONTAINER_MEMORY_REQUEST
               value: '{{ .Values.operator.initContainer.resources.requests.memory }}'
+            {{- end }}
+            {{- if hasKey .Values.operator.initContainer.resources.limits "memory" }}
             - name: CONTRAST_INITCONTAINER_MEMORY_LIMIT
               value: '{{ .Values.operator.initContainer.resources.limits.memory }}'
+            {{- end }}
+            {{- if hasKey .Values.operator.initContainer.resources.requests "ephemeralStorage" }}
             - name: CONTRAST_INITCONTAINER_EPHEMERALSTORAGE_REQUEST
               value: '{{ .Values.operator.initContainer.resources.requests.ephemeralStorage }}'
+            {{- end }}
+            {{- if hasKey .Values.operator.initContainer.resources.limits "ephemeralStorage" }}
             - name: CONTRAST_INITCONTAINER_EPHEMERALSTORAGE_LIMIT
               value: '{{ .Values.operator.initContainer.resources.limits.ephemeralStorage }}'
+            {{- end }}
           livenessProbe:
             httpGet:
               path: /health
