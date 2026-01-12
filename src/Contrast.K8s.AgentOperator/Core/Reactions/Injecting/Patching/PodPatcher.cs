@@ -32,17 +32,19 @@ public class PodPatcher : IPodPatcher
     private readonly IClusterIdState _clusterIdState;
     private readonly OperatorOptions _operatorOptions;
     private readonly InitContainerOptions _initOptions;
+    private readonly TelemetryOptions _telemetryOptions;
     private readonly IAgentInjectionTypeConverter _agentTypeConverter;
 
     public PodPatcher(Func<IEnumerable<IAgentPatcher>> patchersFactory, IGlobMatcher globMatcher,
             IClusterIdState clusterIdState, OperatorOptions operatorOptions, InitContainerOptions initOptions,
-            IAgentInjectionTypeConverter agentTypeConverter)
+            TelemetryOptions telemetryOptions, IAgentInjectionTypeConverter agentTypeConverter)
     {
         _patchersFactory = patchersFactory;
         _globMatcher = globMatcher;
         _clusterIdState = clusterIdState;
         _operatorOptions = operatorOptions;
         _initOptions = initOptions;
+        _telemetryOptions = telemetryOptions;
         _agentTypeConverter = agentTypeConverter;
     }
 
@@ -315,6 +317,12 @@ public class PodPatcher : IPodPatcher
         yield return new V1EnvVar { Name = "CONTRAST_MOUNT_PATH", Value = agentMountPath };
         yield return new V1EnvVar { Name = "CONTRAST_MOUNT_AGENT_PATH", Value = agentMountPath };
         yield return new V1EnvVar { Name = "CONTRAST_MOUNT_WRITABLE_PATH", Value = writableMountPath };
+
+        //If opt-out is set on the operator we should opt-out the agents
+        if (_telemetryOptions.OptOut)
+        {
+            yield return new V1EnvVar { Name = "CONTRAST_AGENT_TELEMETRY_OPTOUT", Value = "1" };
+        }
 
         if (connection.TeamServerUri != null)
         {
