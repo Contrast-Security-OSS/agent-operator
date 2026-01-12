@@ -39,6 +39,8 @@ operator:
   # DropOldest:
   #   Removes and ignores the oldest item in the channel in order to make room for the item being written.
   eventQueueFullMode: # @schema type:[string];enum:[Wait, DropOldest];default:DropOldest
+  # -- Time window to merge events in the eventQueue
+  eventQueueMergeWindowSeconds: # @schema type:[integer];default:10
   # -- The secret containing the TLS certificates used for the webhook. Used for to cache TLS certificate generation across restarts, and to share the same certificate across operator instances (when running in HA mode).
   webhookSecretName: # @schema type:[string];default:contrast-web-hook-secret
   # -- The name of the webhook to patch after certificate generation occurs.
@@ -47,6 +49,10 @@ operator:
   enableEarlyChaining: # @schema type:[boolean];default:false
   # -- Globally enable agents logging to stdout
   enableAgentStdout: # @schema type:[boolean];default:false
+  # -- Opt-Out of telemetry collection
+  telemetryOptOut: # @schema type:[boolean];default:false
+  # -- Operator Log Level
+  operatorLogLevel: # @schema type:[string];enum:[Trace, Debug, Info, Warn, Error];default:Info
   # -- Deployment Labels for the operator deployment.
   labels: {}
   # -- Deployment Annotations for the operator deployment.
@@ -69,6 +75,8 @@ operator:
       ephemeralStorage: # @schema type:[string, null]
   # -- Resource management for the agent initContainers
   initContainer:
+    # -- Run init-containers as non-root
+    nonRoot: # @schema type:[boolean];default:true
     resources:
       limits:
         cpu: # @schema type:[string, null];default:100m

@@ -36,6 +36,8 @@ operator:
   # DropOldest:
   #   Removes and ignores the oldest item in the channel in order to make room for the item being written.
   eventQueueFullMode: DropOldest
+  # Time window to merge events in the eventQueue
+  eventQueueMergeWindowSeconds: 10
   # The secret containing the TLS certificates used for the webhook.
   # Used for to cache TLS certificate generation across restarts,
   # and to share the same certificate across operator instances (when running in HA mode).
@@ -48,6 +50,10 @@ operator:
   enableEarlyChaining: false
   # Globally enable agents logging to stdout
   enableAgentStdout: false
+  # Opt-Out of telemetry collection
+  #telemetryOptOut: false
+  # Operator Log Level
+  operatorLogLevel: Info
   # Metadata for the operator deployment.
   labels: {}
   annotations: {}
@@ -75,6 +81,8 @@ operator:
       #ephemeralStorage:
   # Resource management for the agent initContainers
   initContainer:
+    # Run init-containers as non-root
+    nonRoot: true
     resources:
       limits:
         cpu: 100m
