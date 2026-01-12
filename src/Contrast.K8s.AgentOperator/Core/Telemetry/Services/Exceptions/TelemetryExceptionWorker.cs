@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Telemetry.Cluster;
 using Contrast.K8s.AgentOperator.Core.Telemetry.Models;
+using Contrast.K8s.AgentOperator.Options;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Hosting;
 using NLog;
@@ -16,20 +17,20 @@ namespace Contrast.K8s.AgentOperator.Core.Telemetry.Services.Exceptions;
 public class TelemetryExceptionWorker : BackgroundService
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-    private readonly ITelemetryOptOut _optOut;
+    private readonly TelemetryOptions _options;
     private readonly TelemetryService _telemetryService;
     private readonly IClusterIdState _clusterIdState;
 
-    public TelemetryExceptionWorker(ITelemetryOptOut optOut, TelemetryService telemetryService, IClusterIdState clusterIdState)
+    public TelemetryExceptionWorker(TelemetryOptions options, TelemetryService telemetryService, IClusterIdState clusterIdState)
     {
-        _optOut = optOut;
+        _options = options;
         _telemetryService = telemetryService;
         _clusterIdState = clusterIdState;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        if (_optOut.IsOptOutActive())
+        if (_options.OptOut)
         {
             await Task.Delay(Timeout.Infinite, stoppingToken);
             return;

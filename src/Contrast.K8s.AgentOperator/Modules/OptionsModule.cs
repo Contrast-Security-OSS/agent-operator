@@ -235,8 +235,11 @@ public class OptionsModule : Module
                 logger.LogOptionValue("install-source", installSource, installSourceStr);
                 installSource = installSourceStr;
             }
+            var optOutOld = GetEnvironmentOptionFlag(logger, "CONTRAST_DOTNET_TELEMETRY_OPTOUT", "telemetry-opt-out", false);
+            var optOutNew = GetEnvironmentOptionFlag(logger, "CONTRAST_AGENT_TELEMETRY_OPTOUT", "telemetry-opt-out", false);
+            var telemetryOptOut = optOutOld || optOutNew;
 
-            return new TelemetryOptions("contrast-cluster-id", @namespace, installSource);
+            return new TelemetryOptions(telemetryOptOut, "contrast-cluster-id", @namespace, installSource);
         }).SingleInstance();
 
         builder.Register(context =>
