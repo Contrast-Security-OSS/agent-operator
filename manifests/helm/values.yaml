@@ -23,9 +23,10 @@ operator:
   enabled: true
   # The default registry to use, defaults to docker.io/contrast.
   defaultRegistry: contrast
-  # The settle duration in seconds.
-  # The time to wait to sync with the cluster before making changes.
+  # The settle duration in seconds. The time to wait to sync with the cluster before making changes.
   settleDuration: 10
+  # The watcher timeout in seconds. This controls how often we perform a full state re-sync. So best to keep this high, especially for larger clusters.
+  watcherTimeout: 600
   # Max number of events to queue from the K8s event stream.
   eventQueueSize: 10000
   # The action to perform when the event queue is full,
