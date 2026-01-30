@@ -7,6 +7,7 @@ namespace Contrast.K8s.AgentOperator.Options;
 
 public record OperatorOptions(string Namespace,
                               int SettlingDurationSeconds,
+                              int WatcherTimeoutSeconds,
                               int EventQueueSize,
                               BoundedChannelFullMode EventQueueFullMode,
                               int EventQueueMergeWindowSeconds,
