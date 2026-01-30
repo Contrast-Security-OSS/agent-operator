@@ -30,6 +30,8 @@ operator:
   defaultRegistry: # @schema type:[string];default:contrast
   # -- The settle duration in seconds. The time to wait to sync with the cluster before making changes.
   settleDuration: # @schema type:[integer];default:10
+  # -- The watcher timeout in seconds. This controls how often we perform a full state re-sync. So best to keep this high, especially for larger clusters.
+  watcherTimeout: # @schema type:[integer];default:600
   # -- Max number of events to queue from the K8s event stream.
   eventQueueSize: # @schema type:[integer];default:10000
   # -- The action to perform when the event queue is full, and the operator is unable to process events fast enough.

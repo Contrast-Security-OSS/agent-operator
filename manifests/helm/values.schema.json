@@ -531,6 +531,11 @@
                     "default": false,
                     "type": "boolean"
                 },
+                "watcherTimeout": {
+                    "description": "The watcher timeout in seconds. This controls how often we perform a full state re-sync. So best to keep this high, especially for larger clusters.",
+                    "default": 600,
+                    "type": "integer"
+                },
                 "webhookConfiguration": {
                     "description": "The name of the webhook to patch after certificate generation occurs.",
                     "default": "contrast-web-hook-configuration",

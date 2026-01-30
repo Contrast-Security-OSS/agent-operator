@@ -96,6 +96,10 @@ spec:
             - name: CONTRAST_SETTLE_DURATION
               value: '{{ .Values.operator.settleDuration }}'
             {{- end }}
+            {{- if hasKey .Values.operator "watcherTimeout" }}
+            - name: CONTRAST_WATCHER_TIMEOUT_SECONDS
+              value: '{{ .Values.operator.watcherTimeout }}'
+            {{- end }}
             {{- if hasKey .Values.operator "eventQueueSize" }}
             - name: CONTRAST_EVENT_QUEUE_SIZE
               value: '{{ .Values.operator.eventQueueSize }}'
