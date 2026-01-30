@@ -36,6 +36,14 @@ public class OptionsModule : Module
                 settleDuration = parsedSettleDuration;
             }
 
+            var watcherTimeout = 600; //10 min
+            if (GetEnvironmentVariableAsInt("CONTRAST_WATCHER_TIMEOUT_SECONDS", out var parsedwatcherTimeout)
+                && parsedwatcherTimeout > -1)
+            {
+                logger.LogOptionValue("watcher-timeout", watcherTimeout, parsedwatcherTimeout);
+                watcherTimeout = parsedwatcherTimeout;
+            }
+
             var eventQueueSize = 10 * 1024;
             if (GetEnvironmentVariableAsInt("CONTRAST_EVENT_QUEUE_SIZE", out var parsedEventQueueSize)
                 && parsedEventQueueSize > -1)
@@ -88,6 +96,7 @@ public class OptionsModule : Module
             return new OperatorOptions(
                 @namespace,
                 settleDuration,
+                watcherTimeout,
                 eventQueueSize,
                 fullMode,
                 eventQueueMergeWindowSeconds,

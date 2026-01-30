@@ -18,6 +18,7 @@ using Contrast.K8s.AgentOperator.Core.State;
 using NLog;
 using Contrast.K8s.AgentOperator.Core.Events;
 using k8s.Autorest;
+using Contrast.K8s.AgentOperator.Options;
 
 namespace Contrast.K8s.AgentOperator.Core.Kube;
 
@@ -40,14 +41,17 @@ public class CustomResourceWatcher<TEntity> : BackgroundService
     private readonly IEventStream _eventStream;
     private readonly OperatorSettings _settings;
     private readonly IKubernetesClient _client;
+    private readonly OperatorOptions _options;
 
     public CustomResourceWatcher(IEventStream eventStream,
         OperatorSettings settings,
-        IKubernetesClient client)
+        IKubernetesClient client,
+        OperatorOptions options)
     {
         _eventStream = eventStream;
         _settings = settings;
         _client = client;
+        _options = options;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -55,13 +59,16 @@ public class CustomResourceWatcher<TEntity> : BackgroundService
         string? currentVersion = null;
         while (!stoppingToken.IsCancellationRequested)
         {
+            using var timeoutToken = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
+            timeoutToken.CancelAfter(TimeSpan.FromSeconds(_options.WatcherTimeoutSeconds));
             try
             {
+                
                 await foreach ((WatchEventType type, TEntity entity) in _client.WatchAsync<TEntity>(
                                    _settings.Namespace,
                                    resourceVersion: currentVersion,
                                    allowWatchBookmarks: true,
-                                   cancellationToken: stoppingToken))
+                                   cancellationToken: timeoutToken.Token))
                 {
                     Logger.Trace(() => 
                         $"Received watch event '{type}' for '{entity.Kind}/{entity.Name()}', last observed resource version: {entity.ResourceVersion()}.");
@@ -97,6 +104,10 @@ public class CustomResourceWatcher<TEntity> : BackgroundService
                 // Don't throw if the cancellation was indeed requested.
                 break;
             }
+            catch (OperationCanceledException) when (timeoutToken.IsCancellationRequested && !stoppingToken.IsCancellationRequested)
+            {
+                Logger.Debug($"Watcher for {typeof(TEntity).Name} timeout reached, restarting watcher.");
+            }
             catch (HttpOperationException e) when (e.Response.StatusCode is HttpStatusCode.NotFound)
             {
                 Logger.Debug($"Entity {typeof(TEntity).Name} doesn't exist, stopping watcher.");
@@ -104,7 +115,7 @@ public class CustomResourceWatcher<TEntity> : BackgroundService
             }
             catch (KubernetesException e) when (e.Status.Code is (int)HttpStatusCode.Gone)
             {
-                Logger.Debug(e, "Watch restarting with reset bookmark due to 410 HTTP Gone.");
+                Logger.Debug(e, $"Watcher for {typeof(TEntity).Name} restarting with reset bookmark due to 410 HTTP Gone.");
                 currentVersion = null;
             }
             catch (Exception e)
