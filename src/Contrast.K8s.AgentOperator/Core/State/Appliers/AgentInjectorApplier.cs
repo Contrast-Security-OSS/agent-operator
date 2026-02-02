@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Contrast.K8s.AgentOperator.Core.Reactions.Defaults;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
 using Contrast.K8s.AgentOperator.Entities;
@@ -42,16 +41,8 @@ public class AgentInjectorApplier : BaseApplier<V1Beta1AgentInjector, AgentInjec
         );
         var selector = GetSelector(spec, @namespace);
 
-        var namespaceDefaultConnectionName = ClusterDefaults.AgentConnectionName(@namespace);
-        var connectionName = spec.Connection?.Name ?? namespaceDefaultConnectionName;
-        var isConnectionNamespaceDefault = connectionName == namespaceDefaultConnectionName;
-        var connectionReference = new AgentInjectorConnectionReference(@namespace, connectionName, isConnectionNamespaceDefault);
-
-        var namespaceDefaultConfigurationName = ClusterDefaults.AgentConfigurationName(@namespace);
-        var configurationName = spec.Configuration?.Name ?? namespaceDefaultConfigurationName;
-        var isConfigurationNamespaceDefault = namespaceDefaultConfigurationName == configurationName;
-        var configurationReference = new AgentConfigurationReference(@namespace, configurationName, isConfigurationNamespaceDefault);
-
+        var connectionReference = spec.Connection?.Name != null ? new AgentConnectionReference(@namespace, spec.Connection.Name) : null;
+        var configurationReference = spec.Configuration?.Name != null ? new AgentConfigurationReference(@namespace, spec.Configuration.Name) : null;
         var pullSecretName = spec.Image.PullSecretName != null ? new SecretReference(@namespace, spec.Image.PullSecretName, ".dockerconfigjson") : null;
         var pullPolicy = spec.Image.PullPolicy ?? "Always";
 

@@ -82,9 +82,33 @@ spec:
                               type: object
                             type: array
                         type: object
+                      connection:
+                        description: The connection the injected agent will use to communicate with Contrast.
+                        nullable: true
+                        properties:
+                          name:
+                            description: The name of AgentConnection resource. Must exist within the same namespace. Defaults to the AgentConnection specified by a ClusterAgentConnection.
+                            nullable: true
+                            type: string
+                        type: object
+                      configuration:
+                        description: The configuration the injected agent will use.
+                        nullable: true
+                        properties:
+                          name:
+                            description: The name of a AgentConfiguration resource. Must exist within the same namespace. Defaults to the AgentConfiguration specified by a ClusterAgentConfiguration.
+                            nullable: true
+                            type: string
+                        type: object
                     required:
                     - type
                     type: object
+                  metadata:
+                    type: object
+                  apiVersion:
+                    type: string
+                  kind:
+                    type: string
                 type: object
               namespaces:
                 description: The namespaces to apply this AgentInjector template to. Glob syntax is supported. Optional, defaults to none.

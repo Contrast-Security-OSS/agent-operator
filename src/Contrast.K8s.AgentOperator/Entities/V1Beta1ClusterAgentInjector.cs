@@ -20,37 +20,12 @@ public partial class V1Beta1ClusterAgentInjector : CustomKubernetesEntity<V1Beta
     {
         [Required]
         [Description("The default AgentInjector to apply to the namespaces selected by 'spec.namespaces' or 'spec.namespaceLabelSelector'. Required.")]
-        public AgentInjectorTemplate? Template { get; set; }
+        public V1Beta1AgentInjector? Template { get; set; }
 
         [Description("The namespaces to apply this AgentInjector template to. Glob syntax is supported. Optional, defaults to none.")]
         public IReadOnlyCollection<string> Namespaces { get; set; } = Array.Empty<string>();
 
         [Description("The labels to select which namespaces to apply this AgentInjector template to. Optional, defaults to empty.")]
         public IReadOnlyCollection<ClusterNamespaceLabelSelectorSpec> NamespaceLabelSelector { get; set; } = Array.Empty<ClusterNamespaceLabelSelectorSpec>();
-    }
-
-    public class AgentInjectorTemplate
-    {
-        public AgentInjectorTemplateSpec Spec { get; set; } = new();
-    }
-
-    public class AgentInjectorTemplateSpec
-    {
-        [Description("Enable this agent injector. Defaults to 'true'.")]
-        public bool Enabled { get; set; } = true;
-
-        [Pattern(RegexConstants.InjectorVersionRegex)]
-        [Description("The version of the agent to inject. The literal 'latest' will inject the latest version. Partial version matches are supported, e.g. '2' will select the version '2.1.0'. Defaults to 'latest'.")]
-        public string? Version { get; set; }
-
-        [Required, Pattern(RegexConstants.AgentTypeRegex)]
-        [Description("The type of agent to inject. Can be one of ['dotnet-core', 'java', 'nodejs', 'nodejs-legacy', 'php', 'python', 'flex']. Required.")]
-        public string Type { get; set; } = null!;
-
-        [Description("Overrides the default agent images.")]
-        public V1Beta1AgentInjector.AgentInjectorImageSpec Image { get; set; } = new();
-
-        [Description("Select which Deployment/StatefulSet/DaemonSet/Rollout pods are eligible for agent injection. Under OpenShift, DeploymentConfig is also supported.")]
-        public V1Beta1AgentInjector.AgentInjectorSelectorSpec Selector { get; set; } = new();
     }
 }

@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Contrast.K8s.AgentOperator.Core.Reactions.Defaults;
+using Contrast.K8s.AgentOperator.Core.Reactions.Secrets;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
 
@@ -31,17 +33,17 @@ public static class StateContainerExtensions
         }
         else
         {
-            var connectionResourceFound = injector.ConnectionReference is { } connectionRef
-                                          && await state.GetReadyAgentConnectionById(
+            var connectionRef = injector.ConnectionReference ?? new AgentConnectionReference(@namespace, ClusterDefaults.AgentConnectionName(@namespace));
+            var connectionResourceFound = await state.GetReadyAgentConnectionById(
                                               connectionRef.Name,
                                               connectionRef.Namespace,
-                                              connectionRef.IsNamespaceDefault,
+                                              injector.ConnectionReference == null,
                                               context,
                                               cancellationToken
                                           ) != null;
 
             bool configurationIsValid;
-            if (injector.ConfigurationReference is { IsNamespaceDefault: false } configurationRef)
+            if (injector.ConfigurationReference is { } configurationRef)
             {
                 var configurationResource = await state.GetById<AgentConfigurationResource>(configurationRef.Name, configurationRef.Namespace, cancellationToken);
                 configurationIsValid = configurationResource != null;
@@ -165,64 +167,68 @@ public static class StateContainerExtensions
                                                                      string injectorNamespace,
                                                                      CancellationToken cancellationToken = default)
     {
-        if (await state.GetById<AgentInjectorResource>(injectorName, injectorNamespace, cancellationToken)
-                is { ConnectionReference: { } connectionRef } injector
-            && await state.GetById<AgentConnectionResource>(connectionRef.Name, connectionRef.Namespace, cancellationToken)
-                is { } connection
-           )
+
+        if (await state.GetById<AgentInjectorResource>(injectorName, injectorNamespace, cancellationToken) is { } injector)
         {
-            var secrets = new List<SecretResource>();
-
-            var configuration = injector.ConfigurationReference is { } configurationRef
-                ? await state.GetById<AgentConfigurationResource>(configurationRef.Name, configurationRef.Namespace, cancellationToken)
-                : null;
-
-            var imagePullSecret = injector.ImagePullSecret is { } imagePullSecretRef
-                ? await state.GetSecret(imagePullSecretRef, cancellationToken)
-                : null;
-
-            if (imagePullSecret != null)
+            var connectionRef = injector.ConnectionReference ?? new AgentConnectionReference(injectorNamespace, ClusterDefaults.AgentConnectionName(injectorNamespace));
+            if(await state.GetById<AgentConnectionResource>(connectionRef.Name, connectionRef.Namespace, cancellationToken) is { } connection)
             {
-                secrets.Add(imagePullSecret);
+                var secrets = new List<SecretResource>();
+
+                var configurationRef = injector.ConfigurationReference ?? new AgentConfigurationReference(injectorNamespace, ClusterDefaults.AgentConfigurationName(injectorNamespace));
+                var configuration = await state.GetById<AgentConfigurationResource>(configurationRef.Name, configurationRef.Namespace, cancellationToken);
+
+                var imagePullSecret = injector.ImagePullSecret is { } imagePullSecretRef
+                    ? await state.GetSecret(imagePullSecretRef, cancellationToken)
+                    : null;
+
+                if (imagePullSecret != null)
+                {
+                    secrets.Add(imagePullSecret);
+                }
+
+                var tokenSecret = connection.Token is { } tokenSecretRef
+                    ? await state.GetSecret(tokenSecretRef, cancellationToken)
+                    : null;
+
+                if (tokenSecret != null)
+                {
+                    secrets.Add(tokenSecret);
+                }
+
+                var userNameSecret = connection.UserName is { } userNameSecretRef
+                    ? await state.GetSecret(userNameSecretRef, cancellationToken)
+                    : null;
+
+                if (userNameSecret != null)
+                {
+                    secrets.Add(userNameSecret);
+                }
+
+                var serviceKeySecret = connection.UserName is { } serviceKeySecretRef
+                    ? await state.GetSecret(serviceKeySecretRef, cancellationToken)
+                    : null;
+
+                if (serviceKeySecret != null)
+                {
+                    secrets.Add(serviceKeySecret);
+                }
+
+                var apiKeySecret = connection.UserName is { } apiKeySecretRef
+                    ? await state.GetSecret(apiKeySecretRef, cancellationToken)
+                    : null;
+
+                if (apiKeySecret != null)
+                {
+                    secrets.Add(apiKeySecret);
+                }
+
+                var connectionVolumeSecret = connection.MountAsVolume == true
+                                            ? new VolumeSecretReference(VolumeSecrets.GetConnectionVolumeSecretName(connectionRef.Name), VolumeSecrets.ConfigVolumeSecretKey, "/contrast/connection")
+                                            : null;
+
+                return new InjectorBundle(injector, connection, configuration, secrets, connectionVolumeSecret);
             }
-
-            var tokenSecret = connection.Token is { } tokenSecretRef
-                ? await state.GetSecret(tokenSecretRef, cancellationToken)
-                : null;
-
-            if (tokenSecret != null)
-            {
-                secrets.Add(tokenSecret);
-            }
-
-            var userNameSecret = connection.UserName is { } userNameSecretRef
-                ? await state.GetSecret(userNameSecretRef, cancellationToken)
-                : null;
-
-            if (userNameSecret != null)
-            {
-                secrets.Add(userNameSecret);
-            }
-
-            var serviceKeySecret = connection.UserName is { } serviceKeySecretRef
-                ? await state.GetSecret(serviceKeySecretRef, cancellationToken)
-                : null;
-
-            if (serviceKeySecret != null)
-            {
-                secrets.Add(serviceKeySecret);
-            }
-
-            var apiKeySecret = connection.UserName is { } apiKeySecretRef
-                ? await state.GetSecret(apiKeySecretRef, cancellationToken)
-                : null;
-
-            if (apiKeySecret != null)
-            {
-                secrets.Add(apiKeySecret);
-            }
-
-            return new InjectorBundle(injector, connection, configuration, secrets);
         }
 
         return null;
@@ -246,7 +252,8 @@ public static class StateContainerExtensions
 public record InjectorBundle(AgentInjectorResource Injector,
                              AgentConnectionResource Connection,
                              AgentConfigurationResource? Configuration,
-                             IReadOnlyCollection<SecretResource> Secrets);
+                             IReadOnlyCollection<SecretResource> Secrets,
+                             VolumeSecretReference? ConnectionVolumeSecret);
 
 public abstract record ReadyResult<T>;
 

@@ -1,15 +1,16 @@
 ﻿// Contrast Security, Inc licenses this file to you under the Apache 2.0 License.
 // See the LICENSE file in the project root for more information.
 
-using System.Threading;
-using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Events;
 using Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching;
 using Contrast.K8s.AgentOperator.Core.State;
+using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
 using JetBrains.Annotations;
 using k8s.Models;
 using MediatR;
 using NLog;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Contrast.K8s.AgentOperator.Core.Reactions.Injecting;
 
@@ -35,7 +36,7 @@ public class PodInjectionHandler : IRequestHandler<EntityCreating<V1Pod>, Entity
             && annotations.TryGetValue(InjectionConstants.WorkloadNameAttributeName, out var workloadName)
             && annotations.TryGetValue(InjectionConstants.WorkloadNamespaceAttributeName, out var workloadNamespace)
             && await _state.GetInjectorBundle(injectorName, injectorNamespace, cancellationToken)
-                is var (injector, connection, configuration, _))
+                is var (injector, connection, configuration, _, connectionVolumeSecret))
         {
             var context = new PatchingContext(
                 workloadName,
@@ -43,9 +44,9 @@ public class PodInjectionHandler : IRequestHandler<EntityCreating<V1Pod>, Entity
                 injector,
                 connection,
                 configuration,
+                connectionVolumeSecret,
                 "/contrast/agent",
-                "/contrast/data",
-                "/contrast/connection"
+                "/contrast/data"
             );
             await _patcher.Patch(context, request.Entity, cancellationToken);
 

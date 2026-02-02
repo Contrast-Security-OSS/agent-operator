@@ -45,13 +45,21 @@ public class ClusterAgentInjectorSyncingHandler
                 ClusterDefaults.AgentInjectorPullSecretName(targetNamespace, template.Type), ".dockerconfigjson")
             : null;
 
+        var connectionRef = template.ConnectionReference != null
+            ? new AgentConnectionReference(targetNamespace, ClusterDefaults.AgentInjectorConnectionName(targetNamespace, template.Type))
+            : null;
+
+        var configurationRef = template.ConfigurationReference != null
+            ? new AgentConfigurationReference(targetNamespace, ClusterDefaults.AgentInjectorConfigurationName(targetNamespace, template.Type))
+            : null;
+
         var resource = new AgentInjectorResource(
             template.Enabled,
             template.Type,
             template.Image,
             template.Selector with { Namespaces = new List<string> { targetNamespace } },
-            new AgentInjectorConnectionReference(targetNamespace, ClusterDefaults.AgentConnectionName(targetNamespace), true), //TODO handle syncing agent specific
-            new AgentConfigurationReference(targetNamespace, ClusterDefaults.AgentConfigurationName(targetNamespace), true), //TODO handle syncing agent specific
+            connectionRef,
+            configurationRef,
             pullSecret,
             template.ImagePullPolicy
         );
@@ -65,6 +73,14 @@ public class ClusterAgentInjectorSyncingHandler
         string targetName,
         string targetNamespace)
     {
+        var connection = desiredResource.ConnectionReference != null
+            ? new V1Beta1AgentInjector.AgentInjectorConnectionSpec { Name = desiredResource.ConnectionReference.Name }
+            : null;
+
+        var configuration = desiredResource.ConfigurationReference != null
+            ? new V1Beta1AgentInjector.AgentInjectorConfigurationSpec { Name = desiredResource.ConfigurationReference.Name }
+            : null;
+
         var spec = new V1Beta1AgentInjector.AgentInjectorSpec
         {
             Enabled = desiredResource.Enabled,
@@ -83,14 +99,8 @@ public class ClusterAgentInjectorSyncingHandler
                 Labels = desiredResource.Selector.LabelPatterns.Select(x => new V1Beta1AgentInjector.AgentInjectorLabelSelectorSpec
                     { Name = x.Key, Value = x.Value }).ToList()
             },
-            Connection = new V1Beta1AgentInjector.AgentInjectorConnectionSpec
-            {
-                Name = desiredResource.ConnectionReference.Name
-            },
-            Configuration = new V1Beta1AgentInjector.AgentInjectorConfigurationSpec
-            {
-                Name = desiredResource.ConfigurationReference.Name
-            }
+            Connection = connection,
+            Configuration = configuration
         };
 
         return ValueTask.FromResult(new V1Beta1AgentInjector

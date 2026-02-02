@@ -21,3 +21,50 @@ spec:
         labels:
           - name: app
             value: injection-cluster
+      connection:
+        name: cluster-injector-agent-connection
+      configuration:
+        name: cluster-injector-agent-configuration
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cluster-injector-agent-connection-secret
+  namespace: testing-agent-operator
+type: Opaque
+stringData:
+  token: token
+  apiKey: apiKey
+  serviceKey: serviceKey
+  userName: userName
+---
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: AgentConnection
+metadata:
+  name: cluster-injector-agent-connection
+  namespace: testing-agent-operator
+spec:
+  token:
+    secretName: cluster-injector-agent-connection-secret
+    secretKey: token
+  url: http://localhost
+  apiKey:
+    secretName: cluster-injector-agent-connection-secret
+    secretKey: apiKey
+  serviceKey:
+    secretName: cluster-injector-agent-connection-secret
+    secretKey: serviceKey
+  userName:
+    secretName: cluster-injector-agent-connection-secret
+    secretKey: userName
+---
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: AgentConfiguration
+metadata:
+  name: cluster-injector-agent-configuration
+  namespace: testing-agent-operator
+spec:
+  yaml: |
+    enabled: false
+    foo:
+      bar: "foobar_cluster"
