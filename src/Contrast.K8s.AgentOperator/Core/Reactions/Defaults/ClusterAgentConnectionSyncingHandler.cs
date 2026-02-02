@@ -18,7 +18,6 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults;
 public class ClusterAgentConnectionSyncingHandler
     : BaseUniqueSyncingHandler<ClusterAgentConnectionResource, AgentConnectionResource, V1Beta1AgentConnection>
 {
-    private readonly ClusterDefaults _clusterDefaults;
 
     protected override string EntityName => "AgentConnection";
 
@@ -26,12 +25,11 @@ public class ClusterAgentConnectionSyncingHandler
         OperatorOptions operatorOptions,
         IKubernetesClient kubernetesClient,
         IReactionHelper reactionHelper,
-        ClusterDefaults clusterDefaults,
+        ClusterDefaultsHelper clusterDefaults,
         IResourceComparer comparer,
         ClusterResourceMatcher matcher)
         : base(state, operatorOptions, kubernetesClient, reactionHelper, clusterDefaults, comparer, matcher)
     {
-        _clusterDefaults = clusterDefaults;
     }
 
     protected override ValueTask<V1Beta1AgentConnection?> CreateTargetEntity(
@@ -91,39 +89,39 @@ public class ClusterAgentConnectionSyncingHandler
 
     protected override string GetTargetEntityName(string targetNamespace)
     {
-        return _clusterDefaults.GetDefaultAgentConnectionName(targetNamespace);
+        return ClusterDefaults.AgentConnectionName(targetNamespace);
     }
 
     protected override ValueTask<AgentConnectionResource?> CreateDesiredResource(
-        AgentConnectionResource? existingResource, ResourceIdentityPair<ClusterAgentConnectionResource> baseResource,
+        ResourceIdentityPair<ClusterAgentConnectionResource> baseResource,
         string targetName,
         string targetNamespace)
     {
-        var secretName = _clusterDefaults.GetDefaultAgentConnectionSecretName(targetNamespace);
+        var secretName = ClusterDefaults.AgentConnectionSecretName(targetNamespace);
         var template = baseResource.Resource.Template;
 
         SecretReference? token = null;
         if (template.Token != null)
         {
-            token = new SecretReference(targetNamespace, secretName, ClusterDefaultsConstants.DefaultTokenSecretKey);
+            token = new SecretReference(targetNamespace, secretName, ClusterDefaults.DefaultTokenSecretKey);
         }
 
         SecretReference? apiKey = null;
         if (template.ApiKey != null)
         {
-            apiKey = new SecretReference(targetNamespace, secretName, ClusterDefaultsConstants.DefaultApiKeySecretKey);
+            apiKey = new SecretReference(targetNamespace, secretName, ClusterDefaults.DefaultApiKeySecretKey);
         }
 
         SecretReference? serviceKey = null;
         if (template.ServiceKey != null)
         {
-            serviceKey = new SecretReference(targetNamespace, secretName, ClusterDefaultsConstants.DefaultServiceKeySecretKey);
+            serviceKey = new SecretReference(targetNamespace, secretName, ClusterDefaults.DefaultServiceKeySecretKey);
         }
 
         SecretReference? username = null;
         if (template.UserName != null)
         {
-            username = new SecretReference(targetNamespace, secretName, ClusterDefaultsConstants.DefaultUsernameSecretKey);
+            username = new SecretReference(targetNamespace, secretName, ClusterDefaults.DefaultUsernameSecretKey);
         }
 
         return ValueTask.FromResult(baseResource.Resource.Template with

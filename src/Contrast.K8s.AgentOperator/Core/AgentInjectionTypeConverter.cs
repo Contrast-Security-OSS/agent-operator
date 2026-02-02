@@ -3,33 +3,12 @@
 
 using System;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
-using Contrast.K8s.AgentOperator.Options;
 
 namespace Contrast.K8s.AgentOperator.Core;
 
-public interface IAgentInjectionTypeConverter
+public static class AgentInjectionTypeConverter
 {
-    string GetDefaultImageRegistry(AgentInjectionType type);
-    string GetDefaultImageName(AgentInjectionType type);
-    AgentInjectionType GetTypeFromString(string type);
-    string GetStringFromType(AgentInjectionType? type);
-}
-
-public class AgentInjectionTypeConverter : IAgentInjectionTypeConverter
-{
-    private readonly ImageRepositoryOptions _repositoryOptions;
-
-    public AgentInjectionTypeConverter(ImageRepositoryOptions repositoryOptions)
-    {
-        _repositoryOptions = repositoryOptions;
-    }
-
-    public string GetDefaultImageRegistry(AgentInjectionType type)
-    {
-        return _repositoryOptions.DefaultRegistry;
-    }
-
-    public string GetDefaultImageName(AgentInjectionType type)
+    public static string GetDefaultImageName(AgentInjectionType type)
     {
         return type switch
         {
@@ -46,7 +25,7 @@ public class AgentInjectionTypeConverter : IAgentInjectionTypeConverter
         };
     }
 
-    public AgentInjectionType GetTypeFromString(string type)
+    public static AgentInjectionType GetTypeFromString(string type)
     {
         return type.ToLowerInvariant() switch
         {
@@ -67,7 +46,7 @@ public class AgentInjectionTypeConverter : IAgentInjectionTypeConverter
         };
     }
 
-    public string GetStringFromType(AgentInjectionType? type)
+    public static string GetStringFromType(AgentInjectionType? type)
     {
         return type switch
         {

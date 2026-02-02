@@ -13,7 +13,6 @@ using Contrast.K8s.AgentOperator.Core.State;
 using KubeOps.KubernetesClient;
 using k8s.Autorest;
 using System.Diagnostics;
-using System.Security.Cryptography;
 using k8s.Models;
 using YamlDotNet.Serialization;
 using YamlDotNet.Core;
@@ -35,7 +34,6 @@ public class AgentConnectionVolumeSecretHandler : INotificationHandler<DeferredS
     private readonly ISecretHelper _secretHelper;
 
     private string EntityName => "AgentConnectionVolumeSecret";
-    private string ConfigFilename => "contrast_security.yaml";
     private string HashAnnotation => "agents.contrastsecurity.com/connection-secret-hash";
 
     public AgentConnectionVolumeSecretHandler(IStateContainer state,
@@ -99,7 +97,7 @@ public class AgentConnectionVolumeSecretHandler : INotificationHandler<DeferredS
             },
             Data = new Dictionary<string, byte[]>
             {
-                { ConfigFilename, config }
+                { VolumeSecrets.ConfigVolumeSecretKey, config }
             }
         };
     }

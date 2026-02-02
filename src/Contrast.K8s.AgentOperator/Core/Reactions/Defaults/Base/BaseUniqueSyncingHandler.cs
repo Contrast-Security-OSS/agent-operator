@@ -33,13 +33,13 @@ public abstract class BaseUniqueSyncingHandler<TClusterResource, TTargetResource
     private readonly IResourceComparer _comparer;
     private readonly ClusterResourceMatcher _matcher;
     private readonly IStateContainer _state;
-    private readonly ClusterDefaults _clusterDefaults;
+    private readonly ClusterDefaultsHelper _clusterDefaults;
 
     protected BaseUniqueSyncingHandler(IStateContainer state,
         OperatorOptions operatorOptions,
         IKubernetesClient kubernetesClient,
         IReactionHelper reactionHelper,
-        ClusterDefaults clusterDefaults,
+        ClusterDefaultsHelper clusterDefaults,
         IResourceComparer comparer,
         ClusterResourceMatcher matcher)
         : base(state, operatorOptions, kubernetesClient, reactionHelper)
@@ -74,7 +74,7 @@ public abstract class BaseUniqueSyncingHandler<TClusterResource, TTargetResource
             if (isValidNamespace
                 && await _state.GetById<NamespaceResource>(targetNamespace, targetNamespace, cancellationToken) is { } namespaceResource
                 && await GetBestBaseForNamespace(availableClusterResources, targetNamespace, namespaceResource) is { } bestBase
-                && await CreateDesiredResource(existingResource, bestBase, targetEntityName, targetNamespace) is { } desiredResource)
+                && await CreateDesiredResource(bestBase, targetEntityName, targetNamespace) is { } desiredResource)
             {
                 if (!_comparer.AreEqual(existingResource, desiredResource))
                 {

@@ -152,7 +152,6 @@ public abstract class BaseSyncingHandler<TClusterResource, TTargetResource, TEnt
         string targetNamespace);
 
     protected abstract ValueTask<TTargetResource?> CreateDesiredResource(
-        TTargetResource? existingResource,
         ResourceIdentityPair<TClusterResource> baseResource,
         string targetName,
         string targetNamespace);

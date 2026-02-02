@@ -20,27 +20,20 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults;
 public class ClusterAgentInjectorSyncingHandler
     : BaseAgentInjectorSyncingHandler<AgentInjectorResource, V1Beta1AgentInjector>
 {
-    private readonly ClusterDefaults _clusterDefaults;
-    private readonly IAgentInjectionTypeConverter _typeConverter;
-
     protected override string EntityName => "AgentInjector";
 
     public ClusterAgentInjectorSyncingHandler(IStateContainer state,
         OperatorOptions operatorOptions,
         IKubernetesClient kubernetesClient,
         IReactionHelper reactionHelper,
-        ClusterDefaults clusterDefaults,
+        ClusterDefaultsHelper clusterDefaults,
         IResourceComparer comparer,
-        ClusterResourceMatcher matcher,
-        IAgentInjectionTypeConverter typeConverter)
+        ClusterResourceMatcher matcher)
         : base(state, operatorOptions, kubernetesClient, reactionHelper, clusterDefaults, comparer, matcher)
     {
-        _clusterDefaults = clusterDefaults;
-        _typeConverter = typeConverter;
     }
 
     protected override ValueTask<AgentInjectorResource?> CreateDesiredResource(
-        AgentInjectorResource? existingResource,
         ResourceIdentityPair<ClusterAgentInjectorResource> baseResource,
         string targetName,
         string targetNamespace)
@@ -49,7 +42,7 @@ public class ClusterAgentInjectorSyncingHandler
 
         var pullSecret = template.ImagePullSecret != null
             ? new SecretReference(targetNamespace,
-                _clusterDefaults.GetDefaultPullSecretName(targetNamespace, template.Type), ".dockerconfigjson")
+                ClusterDefaults.AgentInjectorPullSecretName(targetNamespace, template.Type), ".dockerconfigjson")
             : null;
 
         var resource = new AgentInjectorResource(
@@ -57,8 +50,8 @@ public class ClusterAgentInjectorSyncingHandler
             template.Type,
             template.Image,
             template.Selector with { Namespaces = new List<string> { targetNamespace } },
-            existingResource?.ConnectionReference ?? new AgentInjectorConnectionReference(targetNamespace, _clusterDefaults.GetDefaultAgentConnectionName(targetNamespace), true),
-            existingResource?.ConfigurationReference ?? new AgentConfigurationReference(targetNamespace, _clusterDefaults.GetDefaultAgentConfigurationName(targetNamespace), true),
+            new AgentInjectorConnectionReference(targetNamespace, ClusterDefaults.AgentConnectionName(targetNamespace), true), //TODO handle syncing agent specific
+            new AgentConfigurationReference(targetNamespace, ClusterDefaults.AgentConfigurationName(targetNamespace), true), //TODO handle syncing agent specific
             pullSecret,
             template.ImagePullPolicy
         );
@@ -76,7 +69,7 @@ public class ClusterAgentInjectorSyncingHandler
         {
             Enabled = desiredResource.Enabled,
             Version = desiredResource.Image.Tag,
-            Type = _typeConverter.GetStringFromType(desiredResource.Type),
+            Type = AgentInjectionTypeConverter.GetStringFromType(desiredResource.Type),
             Image = new V1Beta1AgentInjector.AgentInjectorImageSpec
             {
                 Name = desiredResource.Image.Name,
@@ -109,6 +102,6 @@ public class ClusterAgentInjectorSyncingHandler
 
     protected override string GetTargetEntityName(string targetNamespace, AgentInjectionType agentType)
     {
-        return _clusterDefaults.GetDefaultAgentInjectorName(targetNamespace, agentType);
+        return ClusterDefaults.AgentInjectorName(targetNamespace, agentType);
     }
 }

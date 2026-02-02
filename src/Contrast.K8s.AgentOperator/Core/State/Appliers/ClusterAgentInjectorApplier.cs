@@ -19,16 +19,13 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers;
 public class ClusterAgentInjectorApplier : BaseApplier<V1Beta1ClusterAgentInjector, ClusterAgentInjectorResource>
 {
     private readonly IImageGenerator _imageGenerator;
-    private readonly IAgentInjectionTypeConverter _typeConverter;
 
     public ClusterAgentInjectorApplier(IStateContainer stateContainer,
         IMediator mediator,
-        IImageGenerator imageGenerator,
-        IAgentInjectionTypeConverter typeConverter) : base(
+        IImageGenerator imageGenerator) : base(
         stateContainer, mediator)
     {
         _imageGenerator = imageGenerator;
-        _typeConverter = typeConverter;
     }
 
     public override async ValueTask<ClusterAgentInjectorResource> CreateFrom(V1Beta1ClusterAgentInjector entity,
@@ -36,7 +33,7 @@ public class ClusterAgentInjectorApplier : BaseApplier<V1Beta1ClusterAgentInject
     {
         var spec = entity.Spec.Template?.Spec!;
 
-        var type = _typeConverter.GetTypeFromString(spec.Type);
+        var type = AgentInjectionTypeConverter.GetTypeFromString(spec.Type);
         var imageReference = await _imageGenerator.GenerateImage(type,
             spec.Image.Registry,
             spec.Image.Name,
