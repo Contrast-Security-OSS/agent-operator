@@ -18,7 +18,6 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults;
 public class ClusterAgentConnectionSecretSyncingHandler
     : BaseUniqueSyncingHandler<ClusterAgentConnectionResource, SecretResource, V1Secret>
 {
-    private readonly ClusterDefaults _clusterDefaults;
     private readonly ISecretHelper _secretHelper;
 
     protected override string EntityName => "AgentConnectionSecret";
@@ -27,17 +26,16 @@ public class ClusterAgentConnectionSecretSyncingHandler
         OperatorOptions operatorOptions,
         IKubernetesClient kubernetesClient,
         IReactionHelper reactionHelper,
-        ClusterDefaults clusterDefaults,
+        ClusterDefaultsHelper clusterDefaults,
         IResourceComparer comparer,
         ClusterResourceMatcher matcher,
         ISecretHelper secretHelper)
         : base(state, operatorOptions, kubernetesClient, reactionHelper, clusterDefaults, comparer, matcher)
     {
-        _clusterDefaults = clusterDefaults;
         _secretHelper = secretHelper;
     }
 
-    protected override async ValueTask<SecretResource?> CreateDesiredResource(SecretResource? existingResource,
+    protected override async ValueTask<SecretResource?> CreateDesiredResource(
         ResourceIdentityPair<ClusterAgentConnectionResource> baseResource,
         string targetName,
         string targetNamespace)
@@ -52,7 +50,7 @@ public class ClusterAgentConnectionSecretSyncingHandler
             var tokenHash = await _secretHelper.GetCachedSecretDataHashByRef(template.Token.Name, @namespace, template.Token.Key);
             if (tokenHash != null)
             {
-                secretKeyValues.Add(new SecretKeyValue(ClusterDefaultsConstants.DefaultTokenSecretKey, tokenHash));
+                secretKeyValues.Add(new SecretKeyValue(ClusterDefaults.DefaultTokenSecretKey, tokenHash));
             }
         }
 
@@ -61,7 +59,7 @@ public class ClusterAgentConnectionSecretSyncingHandler
             var usernameHash = await _secretHelper.GetCachedSecretDataHashByRef(template.UserName.Name, @namespace, template.UserName.Key);
             if (usernameHash != null)
             {
-                secretKeyValues.Add(new SecretKeyValue(ClusterDefaultsConstants.DefaultUsernameSecretKey, usernameHash));
+                secretKeyValues.Add(new SecretKeyValue(ClusterDefaults.DefaultUsernameSecretKey, usernameHash));
             }
         }
 
@@ -70,7 +68,7 @@ public class ClusterAgentConnectionSecretSyncingHandler
             var apiKeyHash = await _secretHelper.GetCachedSecretDataHashByRef(template.ApiKey.Name, @namespace, template.ApiKey.Key);
             if (apiKeyHash != null)
             {
-                secretKeyValues.Add(new SecretKeyValue(ClusterDefaultsConstants.DefaultApiKeySecretKey, apiKeyHash));
+                secretKeyValues.Add(new SecretKeyValue(ClusterDefaults.DefaultApiKeySecretKey, apiKeyHash));
             }
         }
 
@@ -79,7 +77,7 @@ public class ClusterAgentConnectionSecretSyncingHandler
             var serviceKeyHash = await _secretHelper.GetCachedSecretDataHashByRef(template.ServiceKey.Name, @namespace, template.ServiceKey.Key);
             if (serviceKeyHash != null)
             {
-                secretKeyValues.Add(new SecretKeyValue(ClusterDefaultsConstants.DefaultServiceKeySecretKey, serviceKeyHash));
+                secretKeyValues.Add(new SecretKeyValue(ClusterDefaults.DefaultServiceKeySecretKey, serviceKeyHash));
             }
         }
 
@@ -102,7 +100,7 @@ public class ClusterAgentConnectionSecretSyncingHandler
             var tokenData = await _secretHelper.GetLiveSecretDataByRef(template.Token.Name, @namespace, template.Token.Key);
             if (tokenData != null)
             {
-                data.Add(ClusterDefaultsConstants.DefaultTokenSecretKey, tokenData);
+                data.Add(ClusterDefaults.DefaultTokenSecretKey, tokenData);
             }
         }
 
@@ -111,7 +109,7 @@ public class ClusterAgentConnectionSecretSyncingHandler
             var usernameData = await _secretHelper.GetLiveSecretDataByRef(template.UserName.Name, @namespace, template.UserName.Key);
             if (usernameData != null)
             {
-                data.Add(ClusterDefaultsConstants.DefaultUsernameSecretKey, usernameData);
+                data.Add(ClusterDefaults.DefaultUsernameSecretKey, usernameData);
             }
         }
 
@@ -120,7 +118,7 @@ public class ClusterAgentConnectionSecretSyncingHandler
             var apiKeyData = await _secretHelper.GetLiveSecretDataByRef(template.ApiKey.Name, @namespace, template.ApiKey.Key);
             if (apiKeyData != null)
             {
-                data.Add(ClusterDefaultsConstants.DefaultApiKeySecretKey, apiKeyData);
+                data.Add(ClusterDefaults.DefaultApiKeySecretKey, apiKeyData);
             }
         }
 
@@ -129,7 +127,7 @@ public class ClusterAgentConnectionSecretSyncingHandler
             var serviceKeyData = await _secretHelper.GetLiveSecretDataByRef(template.ServiceKey.Name, @namespace, template.ServiceKey.Key);
             if (serviceKeyData != null)
             {
-                data.Add(ClusterDefaultsConstants.DefaultServiceKeySecretKey, serviceKeyData);
+                data.Add(ClusterDefaults.DefaultServiceKeySecretKey, serviceKeyData);
             }
         }
 
@@ -146,6 +144,6 @@ public class ClusterAgentConnectionSecretSyncingHandler
 
     protected override string GetTargetEntityName(string targetNamespace)
     {
-        return _clusterDefaults.GetDefaultAgentConnectionSecretName(targetNamespace);
+        return ClusterDefaults.AgentConnectionSecretName(targetNamespace);
     }
 }

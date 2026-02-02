@@ -18,7 +18,6 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults;
 public class ClusterAgentConfigurationSyncingHandler
     : BaseUniqueSyncingHandler<ClusterAgentConfigurationResource, AgentConfigurationResource, V1Beta1AgentConfiguration>
 {
-    private readonly ClusterDefaults _clusterDefaults;
 
     protected override string EntityName => "AgentConfiguration";
 
@@ -26,12 +25,11 @@ public class ClusterAgentConfigurationSyncingHandler
         OperatorOptions operatorOptions,
         IKubernetesClient kubernetesClient,
         IReactionHelper reactionHelper,
-        ClusterDefaults clusterDefaults,
+        ClusterDefaultsHelper clusterDefaults,
         IResourceComparer comparer,
         ClusterResourceMatcher matcher)
         : base(state, operatorOptions, kubernetesClient, reactionHelper, clusterDefaults, comparer, matcher)
     {
-        _clusterDefaults = clusterDefaults;
     }
 
     protected override ValueTask<V1Beta1AgentConfiguration?> CreateTargetEntity(
@@ -72,10 +70,10 @@ public class ClusterAgentConfigurationSyncingHandler
 
     protected override string GetTargetEntityName(string targetNamespace)
     {
-        return _clusterDefaults.GetDefaultAgentConfigurationName(targetNamespace);
+        return ClusterDefaults.AgentConfigurationName(targetNamespace);
     }
 
-    protected override ValueTask<AgentConfigurationResource?> CreateDesiredResource(AgentConfigurationResource? existingResource,
+    protected override ValueTask<AgentConfigurationResource?> CreateDesiredResource(
         ResourceIdentityPair<ClusterAgentConfigurationResource> baseResource, string targetName,
         string targetNamespace)
     {

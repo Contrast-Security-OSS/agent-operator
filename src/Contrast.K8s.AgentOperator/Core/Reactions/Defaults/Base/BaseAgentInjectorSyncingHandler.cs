@@ -32,13 +32,13 @@ public abstract class BaseAgentInjectorSyncingHandler<TTargetResource, TEntity>
     private readonly IStateContainer _state;
     private readonly IResourceComparer _comparer;
     private readonly ClusterResourceMatcher _matcher;
-    private readonly ClusterDefaults _clusterDefaults;
+    private readonly ClusterDefaultsHelper _clusterDefaults;
 
     protected BaseAgentInjectorSyncingHandler(IStateContainer state,
         OperatorOptions operatorOptions,
         IKubernetesClient kubernetesClient,
         IReactionHelper reactionHelper,
-        ClusterDefaults clusterDefaults,
+        ClusterDefaultsHelper clusterDefaults,
         IResourceComparer comparer,
         ClusterResourceMatcher matcher)
         : base(state, operatorOptions, kubernetesClient, reactionHelper)
@@ -86,7 +86,7 @@ public abstract class BaseAgentInjectorSyncingHandler<TTargetResource, TEntity>
                 var existingResource = await _state.GetById<TTargetResource>(targetEntityName, targetNamespace, cancellationToken);
 
                 if (await GetBestBaseForNamespace(availableClusterResources, targetNamespace, namespaceResource, agentType) is { } bestBase
-                    && await CreateDesiredResource(existingResource, bestBase, targetEntityName, targetNamespace) is { } desiredResource)
+                    && await CreateDesiredResource(bestBase, targetEntityName, targetNamespace) is { } desiredResource)
                 {
                     if (!_comparer.AreEqual(existingResource, desiredResource))
                     {

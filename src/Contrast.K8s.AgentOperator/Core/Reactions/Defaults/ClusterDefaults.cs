@@ -1,82 +1,59 @@
 ﻿// Contrast Security, Inc licenses this file to you under the Apache 2.0 License.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using Contrast.K8s.AgentOperator.Core.State;
-using Contrast.K8s.AgentOperator.Core.State.Resources;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
 
 namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults;
 
-public class ClusterDefaults
+public static class ClusterDefaults
 {
-    private readonly IStateContainer _state;
-    private readonly AgentInjectionTypeConverter _typeConverter;
+    public const string DefaultTokenSecretKey = "token";
+    public const string DefaultUsernameSecretKey = "username";
+    public const string DefaultApiKeySecretKey = "api-key";
+    public const string DefaultServiceKeySecretKey = "service-key";
 
-    public ClusterDefaults(IStateContainer state, AgentInjectionTypeConverter typeConverter)
-    {
-        _state = state;
-        _typeConverter = typeConverter;
-    }
-
-    public string GetDefaultAgentConfigurationName(string targetNamespace)
+    public static string AgentConfigurationName(string targetNamespace)
     {
         return "default-agent-configuration-" + HashHelper.GetShortHash(targetNamespace);
     }
 
-    public string GetDefaultAgentConnectionName(string targetNamespace)
+    public static string AgentConnectionName(string targetNamespace)
     {
         return "default-agent-connection-" + HashHelper.GetShortHash(targetNamespace);
     }
 
-    public string GetDefaultAgentConnectionSecretName(string targetNamespace)
+    public static string AgentConnectionSecretName(string targetNamespace)
     {
         return "default-agent-connection-secret-" + HashHelper.GetShortHash(targetNamespace);
     }
 
-    public string GetDefaultPullSecretName(string targetNamespace, AgentInjectionType agentType)
+    public static string AgentInjectorName(string targetNamespace, AgentInjectionType agentType)
     {
-        var type = _typeConverter.GetStringFromType(agentType);
-        return $"default-agent-injector-pullsecret-{type}-{HashHelper.GetShortHash(targetNamespace)}";
-    }
-
-    public string GetDefaultAgentInjectorName(string targetNamespace, AgentInjectionType agentType)
-    {
-        var type = _typeConverter.GetStringFromType(agentType);
+        var type = AgentInjectionTypeConverter.GetStringFromType(agentType);
         return $"default-agent-injector-{type}-{HashHelper.GetShortHash(targetNamespace)}";
     }
 
-    public async ValueTask<IReadOnlyCollection<string>> GetAllNamespaces(CancellationToken cancellationToken = default)
+    public static string AgentInjectorPullSecretName(string targetNamespace, AgentInjectionType agentType)
     {
-        var namespaces = new HashSet<string>(StringComparer.Ordinal);
-        var keys = await _state.GetKeysByType<NamespaceResource>(cancellationToken);
-        foreach (var id in keys)
-        {
-            var @namespace = id.Name.ToLowerInvariant();
-            namespaces.Add(@namespace);
-        }
-
-        return namespaces;
+        var type = AgentInjectionTypeConverter.GetStringFromType(agentType);
+        return $"default-agent-injector-pullsecret-{type}-{HashHelper.GetShortHash(targetNamespace)}";
     }
 
-    public async ValueTask<IReadOnlyCollection<string>> GetValidNamespacesForDefaults(CancellationToken cancellationToken = default)
+    public static string AgentInjectorConfigurationName(string targetNamespace, AgentInjectionType agentType)
     {
-        var namespaces = new HashSet<string>(StringComparer.Ordinal);
-        var keys = await _state.GetKeysByType<AgentInjectorResource>(cancellationToken);
-        foreach (var id in keys)
-        {
-            var @namespace = id.Namespace.ToLowerInvariant();
-            namespaces.Add(@namespace);
-        }
-
-        return namespaces;
+        var type = AgentInjectionTypeConverter.GetStringFromType(agentType);
+        return $"default-agent-injector-configuration-{type}-{HashHelper.GetShortHash(targetNamespace)}";
     }
 
-    public IReadOnlyCollection<string> GetSystemNamespaces()
+    public static string AgentInjectorConnectionName(string targetNamespace, AgentInjectionType agentType)
     {
-        return new HashSet<string> { "kube-system", "kube-node-lease", "kube-public", "gatekeeper-system" };
+        var type = AgentInjectionTypeConverter.GetStringFromType(agentType);
+        return $"default-agent-injector-connection-{type}-{HashHelper.GetShortHash(targetNamespace)}";
+    }
+
+    public static string AgentInjectorConnectionSecretName(string targetNamespace, AgentInjectionType agentType)
+    {
+        var type = AgentInjectionTypeConverter.GetStringFromType(agentType);
+        return $"default-agent-injector-connectionsecret-{type}-{HashHelper.GetShortHash(targetNamespace)}";
     }
 }

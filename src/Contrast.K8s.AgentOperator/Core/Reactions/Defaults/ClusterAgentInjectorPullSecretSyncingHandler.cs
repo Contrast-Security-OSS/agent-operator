@@ -18,7 +18,6 @@ namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults;
 public class ClusterAgentInjectorPullSecretSyncingHandler
     : BaseAgentInjectorSyncingHandler<SecretResource, V1Secret>
 {
-    private readonly ClusterDefaults _clusterDefaults;
     private readonly ISecretHelper _secretHelper;
 
     protected override string EntityName => "AgentInjectorPullSecret";
@@ -27,18 +26,16 @@ public class ClusterAgentInjectorPullSecretSyncingHandler
         OperatorOptions operatorOptions,
         IKubernetesClient kubernetesClient,
         IReactionHelper reactionHelper,
-        ClusterDefaults clusterDefaults,
+        ClusterDefaultsHelper clusterDefaults,
         IResourceComparer comparer,
         ClusterResourceMatcher matcher,
         ISecretHelper secretHelper)
         : base(state, operatorOptions, kubernetesClient, reactionHelper, clusterDefaults, comparer, matcher)
     {
-        _clusterDefaults = clusterDefaults;
         _secretHelper = secretHelper;
     }
 
     protected override async ValueTask<SecretResource?> CreateDesiredResource(
-        SecretResource? existingResource,
         ResourceIdentityPair<ClusterAgentInjectorResource> baseResource,
         string targetName,
         string targetNamespace)
@@ -92,6 +89,6 @@ public class ClusterAgentInjectorPullSecretSyncingHandler
 
     protected override string GetTargetEntityName(string targetNamespace, AgentInjectionType agentType)
     {
-        return _clusterDefaults.GetDefaultPullSecretName(targetNamespace, agentType);
+        return ClusterDefaults.AgentInjectorPullSecretName(targetNamespace, agentType);
     }
 }

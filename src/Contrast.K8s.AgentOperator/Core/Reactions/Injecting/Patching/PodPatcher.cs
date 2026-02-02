@@ -33,11 +33,10 @@ public class PodPatcher : IPodPatcher
     private readonly OperatorOptions _operatorOptions;
     private readonly InitContainerOptions _initOptions;
     private readonly TelemetryOptions _telemetryOptions;
-    private readonly IAgentInjectionTypeConverter _agentTypeConverter;
 
     public PodPatcher(Func<IEnumerable<IAgentPatcher>> patchersFactory, IGlobMatcher globMatcher,
             IClusterIdState clusterIdState, OperatorOptions operatorOptions, InitContainerOptions initOptions,
-            TelemetryOptions telemetryOptions, IAgentInjectionTypeConverter agentTypeConverter)
+            TelemetryOptions telemetryOptions)
     {
         _patchersFactory = patchersFactory;
         _globMatcher = globMatcher;
@@ -45,7 +44,6 @@ public class PodPatcher : IPodPatcher
         _operatorOptions = operatorOptions;
         _initOptions = initOptions;
         _telemetryOptions = telemetryOptions;
-        _agentTypeConverter = agentTypeConverter;
     }
 
     public ValueTask Patch(PatchingContext context, V1Pod pod, CancellationToken cancellationToken = default)
@@ -55,7 +53,7 @@ public class PodPatcher : IPodPatcher
 
         if (patcher is { Deprecated: true })
         {
-            Logger.Warn($"Using deprecated agent injector type '{_agentTypeConverter.GetStringFromType(patcher.Type)}'. {patcher.DeprecatedMessage}");
+            Logger.Warn($"Using deprecated agent injector type '{AgentInjectionTypeConverter.GetStringFromType(patcher.Type)}'. {patcher.DeprecatedMessage}");
         }
 
         if (patcher?.GetOverrideAgentMountPath() is { } agentMountPathOverride)
@@ -66,7 +64,7 @@ public class PodPatcher : IPodPatcher
             };
         }
 
-        Logger.Trace($"Selected agent injector '{_agentTypeConverter.GetStringFromType(patcher?.Type)}'.");
+        Logger.Trace($"Selected agent injector '{AgentInjectionTypeConverter.GetStringFromType(patcher?.Type)}'.");
 
         ApplyPatches(context, pod, patcher);
 
@@ -331,7 +329,7 @@ public class PodPatcher : IPodPatcher
 
         if (context.Connection.MountAsVolume == true)
         {
-            yield return new V1EnvVar { Name = "CONTRAST_CONFIG_PATH", Value = Path.Join(secretMountPath, "contrast_security.yaml") };
+            yield return new V1EnvVar { Name = "CONTRAST_CONFIG_PATH", Value = Path.Join(secretMountPath, VolumeSecrets.ConfigVolumeSecretKey) };
         }
         else
         {

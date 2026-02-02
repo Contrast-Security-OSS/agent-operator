@@ -19,18 +19,12 @@ namespace Contrast.K8s.AgentOperator.Core.State.Appliers;
 public class AgentInjectorApplier : BaseApplier<V1Beta1AgentInjector, AgentInjectorResource>
 {
     private readonly IImageGenerator _imageGenerator;
-    private readonly IAgentInjectionTypeConverter _typeConverter;
-    private readonly ClusterDefaults _clusterDefaults;
 
     public AgentInjectorApplier(IStateContainer stateContainer,
                                 IMediator mediator,
-                                IImageGenerator imageGenerator,
-                                IAgentInjectionTypeConverter typeConverter,
-                                ClusterDefaults clusterDefaults) : base(stateContainer, mediator)
+                                IImageGenerator imageGenerator) : base(stateContainer, mediator)
     {
         _imageGenerator = imageGenerator;
-        _typeConverter = typeConverter;
-        _clusterDefaults = clusterDefaults;
     }
 
     public override async ValueTask<AgentInjectorResource> CreateFrom(V1Beta1AgentInjector entity, CancellationToken cancellationToken = default)
@@ -39,7 +33,7 @@ public class AgentInjectorApplier : BaseApplier<V1Beta1AgentInjector, AgentInjec
         var @namespace = entity.Namespace()!;
 
         var enabled = spec.Enabled;
-        var type = _typeConverter.GetTypeFromString(spec.Type);
+        var type = AgentInjectionTypeConverter.GetTypeFromString(spec.Type);
         var imageReference = await _imageGenerator.GenerateImage(type,
             spec.Image.Registry,
             spec.Image.Name,
@@ -48,12 +42,12 @@ public class AgentInjectorApplier : BaseApplier<V1Beta1AgentInjector, AgentInjec
         );
         var selector = GetSelector(spec, @namespace);
 
-        var namespaceDefaultConnectionName = _clusterDefaults.GetDefaultAgentConnectionName(@namespace);
+        var namespaceDefaultConnectionName = ClusterDefaults.AgentConnectionName(@namespace);
         var connectionName = spec.Connection?.Name ?? namespaceDefaultConnectionName;
         var isConnectionNamespaceDefault = connectionName == namespaceDefaultConnectionName;
         var connectionReference = new AgentInjectorConnectionReference(@namespace, connectionName, isConnectionNamespaceDefault);
 
-        var namespaceDefaultConfigurationName = _clusterDefaults.GetDefaultAgentConfigurationName(@namespace);
+        var namespaceDefaultConfigurationName = ClusterDefaults.AgentConfigurationName(@namespace);
         var configurationName = spec.Configuration?.Name ?? namespaceDefaultConfigurationName;
         var isConfigurationNamespaceDefault = namespaceDefaultConfigurationName == configurationName;
         var configurationReference = new AgentConfigurationReference(@namespace, configurationName, isConfigurationNamespaceDefault);
