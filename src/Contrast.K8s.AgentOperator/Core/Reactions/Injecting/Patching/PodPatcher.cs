@@ -1,6 +1,7 @@
 ﻿// Contrast Security, Inc licenses this file to you under the Apache 2.0 License.
 // See the LICENSE file in the project root for more information.
 
+using Contrast.K8s.AgentOperator.Core.Reactions.Defaults;
 using Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents;
 using Contrast.K8s.AgentOperator.Core.Reactions.Matching;
 using Contrast.K8s.AgentOperator.Core.Reactions.Secrets;
@@ -96,14 +97,15 @@ public class PodPatcher : IPodPatcher
         };
         pod.Spec.Volumes.AddOrUpdate(writableVolume.Name, writableVolume);
         var connectionSecretVolumeName = "contrast-connection";
-        if (context.Connection.MountAsVolume == true)
+        var connectionVolumeRef = context.ConnectionVolumeSecret;
+        if (connectionVolumeRef != null)
         {
             var secretVolume = new V1Volume
             {
                 Name = connectionSecretVolumeName,
                 Secret = new V1SecretVolumeSource
                 {
-                    SecretName = VolumeSecrets.GetConnectionVolumeSecretName(context.Injector.ConnectionReference.Name),
+                    SecretName = connectionVolumeRef.Name,
                     Optional = true
                 }
             };
@@ -152,12 +154,12 @@ public class PodPatcher : IPodPatcher
             };
             container.VolumeMounts.AddOrUpdate(writableVolumeMount.Name, writableVolumeMount);
 
-            if (context.Connection.MountAsVolume == true)
+            if (connectionVolumeRef != null)
             {
                 var connectionSecretVolumeMount = new V1VolumeMount
                 {
                     Name = connectionSecretVolumeName,
-                    MountPath = context.ConnectionSecretMountPath,
+                    MountPath = connectionVolumeRef.MountPath,
                     ReadOnlyProperty = true
                 };
                 container.VolumeMounts.AddOrUpdate(connectionSecretVolumeMount.Name, connectionSecretVolumeMount);
@@ -309,7 +311,7 @@ public class PodPatcher : IPodPatcher
 
     private IEnumerable<V1EnvVar> GenerateEnvVars(PatchingContext context, V1Pod pod)
     {
-        var (workloadName, workloadNamespace, _, connection, configuration, agentMountPath, writableMountPath, secretMountPath) = context;
+        var (workloadName, workloadNamespace, _, connection, configuration, connectionVolumeRef, agentMountPath, writableMountPath) = context;
 
         // This isn't used in modern agent images, but is still used in older images.
         yield return new V1EnvVar { Name = "CONTRAST_MOUNT_PATH", Value = agentMountPath };
@@ -327,9 +329,9 @@ public class PodPatcher : IPodPatcher
             yield return new V1EnvVar { Name = "CONTRAST__API__URL", Value = connection.TeamServerUri };
         }
 
-        if (context.Connection.MountAsVolume == true)
+        if (connectionVolumeRef != null)
         {
-            yield return new V1EnvVar { Name = "CONTRAST_CONFIG_PATH", Value = Path.Join(secretMountPath, VolumeSecrets.ConfigVolumeSecretKey) };
+            yield return new V1EnvVar { Name = "CONTRAST_CONFIG_PATH", Value = Path.Join(connectionVolumeRef.MountPath, connectionVolumeRef.Key) };
         }
         else
         {

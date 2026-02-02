@@ -68,7 +68,7 @@ public class PodTemplateInjectionHandler : INotificationHandler<InjectorMatched>
     {
         if (injector != null
             && await _state.GetInjectorBundle(injector.Identity.Name, injector.Identity.Namespace, cancellationToken)
-                is var (_, connection, configuration, secrets))
+                is var (_, connection, configuration, secrets, _))
         {
             var injectorHash = _hasher.GetHash(injector.Resource, connection, configuration, secrets);
             return new DesiredState(injectorHash, injector.Identity.Name, injector.Identity.Namespace, target.Identity.Name, target.Identity.Namespace);

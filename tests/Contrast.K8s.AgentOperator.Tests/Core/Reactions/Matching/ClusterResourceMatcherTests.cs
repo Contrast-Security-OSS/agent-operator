@@ -223,7 +223,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Matching
                 FakeNamespacedResourceIdentity<ClusterAgentInjectorResource>(),
                 AutoFixture.Create<ClusterAgentInjectorResource>() with
                 {
-                    Template = AutoFixture.Create<AgentInjectorTemplate>() with
+                    Template = AutoFixture.Create<AgentInjectorResource>() with
                     {
                         Type = agentType
                     },
@@ -258,7 +258,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Matching
                 FakeNamespacedResourceIdentity<ClusterAgentInjectorResource>(),
                 AutoFixture.Create<ClusterAgentInjectorResource>() with
                 {
-                    Template = AutoFixture.Create<AgentInjectorTemplate>() with
+                    Template = AutoFixture.Create<AgentInjectorResource>() with
                     {
                         Type = agentType
                     },
@@ -271,7 +271,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Matching
                 FakeNamespacedResourceIdentity<ClusterAgentInjectorResource>(),
                 AutoFixture.Create<ClusterAgentInjectorResource>() with
                 {
-                    Template = AutoFixture.Create<AgentInjectorTemplate>() with
+                    Template = AutoFixture.Create<AgentInjectorResource>() with
                     {
                         Type = agentType
                     },
@@ -307,7 +307,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Matching
                 FakeNamespacedResourceIdentity<ClusterAgentInjectorResource>(),
                 AutoFixture.Create<ClusterAgentInjectorResource>() with
                 {
-                    Template = AutoFixture.Create<AgentInjectorTemplate>() with
+                    Template = AutoFixture.Create<AgentInjectorResource>() with
                     {
                         Type = agentType
                     },
@@ -342,7 +342,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Matching
                 FakeNamespacedResourceIdentity<ClusterAgentInjectorResource>(),
                 AutoFixture.Create<ClusterAgentInjectorResource>() with
                 {
-                    Template = AutoFixture.Create<AgentInjectorTemplate>() with
+                    Template = AutoFixture.Create<AgentInjectorResource>() with
                     {
                         Type = agentType
                     },
@@ -355,7 +355,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Matching
                 FakeNamespacedResourceIdentity<ClusterAgentInjectorResource>(),
                 AutoFixture.Create<ClusterAgentInjectorResource>() with
                 {
-                    Template = AutoFixture.Create<AgentInjectorTemplate>() with
+                    Template = AutoFixture.Create<AgentInjectorResource>() with
                     {
                         Type = AgentInjectionType.DotNetCore
                     },
@@ -391,7 +391,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Matching
                 FakeNamespacedResourceIdentity<ClusterAgentInjectorResource>(),
                 AutoFixture.Create<ClusterAgentInjectorResource>() with
                 {
-                    Template = AutoFixture.Create<AgentInjectorTemplate>() with
+                    Template = AutoFixture.Create<AgentInjectorResource>() with
                     {
                         Type = agentType
                     },
@@ -404,7 +404,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Matching
                 FakeNamespacedResourceIdentity<ClusterAgentInjectorResource>(),
                 AutoFixture.Create<ClusterAgentInjectorResource>() with
                 {
-                    Template = AutoFixture.Create<AgentInjectorTemplate>() with
+                    Template = AutoFixture.Create<AgentInjectorResource>() with
                     {
                         Type = agentType
                     },
@@ -440,7 +440,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Matching
                 FakeNamespacedResourceIdentity<ClusterAgentInjectorResource>(),
                 AutoFixture.Create<ClusterAgentInjectorResource>() with
                 {
-                    Template = AutoFixture.Create<AgentInjectorTemplate>() with
+                    Template = AutoFixture.Create<AgentInjectorResource>() with
                     {
                         Type = agentType
                     },
@@ -453,7 +453,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Matching
                 FakeNamespacedResourceIdentity<ClusterAgentInjectorResource>(),
                 AutoFixture.Create<ClusterAgentInjectorResource>() with
                 {
-                    Template = AutoFixture.Create<AgentInjectorTemplate>() with
+                    Template = AutoFixture.Create<AgentInjectorResource>() with
                     {
                         Type = agentType
                     },

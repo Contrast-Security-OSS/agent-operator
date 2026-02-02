@@ -11,8 +11,8 @@ public record AgentInjectorResource(
     AgentInjectionType Type,
     ContainerImageReference Image,
     ResourceWithPodSpecSelector Selector,
-    AgentInjectorConnectionReference ConnectionReference,
-    AgentConfigurationReference ConfigurationReference,
+    AgentConnectionReference? ConnectionReference,
+    AgentConfigurationReference? ConfigurationReference,
     SecretReference? ImagePullSecret,
     string ImagePullPolicy
 ) : INamespacedResource, IMutableResource;
