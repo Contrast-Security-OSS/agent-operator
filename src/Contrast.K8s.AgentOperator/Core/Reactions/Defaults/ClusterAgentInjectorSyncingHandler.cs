@@ -17,6 +17,9 @@ using KubeOps.KubernetesClient;
 
 namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults;
 
+/// <summary>
+/// Syncs ClusterAgentInjector to namespaced AgentInjector
+/// </summary>
 public class ClusterAgentInjectorSyncingHandler
     : BaseAgentInjectorSyncingHandler<AgentInjectorResource, V1Beta1AgentInjector>
 {
@@ -31,6 +34,11 @@ public class ClusterAgentInjectorSyncingHandler
         ClusterResourceMatcher matcher)
         : base(state, operatorOptions, kubernetesClient, reactionHelper, clusterDefaults, comparer, matcher)
     {
+    }
+
+    protected override string GetTargetEntityName(string targetNamespace, AgentInjectionType agentType)
+    {
+        return ClusterDefaults.AgentInjectorName(targetNamespace, agentType);
     }
 
     protected override ValueTask<AgentInjectorResource?> CreateDesiredResource(
@@ -108,10 +116,5 @@ public class ClusterAgentInjectorSyncingHandler
             Metadata = new V1ObjectMeta { Name = targetName, NamespaceProperty = targetNamespace },
             Spec = spec
         })!;
-    }
-
-    protected override string GetTargetEntityName(string targetNamespace, AgentInjectionType agentType)
-    {
-        return ClusterDefaults.AgentInjectorName(targetNamespace, agentType);
     }
 }

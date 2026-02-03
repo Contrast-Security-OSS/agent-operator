@@ -3,6 +3,7 @@
 
 using Contrast.K8s.AgentOperator.Core.Comparing;
 using Contrast.K8s.AgentOperator.Core.Reactions.Defaults.Base;
+using Contrast.K8s.AgentOperator.Core.Reactions.Defaults.Common;
 using Contrast.K8s.AgentOperator.Core.Reactions.Matching;
 using Contrast.K8s.AgentOperator.Core.State;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
@@ -15,10 +16,14 @@ using System.Threading.Tasks;
 
 namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults;
 
+/// <summary>
+/// Syncs AgentConnection referenced in a ClusterAgentInjector to another namespace
+/// </summary>
 public class ClusterAgentInjectorConnectionSyncingHandler
     : BaseAgentInjectorSyncingHandler<AgentConnectionResource, V1Beta1AgentConnection>
 {
     private readonly IStateContainer _state;
+    private readonly ConnectionSyncing _connectionSyncing;
 
     protected override string EntityName => "AgentInjectorConnection";
 
@@ -28,10 +33,17 @@ public class ClusterAgentInjectorConnectionSyncingHandler
         IReactionHelper reactionHelper,
         ClusterDefaultsHelper clusterDefaults,
         IResourceComparer comparer,
-        ClusterResourceMatcher matcher)
+        ClusterResourceMatcher matcher,
+        ConnectionSyncing connectionSyncing)
         : base(state, operatorOptions, kubernetesClient, reactionHelper, clusterDefaults, comparer, matcher)
     {
         _state = state;
+        _connectionSyncing = connectionSyncing;
+    }
+
+    protected override string GetTargetEntityName(string targetNamespace, AgentInjectionType agentType)
+    {
+        return ClusterDefaults.AgentInjectorConnectionName(targetNamespace, agentType);
     }
 
     protected override async ValueTask<AgentConnectionResource?> CreateDesiredResource(
@@ -47,39 +59,12 @@ public class ClusterAgentInjectorConnectionSyncingHandler
             if (agentConnection != null)
             {
                 var secretName = ClusterDefaults.AgentInjectorConnectionSecretName(targetNamespace, template.Type);
+                return _connectionSyncing.CreateConnectionResource(agentConnection, secretName, targetNamespace);
 
-                //TODO duplicate of ClusterAgentConnectionSyncingHandler
-                SecretReference? token = null;
-                if (agentConnection.Token != null)
-                {
-                    token = new SecretReference(targetNamespace, secretName, ClusterDefaults.DefaultTokenSecretKey);
-                }
-
-                SecretReference? apiKey = null;
-                if (agentConnection.ApiKey != null)
-                {
-                    apiKey = new SecretReference(targetNamespace, secretName, ClusterDefaults.DefaultApiKeySecretKey);
-                }
-
-                SecretReference? serviceKey = null;
-                if (agentConnection.ServiceKey != null)
-                {
-                    serviceKey = new SecretReference(targetNamespace, secretName, ClusterDefaults.DefaultServiceKeySecretKey);
-                }
-
-                SecretReference? username = null;
-                if (agentConnection.UserName != null)
-                {
-                    username = new SecretReference(targetNamespace, secretName, ClusterDefaults.DefaultUsernameSecretKey);
-                }
-
-                return agentConnection with
-                {
-                    Token = token,
-                    ApiKey = apiKey,
-                    ServiceKey = serviceKey,
-                    UserName = username
-                };
+            }
+            else
+            {
+                Logger.Warn($"Failed to find AgentConnection '{template.ConnectionReference.Namespace}/{template.ConnectionReference.Name} referenced by {baseResource.Identity.Namespace}/{baseResource.Identity.Name}'");
             }
         }
 
@@ -92,58 +77,12 @@ public class ClusterAgentInjectorConnectionSyncingHandler
         string targetName,
         string targetNamespace)
     {
-        //TODO duplicate of ClusterAgentConnectionSyncingHandler
-        var spec = new V1Beta1AgentConnection.AgentConnectionSpec
-        {
-            MountAsVolume = desiredResource.MountAsVolume,
-            Url = desiredResource.TeamServerUri
-        };
-
-        if (desiredResource.Token != null)
-        {
-            spec.Token = new V1Beta1AgentConnection.SecretRef
-            {
-                SecretName = desiredResource.Token.Name,
-                SecretKey = desiredResource.Token.Key
-            };
-        }
-
-        if (desiredResource.ApiKey != null)
-        {
-            spec.ApiKey = new V1Beta1AgentConnection.SecretRef
-            {
-                SecretName = desiredResource.ApiKey.Name,
-                SecretKey = desiredResource.ApiKey.Key
-            };
-        }
-
-        if (desiredResource.ServiceKey != null)
-        {
-            spec.ServiceKey = new V1Beta1AgentConnection.SecretRef
-            {
-                SecretName = desiredResource.ServiceKey.Name,
-                SecretKey = desiredResource.ServiceKey.Key
-            };
-        }
-
-        if (desiredResource.UserName != null)
-        {
-            spec.UserName = new V1Beta1AgentConnection.SecretRef
-            {
-                SecretName = desiredResource.UserName.Name,
-                SecretKey = desiredResource.UserName.Key
-            };
-        }
-
         return ValueTask.FromResult(new V1Beta1AgentConnection
         {
             Metadata = new V1ObjectMeta { Name = targetName, NamespaceProperty = targetNamespace },
-            Spec = spec
+            Spec = _connectionSyncing.CreateConnectionSpec(desiredResource)
         })!;
     }
 
-    protected override string GetTargetEntityName(string targetNamespace, AgentInjectionType agentType)
-    {
-        return ClusterDefaults.AgentInjectorConnectionName(targetNamespace, agentType);
-    }
+
 }
