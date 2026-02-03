@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: injection-cluster
+  name: injection-cluster-injector
   namespace: testing
   labels:
-    app: injection-cluster
+    app: injection-cluster-injector
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: injection-cluster
+      app: injection-cluster-injector
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app: injection-cluster
+        app: injection-cluster-injector
     spec:
       containers:
         - image: k8s.gcr.io/pause:3.3

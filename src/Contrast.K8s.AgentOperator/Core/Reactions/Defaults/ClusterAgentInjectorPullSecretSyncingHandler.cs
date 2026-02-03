@@ -15,6 +15,9 @@ using KubeOps.KubernetesClient;
 
 namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults;
 
+/// <summary>
+/// Syncs ImagePullSecret Secret referenced in a ClusterAgentInjector to namespaced Secret
+/// </summary>
 public class ClusterAgentInjectorPullSecretSyncingHandler
     : BaseAgentInjectorSyncingHandler<SecretResource, V1Secret>
 {
@@ -33,6 +36,11 @@ public class ClusterAgentInjectorPullSecretSyncingHandler
         : base(state, operatorOptions, kubernetesClient, reactionHelper, clusterDefaults, comparer, matcher)
     {
         _secretHelper = secretHelper;
+    }
+
+    protected override string GetTargetEntityName(string targetNamespace, AgentInjectionType agentType)
+    {
+        return ClusterDefaults.AgentInjectorPullSecretName(targetNamespace, agentType);
     }
 
     protected override async ValueTask<SecretResource?> CreateDesiredResource(
@@ -85,10 +93,5 @@ public class ClusterAgentInjectorPullSecretSyncingHandler
             Data = new Dictionary<string, byte[]> { { ".dockerconfigjson", pullSecretData } },
             Type = "kubernetes.io/dockerconfigjson"
         };
-    }
-
-    protected override string GetTargetEntityName(string targetNamespace, AgentInjectionType agentType)
-    {
-        return ClusterDefaults.AgentInjectorPullSecretName(targetNamespace, agentType);
     }
 }

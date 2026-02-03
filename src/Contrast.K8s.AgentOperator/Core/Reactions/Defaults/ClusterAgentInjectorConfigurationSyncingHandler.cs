@@ -3,6 +3,7 @@
 
 using Contrast.K8s.AgentOperator.Core.Comparing;
 using Contrast.K8s.AgentOperator.Core.Reactions.Defaults.Base;
+using Contrast.K8s.AgentOperator.Core.Reactions.Defaults.Common;
 using Contrast.K8s.AgentOperator.Core.Reactions.Matching;
 using Contrast.K8s.AgentOperator.Core.State;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
@@ -11,15 +12,18 @@ using Contrast.K8s.AgentOperator.Entities;
 using Contrast.K8s.AgentOperator.Options;
 using k8s.Models;
 using KubeOps.KubernetesClient;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults;
 
+/// <summary>
+/// Syncs AgentConfiguration referenced in a ClusterAgentInjector to another namespace
+/// </summary>
 public class ClusterAgentInjectorConfigurationSyncingHandler
     : BaseAgentInjectorSyncingHandler<AgentConfigurationResource, V1Beta1AgentConfiguration>
 {
     private readonly IStateContainer _state;
+    private readonly ConfigurationSyncing _configurationSyncing;
 
     protected override string EntityName => "AgentInjectorConfiguration";
 
@@ -29,10 +33,17 @@ public class ClusterAgentInjectorConfigurationSyncingHandler
         IReactionHelper reactionHelper,
         ClusterDefaultsHelper clusterDefaults,
         IResourceComparer comparer,
-        ClusterResourceMatcher matcher)
+        ClusterResourceMatcher matcher,
+        ConfigurationSyncing configurationSyncing)
         : base(state, operatorOptions, kubernetesClient, reactionHelper, clusterDefaults, comparer, matcher)
     {
         _state = state;
+        _configurationSyncing = configurationSyncing;
+    }
+
+    protected override string GetTargetEntityName(string targetNamespace, AgentInjectionType agentType)
+    {
+        return ClusterDefaults.AgentInjectorConfigurationName(targetNamespace, agentType);
     }
 
     protected override async ValueTask<AgentConfigurationResource?> CreateDesiredResource(
@@ -47,7 +58,11 @@ public class ClusterAgentInjectorConfigurationSyncingHandler
             var agentConfiguration = await _state.GetById<AgentConfigurationResource>(template.ConfigurationReference.Name, template.ConfigurationReference.Namespace);
             if (agentConfiguration != null)
             {
-                return agentConfiguration with { }; //TODO I think this needs to be a deepclone
+                return agentConfiguration;
+            }
+            else
+            {
+                Logger.Warn($"Failed to find AgentConfiguration '{template.ConfigurationReference.Namespace}/{template.ConfigurationReference.Name} referenced by {baseResource.Identity.Namespace}/{baseResource.Identity.Name}'");
             }
         }
 
@@ -60,39 +75,12 @@ public class ClusterAgentInjectorConfigurationSyncingHandler
         string targetName,
         string targetNamespace)
     {
-        //TODO duplicate of ClusterAgentConfigurationSyncingHandler
-        var builder = new StringBuilder();
-        foreach (var yamlKey in desiredResource.YamlKeys)
-        {
-            // Hard code the new line for Linux.
-            builder.Append(yamlKey.Key).Append(": '").Append(yamlKey.Value).Append("'\n");
-        }
-
-        var yaml = builder.ToString();
-
-        var initContainer = desiredResource.InitContainerOverrides is { } overrides
-            ? new V1Beta1AgentConfiguration.InitContainerOverridesSpec
-            {
-                SecurityContext = overrides.SecurityContext
-            }
-            : null;
-
         return ValueTask.FromResult(new V1Beta1AgentConfiguration
         {
             Metadata = new V1ObjectMeta { Name = targetName, NamespaceProperty = targetNamespace },
-            Spec = new V1Beta1AgentConfiguration.AgentConfigurationSpec
-            {
-                Yaml = yaml,
-                SuppressDefaultApplicationName = desiredResource.SuppressDefaultApplicationName,
-                SuppressDefaultServerName = desiredResource.SuppressDefaultServerName,
-                EnableYamlVariableReplacement = desiredResource.EnableYamlVariableReplacement,
-                InitContainer = initContainer
-            }
+            Spec = _configurationSyncing.CreateConfigurationSpec(desiredResource)
         })!;
     }
 
-    protected override string GetTargetEntityName(string targetNamespace, AgentInjectionType agentType)
-    {
-        return ClusterDefaults.AgentInjectorConfigurationName(targetNamespace, agentType);
-    }
+
 }

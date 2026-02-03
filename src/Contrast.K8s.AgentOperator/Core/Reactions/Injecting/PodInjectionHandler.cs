@@ -4,7 +4,6 @@
 using Contrast.K8s.AgentOperator.Core.Events;
 using Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching;
 using Contrast.K8s.AgentOperator.Core.State;
-using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
 using JetBrains.Annotations;
 using k8s.Models;
 using MediatR;

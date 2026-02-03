@@ -14,13 +14,13 @@ spec:
       enabled: true
       type: dummy
       image:
-        pullSecretName: cluster-image-pullsecret
+        pullSecretName: cluster-injector-image-pullsecret
       selector:
         images:
           - "*"
         labels:
           - name: app
-            value: injection-cluster
+            value: injection-cluster-injector
       connection:
         name: cluster-injector-agent-connection
       configuration:
@@ -47,7 +47,7 @@ spec:
   token:
     secretName: cluster-injector-agent-connection-secret
     secretKey: token
-  url: http://localhost
+  url: http://localhost_cluster_injector
   apiKey:
     secretName: cluster-injector-agent-connection-secret
     secretKey: apiKey
@@ -67,4 +67,13 @@ spec:
   yaml: |
     enabled: false
     foo:
-      bar: "foobar_cluster"
+      bar: "foobar_cluster_injector"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cluster-injector-image-pullsecret
+  namespace: testing-agent-operator
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: eyJhdXRocyI6eyIiOnsidXNlcm5hbWUiOiIiLCJwYXNzd29yZCI6IiIsImVtYWlsIjoiIiwiYXV0aCI6IiJ9fX0=

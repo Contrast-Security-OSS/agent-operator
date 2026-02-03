@@ -1,24 +1,26 @@
 ﻿// Contrast Security, Inc licenses this file to you under the Apache 2.0 License.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Comparing;
 using Contrast.K8s.AgentOperator.Core.Reactions.Defaults.Base;
+using Contrast.K8s.AgentOperator.Core.Reactions.Defaults.Common;
 using Contrast.K8s.AgentOperator.Core.Reactions.Matching;
 using Contrast.K8s.AgentOperator.Core.State;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
-using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
 using Contrast.K8s.AgentOperator.Options;
 using k8s.Models;
 using KubeOps.KubernetesClient;
 
 namespace Contrast.K8s.AgentOperator.Core.Reactions.Defaults;
 
+/// <summary>
+/// Syncs Secret referenced in a ClusterAgentConnection to namespaced Secret
+/// </summary>
 public class ClusterAgentConnectionSecretSyncingHandler
     : BaseUniqueSyncingHandler<ClusterAgentConnectionResource, SecretResource, V1Secret>
 {
-    private readonly ISecretHelper _secretHelper;
+    private readonly ConnectionSyncing _connectionSyncing;
 
     protected override string EntityName => "AgentConnectionSecret";
 
@@ -29,10 +31,15 @@ public class ClusterAgentConnectionSecretSyncingHandler
         ClusterDefaultsHelper clusterDefaults,
         IResourceComparer comparer,
         ClusterResourceMatcher matcher,
-        ISecretHelper secretHelper)
+        ConnectionSyncing connectionSyncing)
         : base(state, operatorOptions, kubernetesClient, reactionHelper, clusterDefaults, comparer, matcher)
     {
-        _secretHelper = secretHelper;
+        _connectionSyncing = connectionSyncing;
+    }
+
+    protected override string GetTargetEntityName(string targetNamespace)
+    {
+        return ClusterDefaults.AgentConnectionSecretName(targetNamespace);
     }
 
     protected override async ValueTask<SecretResource?> CreateDesiredResource(
@@ -40,48 +47,7 @@ public class ClusterAgentConnectionSecretSyncingHandler
         string targetName,
         string targetNamespace)
     {
-        var @namespace = baseResource.Identity.Namespace;
-        var template = baseResource.Resource.Template;
-
-        var secretKeyValues = new List<SecretKeyValue>();
-
-        if (template.Token != null)
-        {
-            var tokenHash = await _secretHelper.GetCachedSecretDataHashByRef(template.Token.Name, @namespace, template.Token.Key);
-            if (tokenHash != null)
-            {
-                secretKeyValues.Add(new SecretKeyValue(ClusterDefaults.DefaultTokenSecretKey, tokenHash));
-            }
-        }
-
-        if (template.UserName != null)
-        {
-            var usernameHash = await _secretHelper.GetCachedSecretDataHashByRef(template.UserName.Name, @namespace, template.UserName.Key);
-            if (usernameHash != null)
-            {
-                secretKeyValues.Add(new SecretKeyValue(ClusterDefaults.DefaultUsernameSecretKey, usernameHash));
-            }
-        }
-
-        if (template.ApiKey != null)
-        {
-            var apiKeyHash = await _secretHelper.GetCachedSecretDataHashByRef(template.ApiKey.Name, @namespace, template.ApiKey.Key);
-            if (apiKeyHash != null)
-            {
-                secretKeyValues.Add(new SecretKeyValue(ClusterDefaults.DefaultApiKeySecretKey, apiKeyHash));
-            }
-        }
-
-        if (template.ServiceKey != null)
-        {
-            var serviceKeyHash = await _secretHelper.GetCachedSecretDataHashByRef(template.ServiceKey.Name, @namespace, template.ServiceKey.Key);
-            if (serviceKeyHash != null)
-            {
-                secretKeyValues.Add(new SecretKeyValue(ClusterDefaults.DefaultServiceKeySecretKey, serviceKeyHash));
-            }
-        }
-
-        return new SecretResource(secretKeyValues.NormalizeSecrets());
+        return await _connectionSyncing.CreateConnectionSecretResource(baseResource.Resource.Template, baseResource.Identity.Namespace);
     }
 
     protected override async ValueTask<V1Secret?> CreateTargetEntity(
@@ -90,46 +56,7 @@ public class ClusterAgentConnectionSecretSyncingHandler
         string targetName,
         string targetNamespace)
     {
-        var @namespace = baseResource.Identity.Namespace;
-        var template = baseResource.Resource.Template;
-
-        var data = new Dictionary<string, byte[]>();
-
-        if (template.Token != null)
-        {
-            var tokenData = await _secretHelper.GetLiveSecretDataByRef(template.Token.Name, @namespace, template.Token.Key);
-            if (tokenData != null)
-            {
-                data.Add(ClusterDefaults.DefaultTokenSecretKey, tokenData);
-            }
-        }
-
-        if (template.UserName != null)
-        {
-            var usernameData = await _secretHelper.GetLiveSecretDataByRef(template.UserName.Name, @namespace, template.UserName.Key);
-            if (usernameData != null)
-            {
-                data.Add(ClusterDefaults.DefaultUsernameSecretKey, usernameData);
-            }
-        }
-
-        if (template.ApiKey != null)
-        {
-            var apiKeyData = await _secretHelper.GetLiveSecretDataByRef(template.ApiKey.Name, @namespace, template.ApiKey.Key);
-            if (apiKeyData != null)
-            {
-                data.Add(ClusterDefaults.DefaultApiKeySecretKey, apiKeyData);
-            }
-        }
-
-        if (template.ServiceKey != null)
-        {
-            var serviceKeyData = await _secretHelper.GetLiveSecretDataByRef(template.ServiceKey.Name, @namespace, template.ServiceKey.Key);
-            if (serviceKeyData != null)
-            {
-                data.Add(ClusterDefaults.DefaultServiceKeySecretKey, serviceKeyData);
-            }
-        }
+        var data = await _connectionSyncing.CreateConnectionSecretData(baseResource.Resource.Template, baseResource.Identity.Namespace);
 
         return new V1Secret
         {
@@ -142,8 +69,5 @@ public class ClusterAgentConnectionSecretSyncingHandler
         };
     }
 
-    protected override string GetTargetEntityName(string targetNamespace)
-    {
-        return ClusterDefaults.AgentConnectionSecretName(targetNamespace);
-    }
+
 }
