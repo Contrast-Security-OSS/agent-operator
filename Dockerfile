@@ -1,7 +1,7 @@
 # Contrast Security, Inc licenses this file to you under the Apache 2.0 License.
 # See the LICENSE file in the project root for more information.
 
-FROM mcr.microsoft.com/dotnet/aspnet:10.0.0-noble AS base
+FROM mcr.microsoft.com/dotnet/aspnet:10.0.2-noble AS base
 
 # To aid in debugging.
 RUN set -xe \
