@@ -278,8 +278,8 @@ spec:
 | spec.template               | AgentInjector            | Yes      |               | The default AgentInjector to apply to the namespaces selected by 'spec.namespaces' or 'spec.namespaceLabelSelector'. |
 
 - For security, ClusterAgentInjector manifests must be deployed into the same namespace of the operator.
-- Secrets referenced by ClusterAgentInjector must exist in the same namespace in which the ClusterAgentInjector entity is deployed.
-- ClusterAgentInjector requires the ClusterAgentConfiguration and ClusterAgentConnection to be configured for the namespaces specified.
+- Secrets, AgentConnection, and AgentConfiguration referenced by ClusterAgentInjector must exist in the same namespace in which the ClusterAgentInjector entity is deployed.
+- ClusterAgentInjector will use the ClusterAgentConfiguration and ClusterAgentConnection that are configured for the namespaces specified, unless `spec.configuration.name` or `spec.connection.name` is specified.
 - **Will not** target any namespaces by default, they must be specified in `spec.namespaces` or `spec.namespaceLabelSelector`.
 - **Will not** target the `kube-system`, `kube-node-lease`, `kube-public`, `gatekeeper-system` namespaces.
 
