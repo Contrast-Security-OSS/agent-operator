@@ -61,7 +61,7 @@ public class ClusterAgentInjectorConnectionSecretSyncingHandler
             }
             else
             {
-                Logger.Warn($"Failed to find AgentConnection '{template.ConnectionReference.Namespace}/{template.ConnectionReference.Name} referenced by {baseResource.Identity.Namespace}/{baseResource.Identity.Name}'");
+                Logger.Warn($"Failed to find AgentConnection '{template.ConnectionReference.Namespace}/{template.ConnectionReference.Name}' referenced by '{baseResource.Identity.Namespace}/{baseResource.Identity.Name}'");
             }
         }
 

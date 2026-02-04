@@ -22,6 +22,14 @@ spec:
       {{- if eq $injector.enabled false}}
       enabled: false
       {{- end }}
+      {{- if $injector.connectionName }}
+      connection:
+        name: {{ $injector.connectionName }}
+      {{- end}}
+      {{- if $injector.configurationName }}
+      configuration:
+        name: {{ $injector.configurationName }}
+      {{- end }}
       {{- if $injector.imageVersion }}
       version: {{ quote $injector.imageVersion }}
       {{- end }}
