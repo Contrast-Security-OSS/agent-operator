@@ -48,7 +48,7 @@ spec:
                           securityContext:
                             description: SecurityContext defines the security options the container should be run with. If set, the fields of SecurityContext override the equivalent fields of PodSecurityContext.
                             externalDocs:
-                              description: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+                              url: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
                             nullable: true
                             properties:
                               allowPrivilegeEscalation:
