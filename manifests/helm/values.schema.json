@@ -21,14 +21,14 @@
                         ],
                         "properties": {
                             "configurationName": {
-                                "description": "Optional name of an AgentConfiguration to use with this injector. Only supported if useClusterAgentInjectors is false.",
+                                "description": "Optional name of an AgentConfiguration to use with this injector.",
                                 "type": [
                                     "string",
                                     "null"
                                 ]
                             },
                             "connectionName": {
-                                "description": "Optional name of an AgentConnection to use with this injector. Only supported if useClusterAgentInjectors is false.",
+                                "description": "Optional name of an AgentConnection to use with this injector.",
                                 "type": [
                                     "string",
                                     "null"

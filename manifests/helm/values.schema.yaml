@@ -155,7 +155,7 @@ agentInjectors:
         pullPolicy: # @schema type:[string];enum:[IfNotPresent, Always, Never]
       # -- Optional image version, defaults to latest
       imageVersion: # @schema type:[string, null];default:latest
-      # -- Optional name of an AgentConfiguration to use with this injector. Only supported if useClusterAgentInjectors is false.
+      # -- Optional name of an AgentConfiguration to use with this injector.
       configurationName: # @schema type:[string, null]
-      # -- Optional name of an AgentConnection to use with this injector. Only supported if useClusterAgentInjectors is false.
+      # -- Optional name of an AgentConnection to use with this injector.
       connectionName: # @schema type:[string, null]

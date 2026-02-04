@@ -62,7 +62,7 @@ public class ClusterAgentInjectorConfigurationSyncingHandler
             }
             else
             {
-                Logger.Warn($"Failed to find AgentConfiguration '{template.ConfigurationReference.Namespace}/{template.ConfigurationReference.Name} referenced by {baseResource.Identity.Namespace}/{baseResource.Identity.Name}'");
+                Logger.Warn($"Failed to find AgentConfiguration '{template.ConfigurationReference.Namespace}/{template.ConfigurationReference.Name}' referenced by '{baseResource.Identity.Namespace}/{baseResource.Identity.Name}'");
             }
         }
 

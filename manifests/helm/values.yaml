@@ -163,9 +163,9 @@ agentInjectors:
       #   pullPolicy: Always
       # Optional image version, defaults to latest
       #imageVersion: 5
-      # Optional name of an AgentConfiguration to use with this injector. Only supported if useClusterAgentInjectors is false.
+      # Optional name of an AgentConfiguration to use with this injector.
       #configurationName: custom-config-name
-      # Optional name of an AgentConnection to use with this injector. Only supported if useClusterAgentInjectors is false.
+      # Optional name of an AgentConnection to use with this injector.
       #connectionName: custom-connection-name
 
     - language: dotnet-core
