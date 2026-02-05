@@ -227,7 +227,7 @@ jobs:
           version: v${{ matrix.k3s-version }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Import Images
-        uses: nick-fields/retry@7152eba30c6575329ac0576536151aca5a72780e # v3.0.0
+        uses: nick-fields/retry@ce71cc2ab81d554ebbe88c79ab5975992d79ba08 # v3.0.2
         with:
           timeout_minutes: 10
           max_attempts: 5
@@ -262,7 +262,7 @@ jobs:
           dotnet test ./tests/Contrast.K8s.AgentOperator.FunctionalTests/Contrast.K8s.AgentOperator.FunctionalTests.csproj
         shell: bash
       - name: Dump Operator Logs
-        uses: nick-fields/retry@7152eba30c6575329ac0576536151aca5a72780e # v3.0.0
+        uses: nick-fields/retry@ce71cc2ab81d554ebbe88c79ab5975992d79ba08 # v3.0.2
         if: ${{ always() }}
         with:
           timeout_minutes: 10
