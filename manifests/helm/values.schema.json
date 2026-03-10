@@ -345,6 +345,11 @@
                     "default": false,
                     "type": "boolean"
                 },
+                "useImageVolumes": {
+                    "description": "Use Kubernetes image volumes (KEP-4639) instead of init containers to mount agent files. Requires Kubernetes 1.35+.",
+                    "default": false,
+                    "type": "boolean"
+                },
                 "enableEarlyChaining": {
                     "description": "Enable early chaining. Should only be enabled if you are using a dotnet-core AgentInjector and DynaKube is used in classicStack mode.",
                     "default": false,

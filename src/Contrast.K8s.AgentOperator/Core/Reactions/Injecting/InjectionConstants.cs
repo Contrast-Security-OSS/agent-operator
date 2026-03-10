@@ -12,6 +12,7 @@ public static class InjectionConstants
     public const string InjectedOnAttributeName = "agents.contrastsecurity.com/injected-on";
     public const string InjectedByAttributeName = "agents.contrastsecurity.com/injected-by";
     public const string InjectorTypeAttributeName = "agents.contrastsecurity.com/injector-type";
+    public const string InjectionModeAttributeName = "agents.contrastsecurity.com/injection-mode";
 
     // Pod annotations via the workload (our direct patching).
     public const string InjectorHashAttributeName = "agents.contrastsecurity.com/injector-hash";
