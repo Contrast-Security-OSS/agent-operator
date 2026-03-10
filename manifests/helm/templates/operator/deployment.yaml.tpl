@@ -124,6 +124,10 @@ spec:
             - name: CONTRAST_ENABLE_AGENT_STDOUT
               value: '{{ .Values.operator.enableAgentStdout }}'
             {{- end }}
+            {{- if hasKey .Values.operator "useImageVolumes" }}
+            - name: CONTRAST_USE_IMAGE_VOLUMES
+              value: '{{ .Values.operator.useImageVolumes }}'
+            {{- end }}
             {{- if hasKey .Values.operator "telemetryOptOut" }}
             - name: CONTRAST_AGENT_TELEMETRY_OPTOUT
               value: '{{ .Values.operator.telemetryOptOut }}'

@@ -49,6 +49,8 @@ operator:
   enableEarlyChaining: # @schema type:[boolean];default:false
   # -- Globally enable agents logging to stdout
   enableAgentStdout: # @schema type:[boolean];default:false
+  # -- Use Kubernetes image volumes (KEP-4639) instead of init containers to mount agent files. Requires Kubernetes 1.35+.
+  useImageVolumes: # @schema type:[boolean];default:false
   # -- Opt-Out of telemetry collection
   telemetryOptOut: # @schema type:[boolean];default:false
   # -- Operator Log Level

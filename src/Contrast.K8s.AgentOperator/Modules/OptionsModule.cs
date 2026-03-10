@@ -84,6 +84,10 @@ public class OptionsModule : Module
                 chaosPercent = parsedChaosPercent;
             }
 
+            // Use Kubernetes image volumes (KEP-4639) instead of init containers to mount agent files.
+            // Requires Kubernetes 1.35+ with the ImageVolume feature gate enabled.
+            // When enabled, the agent image is mounted directly as a read-only volume, removing the need for the init container.
+            var useImageVolumes = GetEnvironmentOptionFlag(logger, "CONTRAST_USE_IMAGE_VOLUMES", "use-image-volumes", false);
 
             return new OperatorOptions(
                 @namespace,
@@ -94,7 +98,8 @@ public class OptionsModule : Module
                 runInitContainersAsNonRoot,
                 suppressSeccompProfile,
                 enableAgentStdout,
-                chaosPercent / 100m);
+                chaosPercent / 100m,
+                useImageVolumes);
         }).SingleInstance();
 
         builder.Register(context =>

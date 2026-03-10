@@ -58,7 +58,8 @@ public class PodPatcher : IPodPatcher
             Logger.Warn($"Using deprecated agent injector type '{_agentTypeConverter.GetStringFromType(patcher.Type)}'. {patcher.DeprecatedMessage}");
         }
 
-        if (patcher?.GetOverrideAgentMountPath() is { } agentMountPathOverride)
+        if (patcher?.GetOverrideAgentMountPath() is { } agentMountPathOverride
+            && !_operatorOptions.UseImageVolumes)
         {
             context = context with
             {
@@ -75,20 +76,49 @@ public class PodPatcher : IPodPatcher
 
     private void ApplyPatches(PatchingContext context, V1Pod pod, IAgentPatcher? agentPatcher)
     {
+        var useImageVolumes = _operatorOptions.UseImageVolumes;
+
+        // When using image volumes, the OCI image is mounted directly as a volume.
+        // Agent files live at /contrast within the image, so we mount the whole image at a `/contrast/agent` and point the agent mount path to the nested directory.
+        // Not using SubPath as it is not well or seemingly at all supported yet, so the mounth path needs an additional `/contrast` segment for paths to be correct.
+        const string imageVolumeMountPath = "/contrast/agent";
+        if (useImageVolumes)
+        {
+            context = context with
+            {
+                AgentMountPath = imageVolumeMountPath + "/contrast"
+            };
+        }
+
         // Pod annotations.
         pod.SetAnnotation(InjectionConstants.IsInjectedAttributeName, true.ToString());
         pod.SetAnnotation(InjectionConstants.InjectedOnAttributeName, DateTimeOffset.UtcNow.ToString("O"));
         pod.SetAnnotation(InjectionConstants.InjectedByAttributeName,
             $"Contrast.K8s.AgentOperator/{OperatorVersion.Version}");
         pod.SetAnnotation(InjectionConstants.InjectorTypeAttributeName, context.Injector.Type.ToString());
+        if (useImageVolumes)
+        {
+            pod.SetAnnotation(InjectionConstants.InjectionModeAttributeName, "image-volume");
+        }
 
         // Volumes.
         pod.Spec.Volumes ??= new List<V1Volume>();
-        var agentVolume = new V1Volume
-        {
-            Name = "contrast-agent",
-            EmptyDir = new V1EmptyDirVolumeSource()
-        };
+
+        var agentVolume = useImageVolumes
+            ? new V1Volume
+            {
+                Name = "contrast-agent",
+                Image = new V1ImageVolumeSource
+                {
+                    Reference = context.Injector.Image.GetFullyQualifiedContainerImageName(),
+                    PullPolicy = context.Injector.ImagePullPolicy
+                }
+            }
+            : new V1Volume
+            {
+                Name = "contrast-agent",
+                EmptyDir = new V1EmptyDirVolumeSource()
+            };
         pod.Spec.Volumes.AddOrUpdate(agentVolume.Name, agentVolume);
 
         var writableVolume = new V1Volume
@@ -112,7 +142,8 @@ public class PodPatcher : IPodPatcher
             pod.Spec.Volumes.AddOrUpdate(secretVolume.Name, secretVolume);
         }
 
-        // Init Container.
+        // Init Container (skipped when using image volumes).
+        if (!useImageVolumes)
         {
             var podSecurityContext = (V1PodSecurityContext?)pod.Spec.SecurityContext;
             var containerSecurityContext = pod.Spec.Containers.FirstOrDefault()?.SecurityContext;
@@ -141,7 +172,7 @@ public class PodPatcher : IPodPatcher
             var agentVolumeMount = new V1VolumeMount
             {
                 Name = agentVolume.Name,
-                MountPath = context.AgentMountPath,
+                MountPath = useImageVolumes ? imageVolumeMountPath : context.AgentMountPath,
                 ReadOnlyProperty = true
             };
             container.VolumeMounts.AddOrUpdate(agentVolumeMount.Name, agentVolumeMount);
