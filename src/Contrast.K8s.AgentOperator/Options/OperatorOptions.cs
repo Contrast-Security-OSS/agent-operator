@@ -15,4 +15,5 @@ public record OperatorOptions(string Namespace,
                               bool SuppressSeccompProfile,
                               bool EnableAgentStdout,
                               decimal ChaosRatio,
+                              bool UseImageVolumes = false,
                               string FieldManagerName = "agents.contrastsecurity.com");
