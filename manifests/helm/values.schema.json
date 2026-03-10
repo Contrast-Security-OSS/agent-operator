@@ -264,6 +264,16 @@
                         "string",
                         "null"
                     ]
+                },
+                "pullPolicy": {
+                    "description": "Image pull policy for the operator container.",
+                    "type": "string",
+                    "default": "Always",
+                    "enum": [
+                        "IfNotPresent",
+                        "Always",
+                        "Never"
+                    ]
                 }
             }
         },
