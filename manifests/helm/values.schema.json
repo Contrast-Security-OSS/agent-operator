@@ -248,6 +248,16 @@
         "image": {
             "type": "object",
             "properties": {
+                "pullPolicy": {
+                    "description": "Image pull policy for the agent-operator container",
+                    "default": "Always",
+                    "type": "string",
+                    "enum": [
+                        "IfNotPresent",
+                        "Always",
+                        "Never"
+                    ]
+                },
                 "registry": {
                     "description": "agent-operator registry",
                     "default": "contrast",
@@ -263,16 +273,6 @@
                     "type": [
                         "string",
                         "null"
-                    ]
-                },
-                "pullPolicy": {
-                    "description": "Image pull policy for the operator container.",
-                    "type": "string",
-                    "default": "Always",
-                    "enum": [
-                        "IfNotPresent",
-                        "Always",
-                        "Never"
                     ]
                 }
             }

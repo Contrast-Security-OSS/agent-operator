@@ -8,6 +8,8 @@ image:
   repository: # @schema type:[string];default:agent-operator
   # -- agent-operator tag. Defaults to Chart.AppVersion
   tag: # @schema type:[string, null]
+  # -- Image pull policy for the agent-operator container
+  pullPolicy: # @schema type:[string];enum:[IfNotPresent, Always, Never];default:Always
 
 imageCredentials:
   # -- Name of the registry credential secret that should be used to pull agent-operator image.
