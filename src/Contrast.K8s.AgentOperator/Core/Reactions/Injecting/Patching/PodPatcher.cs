@@ -79,12 +79,12 @@ public class PodPatcher : IPodPatcher
         // Agent files live at /contrast within the image, so we mount the whole image at a `/contrast/agent` and point the agent mount path to the nested directory.
         // Not using SubPath as it is not well or seemingly at all supported yet, so the mounth path needs an additional `/contrast` segment for paths to be correct.
         // TODO: remove this workaround once SubPath is supported
-        const string imageVolumeMountPath = "/contrast/agent";
+        string agentVolumeMountPath = context.AgentMountPath;
         if (useImageVolumes)
         {
             context = context with
             {
-                AgentMountPath = imageVolumeMountPath + "/contrast"
+                AgentMountPath = agentVolumeMountPath + "/contrast"
             };
         }
 
@@ -168,7 +168,7 @@ public class PodPatcher : IPodPatcher
             var agentVolumeMount = new V1VolumeMount
             {
                 Name = agentVolume.Name,
-                MountPath = useImageVolumes ? imageVolumeMountPath : context.AgentMountPath,
+                MountPath = agentVolumeMountPath,
                 ReadOnlyProperty = true
             };
             container.VolumeMounts.AddOrUpdate(agentVolumeMount.Name, agentVolumeMount);
