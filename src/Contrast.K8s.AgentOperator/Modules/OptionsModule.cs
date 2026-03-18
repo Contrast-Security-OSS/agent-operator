@@ -107,8 +107,9 @@ public class OptionsModule : Module
                 runInitContainersAsNonRoot,
                 suppressSeccompProfile,
                 enableAgentStdout,
-                chaosPercent / 100m,
-                useImageVolumes);
+                useImageVolumes,
+                chaosPercent / 100m
+                );
         }).SingleInstance();
 
         builder.Register(context =>

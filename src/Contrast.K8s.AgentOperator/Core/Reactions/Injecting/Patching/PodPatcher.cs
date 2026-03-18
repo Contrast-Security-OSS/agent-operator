@@ -78,6 +78,7 @@ public class PodPatcher : IPodPatcher
         // When using image volumes, the OCI image is mounted directly as a volume.
         // Agent files live at /contrast within the image, so we mount the whole image at a `/contrast/agent` and point the agent mount path to the nested directory.
         // Not using SubPath as it is not well or seemingly at all supported yet, so the mounth path needs an additional `/contrast` segment for paths to be correct.
+        // TODO: remove this workaround once SubPath is supported
         const string imageVolumeMountPath = "/contrast/agent";
         if (useImageVolumes)
         {
@@ -93,10 +94,7 @@ public class PodPatcher : IPodPatcher
         pod.SetAnnotation(InjectionConstants.InjectedByAttributeName,
             $"Contrast.K8s.AgentOperator/{OperatorVersion.Version}");
         pod.SetAnnotation(InjectionConstants.InjectorTypeAttributeName, context.Injector.Type.ToString());
-        if (useImageVolumes)
-        {
-            pod.SetAnnotation(InjectionConstants.InjectionModeAttributeName, "image-volume");
-        }
+        pod.SetAnnotation(InjectionConstants.InjectionModeAttributeName, useImageVolumes ? "image-volume" : "init-container");
 
         // Volumes.
         pod.Spec.Volumes ??= new List<V1Volume>();

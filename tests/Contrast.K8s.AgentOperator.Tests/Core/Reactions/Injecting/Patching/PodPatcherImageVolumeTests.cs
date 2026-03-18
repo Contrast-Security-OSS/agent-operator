@@ -181,7 +181,7 @@ public class PodPatcherImageVolumeTests
     {
         var options = new OperatorOptions("default", 5, 30, 100,
             System.Threading.Channels.BoundedChannelFullMode.DropOldest,
-            1, false, false, false, 0, UseImageVolumes: true);
+            1, false, false, false, true, 0);
         var patcher = CreatePatcher(operatorOptions: options);
         var context = CreateContext();
         var pod = CreatePod();
@@ -196,7 +196,7 @@ public class PodPatcherImageVolumeTests
     {
         var options = new OperatorOptions("default", 5, 30, 100,
             System.Threading.Channels.BoundedChannelFullMode.DropOldest,
-            1, false, false, false, 0, UseImageVolumes: true);
+            1, false, false, false, true, 0);
         var patcher = CreatePatcher(operatorOptions: options);
         var context = CreateContext();
         var pod = CreatePod();
@@ -218,7 +218,7 @@ public class PodPatcherImageVolumeTests
     {
         var options = new OperatorOptions("default", 5, 30, 100,
             System.Threading.Channels.BoundedChannelFullMode.DropOldest,
-            1, false, false, false, 0, UseImageVolumes: true);
+            1, false, false, false, true, 0);
         var patcher = CreatePatcher(operatorOptions: options);
         var context = CreateContext();
         var pod = CreatePod();
@@ -235,7 +235,7 @@ public class PodPatcherImageVolumeTests
     {
         var options = new OperatorOptions("default", 5, 30, 100,
             System.Threading.Channels.BoundedChannelFullMode.DropOldest,
-            1, false, false, false, 0, UseImageVolumes: true);
+            1, false, false, false, true, 0);
         var patcher = CreatePatcher(operatorOptions: options);
         var context = CreateContext();
         var pod = CreatePod();
@@ -256,7 +256,7 @@ public class PodPatcherImageVolumeTests
     {
         var options = new OperatorOptions("default", 5, 30, 100,
             System.Threading.Channels.BoundedChannelFullMode.DropOldest,
-            1, false, false, false, 0, UseImageVolumes: true);
+            1, false, false, false, true, 0);
         var patcher = CreatePatcher(operatorOptions: options);
         var context = CreateContext();
         var pod = CreatePod();
@@ -272,7 +272,7 @@ public class PodPatcherImageVolumeTests
     {
         var options = new OperatorOptions("default", 5, 30, 100,
             System.Threading.Channels.BoundedChannelFullMode.DropOldest,
-            1, false, false, false, 0, UseImageVolumes: true);
+            1, false, false, false, true, 0);
         var patcher = CreatePatcher(operatorOptions: options);
         var context = CreateContext();
         var pod = CreatePod();
@@ -295,7 +295,7 @@ public class PodPatcherImageVolumeTests
     {
         var options = new OperatorOptions("default", 5, 30, 100,
             System.Threading.Channels.BoundedChannelFullMode.DropOldest,
-            1, false, false, false, 0, UseImageVolumes: true);
+            1, false, false, false, true, 0);
 
         var mockPatcher = Substitute.For<IAgentPatcher>();
         mockPatcher.Type.Returns(AgentInjectionType.Java);
@@ -326,7 +326,7 @@ public class PodPatcherImageVolumeTests
     {
         var options = new OperatorOptions("default", 5, 30, 100,
             System.Threading.Channels.BoundedChannelFullMode.DropOldest,
-            1, false, false, false, 0, UseImageVolumes: false);
+            1, false, false, false, true, 0);
 
         var mockPatcher = Substitute.For<IAgentPatcher>();
         mockPatcher.Type.Returns(AgentInjectionType.Java);
@@ -357,7 +357,7 @@ public class PodPatcherImageVolumeTests
     {
         var options = new OperatorOptions("default", 5, 30, 100,
             System.Threading.Channels.BoundedChannelFullMode.DropOldest,
-            1, false, false, false, 0, UseImageVolumes: true);
+            1, false, false, false, true, 0);
         var patcher = CreatePatcher(operatorOptions: options);
         var context = CreateContext();
         var pod = CreatePod();
