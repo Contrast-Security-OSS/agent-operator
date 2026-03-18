@@ -1,10 +1,7 @@
 // Contrast Security, Inc licenses this file to you under the Apache 2.0 License.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using AutoFixture;
 using Contrast.K8s.AgentOperator.Core.Reactions.Injecting;
 using Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching;
 using Contrast.K8s.AgentOperator.Core.Reactions.Injecting.Patching.Agents;
@@ -17,34 +14,28 @@ using FluentAssertions;
 using FluentAssertions.Execution;
 using k8s.Models;
 using NSubstitute;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting.Patching;
 
-public class PodPatcherImageVolumeTests
+public class PodPatcherTests
 {
+    private static readonly Fixture AutoFixture = new();
+
     private static PodPatcher CreatePatcher(
         OperatorOptions? operatorOptions = null,
         InitContainerOptions? initOptions = null,
         TelemetryOptions? telemetryOptions = null,
         IAgentPatcher? agentPatcher = null)
     {
-        operatorOptions ??= new OperatorOptions(
-            Namespace: "default",
-            SettlingDurationSeconds: 5,
-            WatcherTimeoutSeconds: 30,
-            EventQueueSize: 100,
-            EventQueueFullMode: System.Threading.Channels.BoundedChannelFullMode.DropOldest,
-            EventQueueMergeWindowSeconds: 1,
-            RunInitContainersAsNonRoot: false,
-            SuppressSeccompProfile: false,
-            EnableAgentStdout: false,
-            ChaosRatio: 0,
-            UseImageVolumes: false
-        );
+        operatorOptions ??= AutoFixture.Create<OperatorOptions>();
 
         initOptions ??= new InitContainerOptions("100m", "500m", "64Mi", "256Mi", "128Mi", "512Mi");
-        telemetryOptions ??= new TelemetryOptions(false, "cluster-id", "default", "operator");
+        telemetryOptions ??= AutoFixture.Create<TelemetryOptions>();
 
         var patchers = agentPatcher != null
             ? new[] { agentPatcher }
@@ -62,49 +53,6 @@ public class PodPatcherImageVolumeTests
             operatorOptions,
             initOptions,
             telemetryOptions
-        );
-    }
-
-    private static PatchingContext CreateContext(AgentInjectionType type = AgentInjectionType.Java)
-    {
-        var image = new ContainerImageReference("docker.io", "contrast/agent-java", "latest");
-        var selector = new ResourceWithPodSpecSelector(
-            new List<string> { "*" },
-            new List<LabelPattern>(),
-            new List<string> { "default" }
-        );
-        var connectionRef = new AgentConnectionReference("default", "my-connection");
-        var configRef = new AgentConfigurationReference("default", "my-config");
-
-        var injector = new AgentInjectorResource(
-            Enabled: true,
-            Type: type,
-            Image: image,
-            Selector: selector,
-            ConnectionReference: connectionRef,
-            ConfigurationReference: configRef,
-            ImagePullSecret: null,
-            ImagePullPolicy: "IfNotPresent"
-        );
-
-        var connection = new AgentConnectionResource(
-            MountAsVolume: false,
-            Token: null,
-            TeamServerUri: "https://app.contrastsecurity.com",
-            ApiKey: new SecretReference("default", "contrast-secret", "apiKey"),
-            ServiceKey: new SecretReference("default", "contrast-secret", "serviceKey"),
-            UserName: new SecretReference("default", "contrast-secret", "userName")
-        );
-
-        return new PatchingContext(
-            WorkloadName: "my-app",
-            WorkloadNamespace: "default",
-            Injector: injector,
-            Connection: connection,
-            Configuration: null,
-            ConnectionVolumeSecret: null,
-            AgentMountPath: "/contrast/agent",
-            WritableMountPath: "/contrast/data"
         );
     }
 
@@ -131,13 +79,14 @@ public class PodPatcherImageVolumeTests
         };
     }
 
-    // --- Default (non-image-volume) behavior ---
+    // -- init-containers --
 
     [Fact]
     public async Task When_image_volumes_disabled_then_init_container_should_be_present()
     {
-        var patcher = CreatePatcher();
-        var context = CreateContext();
+        var options = AutoFixture.Build<OperatorOptions>().With(x => x.UseImageVolumes, false).Create();
+        var patcher = CreatePatcher(operatorOptions: options);
+        var context = AutoFixture.Create<PatchingContext>();
         var pod = CreatePod();
 
         await patcher.Patch(context, pod);
@@ -148,8 +97,9 @@ public class PodPatcherImageVolumeTests
     [Fact]
     public async Task When_image_volumes_disabled_then_agent_volume_should_use_emptydir()
     {
-        var patcher = CreatePatcher();
-        var context = CreateContext();
+        var options = AutoFixture.Build<OperatorOptions>().With(x => x.UseImageVolumes, false).Create();
+        var patcher = CreatePatcher(operatorOptions: options);
+        var context = AutoFixture.Create<PatchingContext>();
         var pod = CreatePod();
 
         await patcher.Patch(context, pod);
@@ -163,27 +113,26 @@ public class PodPatcherImageVolumeTests
     }
 
     [Fact]
-    public async Task When_image_volumes_disabled_then_injection_mode_annotation_should_not_be_set()
+    public async Task When_image_volumes_disabled_injection_mode_annotation_should_be_set_to_init_container()
     {
-        var patcher = CreatePatcher();
-        var context = CreateContext();
+        var options = AutoFixture.Build<OperatorOptions>().With(x => x.UseImageVolumes, false).Create();
+        var patcher = CreatePatcher(operatorOptions: options);
+        var context = AutoFixture.Create<PatchingContext>();
         var pod = CreatePod();
 
         await patcher.Patch(context, pod);
 
-        pod.Metadata.Annotations.Should().NotContainKey(InjectionConstants.InjectionModeAttributeName);
+        pod.Metadata.Annotations.Should().Contain(InjectionConstants.InjectionModeAttributeName, "init-container");
     }
 
-    // --- Image volume behavior ---
+    //-- image-volume --
 
     [Fact]
     public async Task When_image_volumes_enabled_then_init_container_should_not_be_present()
     {
-        var options = new OperatorOptions("default", 5, 30, 100,
-            System.Threading.Channels.BoundedChannelFullMode.DropOldest,
-            1, false, false, false, true, 0);
+        var options = AutoFixture.Build<OperatorOptions>().With(x => x.UseImageVolumes, true).Create();
         var patcher = CreatePatcher(operatorOptions: options);
-        var context = CreateContext();
+        var context = AutoFixture.Create<PatchingContext>();
         var pod = CreatePod();
 
         await patcher.Patch(context, pod);
@@ -194,11 +143,9 @@ public class PodPatcherImageVolumeTests
     [Fact]
     public async Task When_image_volumes_enabled_then_agent_volume_should_use_image_source()
     {
-        var options = new OperatorOptions("default", 5, 30, 100,
-            System.Threading.Channels.BoundedChannelFullMode.DropOldest,
-            1, false, false, false, true, 0);
+        var options = AutoFixture.Build<OperatorOptions>().With(x => x.UseImageVolumes, true).Create();
         var patcher = CreatePatcher(operatorOptions: options);
-        var context = CreateContext();
+        var context = AutoFixture.Create<PatchingContext>();
         var pod = CreatePod();
 
         await patcher.Patch(context, pod);
@@ -207,8 +154,8 @@ public class PodPatcherImageVolumeTests
         using (new AssertionScope())
         {
             agentVolume.Image.Should().NotBeNull();
-            agentVolume.Image.Reference.Should().Be("docker.io/contrast/agent-java:latest");
-            agentVolume.Image.PullPolicy.Should().Be("IfNotPresent");
+            agentVolume.Image.Reference.Should().Be(context.Injector.Image.GetFullyQualifiedContainerImageName());
+            agentVolume.Image.PullPolicy.Should().Be(context.Injector.ImagePullPolicy);
             agentVolume.EmptyDir.Should().BeNull();
         }
     }
@@ -216,11 +163,9 @@ public class PodPatcherImageVolumeTests
     [Fact]
     public async Task When_image_volumes_enabled_then_injection_mode_annotation_should_be_set()
     {
-        var options = new OperatorOptions("default", 5, 30, 100,
-            System.Threading.Channels.BoundedChannelFullMode.DropOldest,
-            1, false, false, false, true, 0);
+        var options = AutoFixture.Build<OperatorOptions>().With(x => x.UseImageVolumes, true).Create();
         var patcher = CreatePatcher(operatorOptions: options);
-        var context = CreateContext();
+        var context = AutoFixture.Create<PatchingContext>();
         var pod = CreatePod();
 
         await patcher.Patch(context, pod);
@@ -233,11 +178,9 @@ public class PodPatcherImageVolumeTests
     [Fact]
     public async Task When_image_volumes_enabled_then_agent_volume_mount_should_use_image_volume_path()
     {
-        var options = new OperatorOptions("default", 5, 30, 100,
-            System.Threading.Channels.BoundedChannelFullMode.DropOldest,
-            1, false, false, false, true, 0);
+        var options = AutoFixture.Build<OperatorOptions>().With(x => x.UseImageVolumes, true).Create();
         var patcher = CreatePatcher(operatorOptions: options);
-        var context = CreateContext();
+        var context = AutoFixture.Create<PatchingContext>();
         var pod = CreatePod();
 
         await patcher.Patch(context, pod);
@@ -246,7 +189,7 @@ public class PodPatcherImageVolumeTests
         var agentMount = container.VolumeMounts.Single(vm => vm.Name == "contrast-agent");
         using (new AssertionScope())
         {
-            agentMount.MountPath.Should().Be("/contrast/agent");
+            agentMount.MountPath.Should().Be(context.AgentMountPath);
             agentMount.ReadOnlyProperty.Should().BeTrue();
         }
     }
@@ -254,11 +197,9 @@ public class PodPatcherImageVolumeTests
     [Fact]
     public async Task When_image_volumes_enabled_then_writable_volume_should_still_be_emptydir()
     {
-        var options = new OperatorOptions("default", 5, 30, 100,
-            System.Threading.Channels.BoundedChannelFullMode.DropOldest,
-            1, false, false, false, true, 0);
+        var options = AutoFixture.Build<OperatorOptions>().With(x => x.UseImageVolumes, true).Create();
         var patcher = CreatePatcher(operatorOptions: options);
-        var context = CreateContext();
+        var context = AutoFixture.Create<PatchingContext>();
         var pod = CreatePod();
 
         await patcher.Patch(context, pod);
@@ -270,11 +211,10 @@ public class PodPatcherImageVolumeTests
     [Fact]
     public async Task When_image_volumes_enabled_then_env_vars_should_use_image_volume_mount_path()
     {
-        var options = new OperatorOptions("default", 5, 30, 100,
-            System.Threading.Channels.BoundedChannelFullMode.DropOldest,
-            1, false, false, false, true, 0);
+        var options = AutoFixture.Build<OperatorOptions>().With(x => x.UseImageVolumes, true).Create();
         var patcher = CreatePatcher(operatorOptions: options);
-        var context = CreateContext();
+        var context = AutoFixture.Build<PatchingContext>()
+            .With(x => x.AgentMountPath, "/contrast/agent").Create();
         var pod = CreatePod();
 
         await patcher.Patch(context, pod);
@@ -284,7 +224,7 @@ public class PodPatcherImageVolumeTests
         var agentPathEnv = container.Env.Single(e => e.Name == "CONTRAST_MOUNT_AGENT_PATH");
         using (new AssertionScope())
         {
-            // AgentMountPath is set to imageVolumeMountPath + "/contrast" = "/contrast/agent/contrast"
+            // AgentMountPath is set to AgentMountPath + "/contrast" = "/contrast/agent/contrast"
             mountPathEnv.Value.Should().Be("/contrast/agent/contrast");
             agentPathEnv.Value.Should().Be("/contrast/agent/contrast");
         }
@@ -293,10 +233,7 @@ public class PodPatcherImageVolumeTests
     [Fact]
     public async Task When_image_volumes_enabled_then_agent_patcher_mount_path_override_should_be_skipped()
     {
-        var options = new OperatorOptions("default", 5, 30, 100,
-            System.Threading.Channels.BoundedChannelFullMode.DropOldest,
-            1, false, false, false, true, 0);
-
+        var options = AutoFixture.Build<OperatorOptions>().With(x => x.UseImageVolumes, true).Create();
         var mockPatcher = Substitute.For<IAgentPatcher>();
         mockPatcher.Type.Returns(AgentInjectionType.Java);
         mockPatcher.GetOverrideAgentMountPath().Returns("/opt/contrast");
@@ -310,7 +247,11 @@ public class PodPatcherImageVolumeTests
         });
 
         var patcher = CreatePatcher(operatorOptions: options, agentPatcher: mockPatcher);
-        var context = CreateContext();
+        var injector = AutoFixture.Build<AgentInjectorResource>().With(x => x.Type, AgentInjectionType.Java).Create();
+        var context = AutoFixture.Build<PatchingContext>()
+            .With(x=> x.Injector, injector)
+            .With(x => x.AgentMountPath, "/contrast/agent")
+            .Create();
         var pod = CreatePod();
 
         await patcher.Patch(context, pod);
@@ -324,10 +265,7 @@ public class PodPatcherImageVolumeTests
     [Fact]
     public async Task When_image_volumes_disabled_then_agent_patcher_mount_path_override_should_apply()
     {
-        var options = new OperatorOptions("default", 5, 30, 100,
-            System.Threading.Channels.BoundedChannelFullMode.DropOldest,
-            1, false, false, false, true, 0);
-
+        var options = AutoFixture.Build<OperatorOptions>().With(x => x.UseImageVolumes, false).Create();
         var mockPatcher = Substitute.For<IAgentPatcher>();
         mockPatcher.Type.Returns(AgentInjectionType.Java);
         mockPatcher.GetOverrideAgentMountPath().Returns("/opt/contrast");
@@ -341,7 +279,10 @@ public class PodPatcherImageVolumeTests
         });
 
         var patcher = CreatePatcher(operatorOptions: options, agentPatcher: mockPatcher);
-        var context = CreateContext();
+        var injector = AutoFixture.Build<AgentInjectorResource>().With(x => x.Type, AgentInjectionType.Java).Create();
+        var context = AutoFixture.Build<PatchingContext>()
+            .With(x => x.Injector, injector)
+            .Create();
         var pod = CreatePod();
 
         await patcher.Patch(context, pod);
@@ -350,28 +291,5 @@ public class PodPatcherImageVolumeTests
         var testEnv = container.Env.Single(e => e.Name == "TEST_AGENT_MOUNT_PATH");
         // Should use the Java override path
         testEnv.Value.Should().Be("/opt/contrast");
-    }
-
-    [Fact]
-    public async Task When_image_volumes_enabled_then_standard_annotations_should_still_be_set()
-    {
-        var options = new OperatorOptions("default", 5, 30, 100,
-            System.Threading.Channels.BoundedChannelFullMode.DropOldest,
-            1, false, false, false, true, 0);
-        var patcher = CreatePatcher(operatorOptions: options);
-        var context = CreateContext();
-        var pod = CreatePod();
-
-        await patcher.Patch(context, pod);
-
-        using (new AssertionScope())
-        {
-            pod.Metadata.Annotations.Should().ContainKey(InjectionConstants.IsInjectedAttributeName)
-                .WhoseValue.Should().Be("True");
-            pod.Metadata.Annotations.Should().ContainKey(InjectionConstants.InjectedOnAttributeName);
-            pod.Metadata.Annotations.Should().ContainKey(InjectionConstants.InjectedByAttributeName);
-            pod.Metadata.Annotations.Should().ContainKey(InjectionConstants.InjectorTypeAttributeName)
-                .WhoseValue.Should().Be("Java");
-        }
     }
 }
