@@ -213,8 +213,7 @@ public class PodPatcherTests
     {
         var options = AutoFixture.Build<OperatorOptions>().With(x => x.UseImageVolumes, true).Create();
         var patcher = CreatePatcher(operatorOptions: options);
-        var context = AutoFixture.Build<PatchingContext>()
-            .With(x => x.AgentMountPath, "/contrast/agent").Create();
+        var context = AutoFixture.Create<PatchingContext>();
         var pod = CreatePod();
 
         await patcher.Patch(context, pod);
@@ -225,8 +224,8 @@ public class PodPatcherTests
         using (new AssertionScope())
         {
             // AgentMountPath is set to AgentMountPath + "/contrast" = "/contrast/agent/contrast"
-            mountPathEnv.Value.Should().Be("/contrast/agent/contrast");
-            agentPathEnv.Value.Should().Be("/contrast/agent/contrast");
+            mountPathEnv.Value.Should().Be(context.AgentMountPath + "/contrast");
+            agentPathEnv.Value.Should().Be(context.AgentMountPath + "/contrast");
         }
     }
 
@@ -234,9 +233,10 @@ public class PodPatcherTests
     public async Task When_image_volumes_enabled_then_agent_patcher_mount_path_override_should_be_skipped()
     {
         var options = AutoFixture.Build<OperatorOptions>().With(x => x.UseImageVolumes, true).Create();
+        var overridePath = AutoFixture.Create<string>();
         var mockPatcher = Substitute.For<IAgentPatcher>();
-        mockPatcher.Type.Returns(AgentInjectionType.Java);
-        mockPatcher.GetOverrideAgentMountPath().Returns("/opt/contrast");
+        mockPatcher.Type.Returns(AgentInjectionType.Dummy);
+        mockPatcher.GetOverrideAgentMountPath().Returns(overridePath);
         mockPatcher.GenerateEnvVars(Arg.Any<PatchingContext>()).Returns(callInfo =>
         {
             var ctx = callInfo.Arg<PatchingContext>();
@@ -247,7 +247,7 @@ public class PodPatcherTests
         });
 
         var patcher = CreatePatcher(operatorOptions: options, agentPatcher: mockPatcher);
-        var injector = AutoFixture.Build<AgentInjectorResource>().With(x => x.Type, AgentInjectionType.Java).Create();
+        var injector = AutoFixture.Build<AgentInjectorResource>().With(x => x.Type, AgentInjectionType.Dummy).Create();
         var context = AutoFixture.Build<PatchingContext>()
             .With(x=> x.Injector, injector)
             .With(x => x.AgentMountPath, "/contrast/agent")
@@ -258,17 +258,18 @@ public class PodPatcherTests
 
         var container = pod.Spec.Containers.First();
         var testEnv = container.Env.Single(e => e.Name == "TEST_AGENT_MOUNT_PATH");
-        // Should use image volume path, not the Java override of /opt/contrast
-        testEnv.Value.Should().Be("/contrast/agent/contrast");
+        // Should use image volume path, not override
+        testEnv.Value.Should().Be(context.AgentMountPath + "/contrast");
     }
 
     [Fact]
     public async Task When_image_volumes_disabled_then_agent_patcher_mount_path_override_should_apply()
     {
         var options = AutoFixture.Build<OperatorOptions>().With(x => x.UseImageVolumes, false).Create();
+        var overridePath = AutoFixture.Create<string>();
         var mockPatcher = Substitute.For<IAgentPatcher>();
-        mockPatcher.Type.Returns(AgentInjectionType.Java);
-        mockPatcher.GetOverrideAgentMountPath().Returns("/opt/contrast");
+        mockPatcher.Type.Returns(AgentInjectionType.Dummy);
+        mockPatcher.GetOverrideAgentMountPath().Returns(overridePath);
         mockPatcher.GenerateEnvVars(Arg.Any<PatchingContext>()).Returns(callInfo =>
         {
             var ctx = callInfo.Arg<PatchingContext>();
@@ -279,7 +280,7 @@ public class PodPatcherTests
         });
 
         var patcher = CreatePatcher(operatorOptions: options, agentPatcher: mockPatcher);
-        var injector = AutoFixture.Build<AgentInjectorResource>().With(x => x.Type, AgentInjectionType.Java).Create();
+        var injector = AutoFixture.Build<AgentInjectorResource>().With(x => x.Type, AgentInjectionType.Dummy).Create();
         var context = AutoFixture.Build<PatchingContext>()
             .With(x => x.Injector, injector)
             .Create();
@@ -289,7 +290,6 @@ public class PodPatcherTests
 
         var container = pod.Spec.Containers.First();
         var testEnv = container.Env.Single(e => e.Name == "TEST_AGENT_MOUNT_PATH");
-        // Should use the Java override path
-        testEnv.Value.Should().Be("/opt/contrast");
+        testEnv.Value.Should().Be(overridePath);
     }
 }
