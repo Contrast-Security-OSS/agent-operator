@@ -7,7 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Channels;
 using Autofac;
-using Contrast.K8s.AgentOperator.Core;
+using Contrast.K8s.AgentOperator.Core.Kube;
 using Contrast.K8s.AgentOperator.Options;
 using JetBrains.Annotations;
 using k8s;
@@ -22,6 +22,8 @@ public class OptionsModule : Module
         builder.Register(context =>
         {
             var logger = context.Resolve<IOptionsLogger>();
+            var kubeClient = context.Resolve<IKubernetes>();
+            var clusterVersion = ClusterVersionHelper.GetClusterVersion(kubeClient);
 
             var @namespace = "contrast-agent-operator";
             if (GetEnvironmentVariableAsString("POD_NAMESPACE", out var namespaceStr))
@@ -97,7 +99,11 @@ public class OptionsModule : Module
             // Use Kubernetes image volumes (KEP-4639) instead of init containers to mount agent files.
             // Requires Kubernetes 1.35+ with the ImageVolume feature gate enabled.
             // When enabled, the agent image is mounted directly as a read-only volume, removing the need for the init container.
-            var useImageVolumes = GetEnvironmentOptionFlag(logger, "CONTRAST_USE_IMAGE_VOLUMES", "use-image-volumes", false);
+            var useImageVolumes = false;
+            if (clusterVersion == null || clusterVersion >= new Version(1, 35))
+            {
+                useImageVolumes = GetEnvironmentOptionFlag(logger, "CONTRAST_USE_IMAGE_VOLUMES", "use-image-volumes", false);
+            }
 
             var options = new OperatorOptions(
                 @namespace,
@@ -113,8 +119,7 @@ public class OptionsModule : Module
                 chaosPercent / 100m
                 );
 
-            var kubeClient = context.Resolve<IKubernetes>();
-            options = ClusterVersionValidator.ValidateOptions(options, kubeClient);
+            
 
             return options;
         }).SingleInstance();
@@ -275,8 +280,10 @@ public class OptionsModule : Module
         }).SingleInstance();
     }
 
-    private static bool GetEnvironmentOptionFlag(IOptionsLogger logger, string variable, string optionName, bool defaultValue)
+    private static bool GetEnvironmentOptionFlag(IOptionsLogger logger, string variable, string optionName, bool defaultValue, Version? minimumVersion = null)
     {
+
+
         if (GetEnvironmentVariableAsBoolean(variable, out var value))
         {
             logger.LogOptionValue(optionName, defaultValue, value);
