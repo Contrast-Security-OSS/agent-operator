@@ -7,8 +7,10 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Channels;
 using Autofac;
+using Contrast.K8s.AgentOperator.Core;
 using Contrast.K8s.AgentOperator.Options;
 using JetBrains.Annotations;
+using k8s;
 
 namespace Contrast.K8s.AgentOperator.Modules;
 
@@ -97,7 +99,7 @@ public class OptionsModule : Module
             // When enabled, the agent image is mounted directly as a read-only volume, removing the need for the init container.
             var useImageVolumes = GetEnvironmentOptionFlag(logger, "CONTRAST_USE_IMAGE_VOLUMES", "use-image-volumes", false);
 
-            return new OperatorOptions(
+            var options = new OperatorOptions(
                 @namespace,
                 settleDuration,
                 watcherTimeout,
@@ -110,6 +112,11 @@ public class OptionsModule : Module
                 useImageVolumes,
                 chaosPercent / 100m
                 );
+
+            var kubeClient = context.Resolve<IKubernetes>();
+            options = ClusterVersionValidator.ValidateOptions(options, kubeClient);
+
+            return options;
         }).SingleInstance();
 
         builder.Register(context =>

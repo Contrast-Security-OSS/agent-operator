@@ -14,6 +14,6 @@ public record OperatorOptions(string Namespace,
                               bool RunInitContainersAsNonRoot,
                               bool SuppressSeccompProfile,
                               bool EnableAgentStdout,
-                              bool UseImageVolumes,
+                              [property: RequiresMinimumKubernetesVersion(1, 35)] bool UseImageVolumes,
                               decimal ChaosRatio,
                               string FieldManagerName = "agents.contrastsecurity.com");
