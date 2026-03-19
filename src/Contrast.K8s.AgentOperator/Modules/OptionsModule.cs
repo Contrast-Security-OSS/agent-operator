@@ -280,10 +280,8 @@ public class OptionsModule : Module
         }).SingleInstance();
     }
 
-    private static bool GetEnvironmentOptionFlag(IOptionsLogger logger, string variable, string optionName, bool defaultValue, Version? minimumVersion = null)
+    private static bool GetEnvironmentOptionFlag(IOptionsLogger logger, string variable, string optionName, bool defaultValue)
     {
-
-
         if (GetEnvironmentVariableAsBoolean(variable, out var value))
         {
             logger.LogOptionValue(optionName, defaultValue, value);
