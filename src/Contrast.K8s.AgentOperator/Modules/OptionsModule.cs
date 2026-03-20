@@ -99,10 +99,11 @@ public class OptionsModule : Module
             // Use Kubernetes image volumes (KEP-4639) instead of init containers to mount agent files.
             // Requires Kubernetes 1.35+ with the ImageVolume feature gate enabled.
             // When enabled, the agent image is mounted directly as a read-only volume, removing the need for the init container.
-            var useImageVolumes = false;
-            if (clusterVersion == null || clusterVersion >= new Version(1, 35))
+            var useImageVolumes = GetEnvironmentOptionFlag(logger, "CONTRAST_USE_IMAGE_VOLUMES", "use-image-volumes", false);
+            if (useImageVolumes && clusterVersion < new Version(1, 35))
             {
-                useImageVolumes = GetEnvironmentOptionFlag(logger, "CONTRAST_USE_IMAGE_VOLUMES", "use-image-volumes", false);
+                logger.LogUnsupportedKey("use-image-volumes");
+                useImageVolumes = false;
             }
 
             var options = new OperatorOptions(
@@ -118,8 +119,6 @@ public class OptionsModule : Module
                 useImageVolumes,
                 chaosPercent / 100m
                 );
-
-            
 
             return options;
         }).SingleInstance();

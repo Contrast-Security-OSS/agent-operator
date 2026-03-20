@@ -9,6 +9,7 @@ namespace Contrast.K8s.AgentOperator.Options;
 
 public interface IOptionsLogger
 {
+    void LogUnsupportedKey(string key);
     void LogOptionValue(string key, string defaultValue, string actualValue);
     void LogOptionValue(string key, long defaultValue, long actualValue);
     void LogOptionValue(string key, bool defaultValue, bool actualValue);
@@ -18,6 +19,11 @@ public interface IOptionsLogger
 public class OptionsLogger : IOptionsLogger
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
+    public void LogUnsupportedKey(string key)
+    {
+        Logger.Info($"Option '{key}' has been disabled due to running on an unsupported version of Kubernetes.");
+    }
 
     public void LogOptionValue(string key, string defaultValue, string actualValue)
     {
