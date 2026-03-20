@@ -230,7 +230,7 @@ public class PodPatcherTests
     }
 
     [Fact]
-    public async Task When_image_volumes_enabled_then_agent_patcher_mount_path_override_should_be_skipped()
+    public async Task When_image_volumes_enabled_then_agent_patcher_mount_path_override_should_be_used_as_prefix()
     {
         var options = AutoFixture.Build<OperatorOptions>().With(x => x.UseImageVolumes, true).Create();
         var overridePath = AutoFixture.Create<string>();
@@ -258,8 +258,8 @@ public class PodPatcherTests
 
         var container = pod.Spec.Containers.First();
         var testEnv = container.Env.Single(e => e.Name == "TEST_AGENT_MOUNT_PATH");
-        // Should use image volume path, not override
-        testEnv.Value.Should().Be(context.AgentMountPath + "/contrast");
+        // Should use image override path, plus /contrast
+        testEnv.Value.Should().Be(overridePath + "/contrast");
     }
 
     [Fact]
