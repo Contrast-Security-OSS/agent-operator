@@ -58,13 +58,18 @@ public class TestingClient
             var results = await _client.ListAsync<T>(@namespace, cancellationToken: source.Token);
             var normalizedPrefix = Regex.Escape(name);
 
-            var result = results.SingleOrDefault(x => Regex.IsMatch(x.Name(), @"^(" + normalizedPrefix + @")-[a-z0-9\-]+$"));
-            if (result != null)
+            var matches = results.Where(x => Regex.IsMatch(x.Name(), @"^(" + normalizedPrefix + @")-[a-z0-9\-]+$")).ToList();
+            switch (matches.Count)
             {
-                return result;
+                case 0:
+                    _outputHelper?.WriteLine($"Entity {@namespace}/{name}-* ({typeof(T)}) does not exist, will try again in {_pollInterval.TotalSeconds} seconds.");
+                    break;
+                case 1:
+                    return matches.First();
+                default:
+                    _outputHelper?.WriteLine($"Entity {@namespace}/{name}-* ({typeof(T)}) matches multiple entities, will try again in {_pollInterval.TotalSeconds} seconds.");
+                    break;
             }
-
-            _outputHelper?.WriteLine($"Entity {@namespace}/{name}-* ({typeof(T)}) does not exist, will try again in {_pollInterval.TotalSeconds} seconds.");
             await Task.Delay(_pollInterval, source.Token);
         }
 
