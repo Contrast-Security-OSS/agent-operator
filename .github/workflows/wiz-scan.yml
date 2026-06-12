@@ -1,0 +1,43 @@
+name: Wiz Scan
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+permissions:
+  contents: read
+
+jobs:
+  wiz-scan:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    env:
+      POLICY: "Block-VM"
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Build the Docker image
+        run: docker build . --tag agent-operator:dev
+
+      - name: Download Wiz CLI
+        run: curl -o wizcli https://downloads.wiz.io/v1/wizcli/latest/wizcli-linux-amd64 && chmod +x wizcli
+
+      - name: Run Wiz CLI container image scan
+        run: ./wizcli scan container-image agent-operator:dev --client-id "$WIZ_CLIENT_ID" --client-secret "$WIZ_CLIENT_SECRET" --assist-migration --policies "$POLICY" --csv-output-file="agent-operator-wiz-report.zip" --by-policy-hits="BLOCK" --show-ignored-by-grace-period
+        env:
+          WIZ_CLIENT_ID: ${{ secrets.WIZ_CLIENT_ID }}
+          WIZ_CLIENT_SECRET: ${{ secrets.WIZ_CLIENT_SECRET }}
+
+      - name: Capture Wiz Output
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+        with:
+          name: agent-operator-wiz-report
+          path: |
+            agent-operator-wiz-report.zip
