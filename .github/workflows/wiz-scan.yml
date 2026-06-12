@@ -40,3 +40,4 @@ jobs:
           name: agent-operator-wiz-report
           path: |
             agent-operator-wiz-report.zip
+          retention-days: 7
