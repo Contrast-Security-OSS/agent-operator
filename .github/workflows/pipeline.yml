@@ -254,7 +254,7 @@ jobs:
           kubectl apply -k manifests/examples/testing
         shell: bash
       - name: Setup .NET SDK
-        uses: actions/setup-dotnet@87b7050bc53ea08284295505d98d2aa94301e852 # v4.2.0
+        uses: actions/setup-dotnet@9a946fdbd5fb07b82b2f5a4466058b876ab72bb2 # v5.3.0
         with:
           dotnet-version: 10.0.x
       - name: Execute Functional Tests
