@@ -454,7 +454,7 @@ jobs:
           name: helm-schema
           path: ./artifacts/schema
       - name: Publish
-        uses: ncipollo/release-action@cdcc88a9acf3ca41c16c37bb7d21b9ad48560d87 # v1.15.0
+        uses: ncipollo/release-action@339a81892b84b4eeb0f6e744e4574d79d0d9b8dd # v1.21.0
         with:
           body: |
             ## Version v${{ env.BUILD_VERSION }} released!
@@ -470,6 +470,7 @@ jobs:
           artifacts: "${{ steps.download-manifests.outputs.download-path }}/*.yaml,${{ steps.download-schema.outputs.download-path }}/*.json"
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
+          immutableCreate: true
           prerelease: ${{ needs.generate-version.outputs.is-release == 'false' }} # pre-releases will have is-release false
       - name: Publish Helm Chart
         uses: peter-evans/repository-dispatch@ff45666b9427631e3450c54a1bcbee4d9ff4d7c0 # v3.0.0
