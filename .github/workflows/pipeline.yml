@@ -10,6 +10,13 @@ on:
 
 jobs:
   #
+  # Security Scan Stage
+  #
+  wiz-scan:
+    uses: ./.github/workflows/wiz-scan.yml
+    secrets: inherit
+
+  #
   # Building Stage
   #
   generate-version:
@@ -50,7 +57,9 @@ jobs:
         shell: pwsh
   build-image:
     runs-on: ubuntu-latest
-    needs: generate-version
+    needs:
+      - generate-version
+      - wiz-scan
     permissions:
       packages: write
     outputs:
