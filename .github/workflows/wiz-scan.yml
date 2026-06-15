@@ -1,0 +1,46 @@
+name: Wiz Scan
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  wiz-scan:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    env:
+      POLICY: "Contrast-OSS,EOL-Scan"
+      WIZ_CLI_VERSION: "1.50.0"
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Build the Docker image
+        run: docker build . --tag agent-operator:dev
+
+      - name: Download Wiz CLI
+        run: curl -fsSLo wizcli https://downloads.wiz.io/v1/wizcli/${WIZ_CLI_VERSION}/wizcli-linux-amd64 && chmod +x wizcli
+
+      - name: Run Wiz CLI container image scan
+        run: ./wizcli scan container-image agent-operator:dev --client-id "$WIZ_CLIENT_ID" --client-secret "$WIZ_CLIENT_SECRET" --assist-migration --policies "$POLICY" --csv-output-file="agent-operator-wiz-report.zip" --by-policy-hits="BLOCK" --show-ignored-by-grace-period
+        env:
+          WIZ_CLIENT_ID: ${{ secrets.WIZ_CLIENT_ID }}
+          WIZ_CLIENT_SECRET: ${{ secrets.WIZ_CLIENT_SECRET }}
+
+      - name: Capture Wiz Output
+        if: always()
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+        with:
+          name: agent-operator-wiz-report
+          path: |
+            agent-operator-wiz-report.zip
+          retention-days: 7
