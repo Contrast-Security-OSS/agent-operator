@@ -1,7 +1,7 @@
 # Contrast Security, Inc licenses this file to you under the Apache 2.0 License.
 # See the LICENSE file in the project root for more information.
 
-FROM mcr.microsoft.com/dotnet/aspnet:10.0.9-noble AS base
+FROM mcr.microsoft.com/dotnet/aspnet:10.0.6-noble AS base
 
 # To aid in debugging.
 RUN set -xe \
@@ -9,7 +9,7 @@ RUN set -xe \
     && apt-get install -y --no-install-recommends curl jq \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-FROM mcr.microsoft.com/dotnet/sdk:10.0.301-noble AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0.202-noble AS build
 WORKDIR /source
 
 # Restore
