@@ -16,19 +16,19 @@
 
     <ItemGroup>
         <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
-        <PackageReference Include="CertificateManager" Version="1.0.9" />
-        <PackageReference Include="Autofac" Version="8.2.0" />
-        <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="10.0.0" />
+        <PackageReference Include="CertificateManager" Version="1.0.10" />
+        <PackageReference Include="Autofac" Version="9.1.0" />
+        <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="11.0.0" />
         <PackageReference Include="Nito.AsyncEx" Version="5.1.2" />
 
-        <PackageReference Include="NLog" Version="5.3.4" />
-        <PackageReference Include="NLog.Web.AspNetCore" Version="5.3.15" />
-        <PackageReference Include="NLog.Extensions.Logging" Version="5.3.15" />
+        <PackageReference Include="NLog" Version="6.1.3" />
+        <PackageReference Include="NLog.Web.AspNetCore" Version="6.1.3" />
+        <PackageReference Include="NLog.Extensions.Logging" Version="6.1.3" />
 
         <PackageReference Include="Glob" Version="1.1.9" />
-        <PackageReference Include="MediatR" Version="12.4.1" />
+        <PackageReference Include="MediatR" Version="14.1.0" />
 
-        <PackageReference Include="JetBrains.Annotations" Version="2024.3.0" />
+        <PackageReference Include="JetBrains.Annotations" Version="2025.2.4" />
 
         <PackageReference Include="RestEase" Version="1.6.4" />
         <PackageReference Include="RestEase.SourceGenerator" Version="1.6.4">
@@ -37,8 +37,8 @@
         </PackageReference>
 
         <PackageReference Include="Sigil" Version="5.0.0" />
-        <PackageReference Include="KubeOps.Operator.Web" Version="10.2.3" />
-        <PackageReference Include="KubeOps.Generator" Version="10.2.3">
+        <PackageReference Include="KubeOps.Operator.Web" Version="11.3.0" />
+        <PackageReference Include="KubeOps.Generator" Version="11.3.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
         </PackageReference>
