@@ -80,6 +80,7 @@
                                 "type": "string"
                             },
                             "reconcilePolicy": {
+                                "description": "Optional. When to reconcile matched workloads. 'Always' (default) re-patches (and restarts) matched workloads on any change. 'OnCreate' patches a workload only when first matched.",
                                 "type": "string",
                                 "enum": [
                                     "Always",
