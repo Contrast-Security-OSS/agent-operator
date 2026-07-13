@@ -79,6 +79,13 @@
                             "name": {
                                 "type": "string"
                             },
+                            "reconcilePolicy": {
+                                "type": "string",
+                                "enum": [
+                                    "Always",
+                                    "OnCreate"
+                                ]
+                            },
                             "selector": {
                                 "description": "Optional, specify labels and/or image names to inject. If omitted, all workloads will be injected. Label selections are cumulative using the logical AND operation.",
                                 "type": "object",
