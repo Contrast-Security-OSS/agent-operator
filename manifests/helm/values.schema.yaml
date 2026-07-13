@@ -163,3 +163,6 @@ agentInjectors:
       configurationName: # @schema type:[string, null]
       # -- Optional name of an AgentConnection to use with this injector.
       connectionName: # @schema type:[string, null]
+      # -- Optional. When to reconcile matched workloads. 'Always' (default) re-patches (and restarts)
+      # matched workloads on any change. 'OnCreate' patches a workload only when first matched.
+      reconcilePolicy: # @schema type:[string];enum:[Always, OnCreate]

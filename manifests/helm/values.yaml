@@ -171,6 +171,10 @@ agentInjectors:
       #configurationName: custom-config-name
       # Optional name of an AgentConnection to use with this injector.
       #connectionName: custom-connection-name
+      # Optional. When to reconcile matched workloads. 'Always' (default) re-patches (and restarts)
+      # matched workloads on any change. 'OnCreate' patches a workload only when first matched,
+      # avoiding fleet-wide restarts (see docs). One of: Always, OnCreate.
+      #reconcilePolicy: OnCreate
 
     - language: dotnet-core
       name: contrast-dotnet-core-injector
