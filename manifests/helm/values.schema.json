@@ -80,6 +80,7 @@
                                 "type": "string"
                             },
                             "reconcilePolicy": {
+                                "description": "Optional. When to reconcile matched workloads. 'Always' (default) re-patches (and restarts) matched workloads on any change. 'OnCreate' patches a workload only when first matched.",
                                 "type": "string",
                                 "enum": [
                                     "Always",
@@ -352,11 +353,6 @@
                     "default": false,
                     "type": "boolean"
                 },
-                "useImageVolumes": {
-                    "description": "Use Kubernetes image volumes (KEP-4639) instead of init containers to mount agent files. Requires Kubernetes 1.35+.",
-                    "default": false,
-                    "type": "boolean"
-                },
                 "enableEarlyChaining": {
                     "description": "Enable early chaining. Should only be enabled if you are using a dotnet-core AgentInjector and DynaKube is used in classicStack mode.",
                     "default": false,
@@ -550,6 +546,11 @@
                 },
                 "telemetryOptOut": {
                     "description": "Opt-Out of telemetry collection",
+                    "default": false,
+                    "type": "boolean"
+                },
+                "useImageVolumes": {
+                    "description": "Use Kubernetes image volumes (KEP-4639) instead of init containers to mount agent files. Requires Kubernetes 1.35+.",
                     "default": false,
                     "type": "boolean"
                 },
