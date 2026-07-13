@@ -34,6 +34,9 @@ spec:
       version: {{ quote $injector.imageVersion }}
       {{- end }}
       type: {{ $injector.language }}
+      {{- if $injector.reconcilePolicy }}
+      reconcilePolicy: {{ $injector.reconcilePolicy }}
+      {{- end }}
       {{- if $injector.image }}
       image:
         {{- $injector.image | toYaml | nindent 8 }}
@@ -76,6 +79,9 @@ spec:
   version: {{ quote $injector.imageVersion }}
   {{- end }}
   type: {{ $injector.language }}
+  {{- if $injector.reconcilePolicy }}
+  reconcilePolicy: {{ $injector.reconcilePolicy }}
+  {{- end }}
   {{- if $injector.image }}
   image:
     {{- $injector.image | toYaml | nindent 4 }}
