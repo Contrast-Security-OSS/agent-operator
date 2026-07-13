@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Contrast.K8s.AgentOperator.Core;
 using Contrast.K8s.AgentOperator.Core.Comparing;
 using Contrast.K8s.AgentOperator.Core.Reactions.Defaults.Base;
 using Contrast.K8s.AgentOperator.Core.Reactions.Matching;
@@ -69,7 +70,8 @@ public class ClusterAgentInjectorSyncingHandler
             connectionRef,
             configurationRef,
             pullSecret,
-            template.ImagePullPolicy
+            template.ImagePullPolicy,
+            template.ReconcilePolicy
         );
 
         return ValueTask.FromResult(resource)!;
@@ -108,7 +110,8 @@ public class ClusterAgentInjectorSyncingHandler
                     { Name = x.Key, Value = x.Value }).ToList()
             },
             Connection = connection,
-            Configuration = configuration
+            Configuration = configuration,
+            ReconcilePolicy = ReconcilePolicyConverter.GetStringFromPolicy(desiredResource.ReconcilePolicy)
         };
 
         return ValueTask.FromResult(new V1Beta1AgentInjector
