@@ -10,6 +10,7 @@ using Contrast.K8s.AgentOperator.Core.Kube;
 using Contrast.K8s.AgentOperator.Core.State;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Interfaces;
+using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
 using Contrast.K8s.AgentOperator.Entities.Argo;
 using Contrast.K8s.AgentOperator.Entities.OpenShift;
 using JetBrains.Annotations;
@@ -45,11 +46,38 @@ public class PodTemplateInjectionHandler : INotificationHandler<InjectorMatched>
         var (target, injector) = notification;
         var desiredState = await GetDesiredState(injector, target, cancellationToken);
 
-        if (ChangesNeeded(target, desiredState))
+        if (!ChangesNeeded(target, desiredState))
         {
-            Logger.Info($"Workload '{target.Identity}' will be patched (Injector: '{injector?.Identity.ToString() ?? "None"}').");
-            await PatchToDesiredState(desiredState, target);
+            return;
         }
+
+        if (await ShouldDeferForOnCreate(target, cancellationToken))
+        {
+            Logger.Info($"Workload '{target.Identity}' has drifted but its injector uses reconcilePolicy 'OnCreate'. "
+                        + "Deferring re-patch; new settings will apply as pods are recreated.");
+            return;
+        }
+
+        Logger.Info($"Workload '{target.Identity}' will be patched (Injector: '{injector?.Identity.ToString() ?? "None"}').");
+        await PatchToDesiredState(desiredState, target);
+    }
+
+    // OnCreate preserves working bindings, never broken ones. Rule 1 (no annotations)
+    // and rule 3 (annotated injector no longer resolves) both fall through to a patch.
+    private async ValueTask<bool> ShouldDeferForOnCreate(ResourceIdentityPair<IResourceWithPodTemplate> target,
+                                                         CancellationToken cancellationToken)
+    {
+        var annotations = target.Resource.PodTemplate.Annotations;
+        var annotatedName = annotations.GetAnnotation(InjectionConstants.InjectorNameAttributeName);
+        var annotatedNamespace = annotations.GetAnnotation(InjectionConstants.InjectorNamespaceAttributeName);
+
+        if (string.IsNullOrEmpty(annotatedName) || string.IsNullOrEmpty(annotatedNamespace))
+        {
+            return false;
+        }
+
+        var annotatedInjector = await _state.GetById<AgentInjectorResource>(annotatedName, annotatedNamespace, cancellationToken);
+        return annotatedInjector is { ReconcilePolicy: ReconcilePolicy.OnCreate };
     }
 
     private static bool ChangesNeeded(ResourceIdentityPair<IResourceWithPodTemplate> target, DesiredState desiredState)
