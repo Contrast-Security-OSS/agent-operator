@@ -53,8 +53,6 @@ public class PodTemplateInjectionHandler : INotificationHandler<InjectorMatched>
 
         if (await ShouldDeferForOnCreate(target, cancellationToken))
         {
-            Logger.Info($"Workload '{target.Identity}' has drifted but its injector uses reconcilePolicy 'OnCreate'. "
-                        + "Deferring re-patch; new settings will apply as pods are recreated.");
             return;
         }
 
@@ -76,8 +74,26 @@ public class PodTemplateInjectionHandler : INotificationHandler<InjectorMatched>
             return false;
         }
 
+        // Only preserve a binding the operator itself established. If the workload-identity
+        // annotations do not match this workload (for example, annotations copied from another
+        // workload's manifest), re-patch to correct them rather than deferring forever.
+        var annotatedWorkloadName = annotations.GetAnnotation(InjectionConstants.WorkloadNameAttributeName);
+        var annotatedWorkloadNamespace = annotations.GetAnnotation(InjectionConstants.WorkloadNamespaceAttributeName);
+        if (!string.Equals(annotatedWorkloadName, target.Identity.Name, StringComparison.Ordinal)
+            || !string.Equals(annotatedWorkloadNamespace, target.Identity.Namespace, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
         var annotatedInjector = await _state.GetById<AgentInjectorResource>(annotatedName, annotatedNamespace, cancellationToken);
-        return annotatedInjector is { ReconcilePolicy: ReconcilePolicy.OnCreate };
+        if (annotatedInjector is { ReconcilePolicy: ReconcilePolicy.OnCreate })
+        {
+            Logger.Info($"Workload '{target.Identity}' has drifted but its annotated injector '{annotatedName}/{annotatedNamespace}' "
+                        + "uses reconcilePolicy 'OnCreate'. Deferring re-patch; new settings will apply as pods are recreated.");
+            return true;
+        }
+
+        return false;
     }
 
     private static bool ChangesNeeded(ResourceIdentityPair<IResourceWithPodTemplate> target, DesiredState desiredState)
