@@ -108,6 +108,7 @@ spec:
   enabled: true
   version: latest
   type: dotnet-core
+  reconcilePolicy: Always
   image:
     registry: docker.io/contrast
     name: agent-dotnet-core
@@ -134,6 +135,7 @@ spec:
 | spec.image.name           | string          | No       | {based on type}                                                              | The name of the injector image to use.                                                                                                                                |
 | spec.image.pullSecretName | string          | No       |                                                                              | The name of a pull Secret to append to the pod's imagePullSecrets list.                                                                                               |
 | spec.image.pullPolicy     | string          | No       | Always                                                                       | The pull policy to use when fetching Contrast images. See Kubernetes imagePullPolicy for more information.                                                            |
+| spec.reconcilePolicy      | string          | No       | Always                                                                       | When to reconcile matched workloads. 'Always' re-patches (and restarts) every matched workload on any settings, version, connection, configuration, or secret change. 'OnCreate' patches a workload only when first matched, then applies new settings as pods are naturally recreated. See the notes below. |
 | spec.selector.images      | string[]        | No       | Selects all containers in Pod.                                               | Container images to inject the agent into. Glob patterns are supported. If empty (the default), selects all containers in Pod.                                        |
 | spec.selector.labels      | labelSelector[] | No       | Selects all workloads in namespace.                                          | Deployment/StatefulSet/DaemonSet/DeploymentConfig labels whose pods are eligible for agent injection. If empty (the default), selects all workloads in namespace.     |
 | spec.connection.name      | string          | No       | Defaults to the AgentConnection specified by a ClusterAgentConnection.       | The name of AgentConnection resource. Must exist within the same namespace.                                                                                           |
@@ -144,6 +146,8 @@ spec:
 - If using a custom registry, both the Pod being injected and the operator must have access, either through the default pull secret, or custom pull secrets.
 - Agent version `latest` is recommended when using the agent in pre-production environments.
 - The AgentInjector supports selecting Deployment, StatefulSet, DaemonSet, Rollout (Argo), and DeploymentConfig (on OpenShift) workloads. Injecting pods directly is not supported.
+- `spec.reconcilePolicy: OnCreate` avoids fleet-wide rolling restarts. Under `OnCreate`, removing a workload's selector label or disabling the injector does not remove the agent from already-injected workloads, and pods in one workload may run different agent versions until they are naturally recreated. To force convergence, set `reconcilePolicy: Always`.
+- Helm users must manually apply the updated CRDs (`kubectl apply` the AgentInjector and ClusterAgentInjector CRDs) before setting `reconcilePolicy`. Helm does not upgrade CRDs on `helm upgrade`, and Kubernetes silently drops the unknown field against an un-upgraded CRD, so the operator would see the default `Always` with no error. The kubectl/kustomize install path applies CRDs automatically and needs no manual step.
 - If the selected workload creates many containers in a single Pod, `spec.selector.images` can be used to filter which containers are injected.
 
 **labelSelector**
