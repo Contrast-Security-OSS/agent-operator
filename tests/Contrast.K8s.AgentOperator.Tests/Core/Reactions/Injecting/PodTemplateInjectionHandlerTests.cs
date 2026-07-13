@@ -47,6 +47,26 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting
             return new ResourceIdentityPair<IResourceWithPodTemplate>(identity, deployment);
         }
 
+        // Same identity as AnnotatedTarget (workload/workload-ns) but the workload-name
+        // annotation names a different workload — i.e. annotations copied from elsewhere.
+        private static ResourceIdentityPair<IResourceWithPodTemplate> ForgedIdentityTarget()
+        {
+            var annotations = new List<MetadataAnnotations>
+            {
+                new(InjectionConstants.InjectorHashAttributeName, "old-hash"),
+                new(InjectionConstants.InjectorNameAttributeName, InjName),
+                new(InjectionConstants.InjectorNamespaceAttributeName, InjNamespace),
+                new(InjectionConstants.WorkloadNameAttributeName, "some-other-workload"),
+                new(InjectionConstants.WorkloadNamespaceAttributeName, "workload-ns"),
+            };
+            var deployment = AutoFixture.Create<DeploymentResource>() with
+            {
+                PodTemplate = AutoFixture.Create<PodTemplate>() with { Annotations = annotations }
+            };
+            var identity = NamespacedResourceIdentity.Create<DeploymentResource>("workload", "workload-ns");
+            return new ResourceIdentityPair<IResourceWithPodTemplate>(identity, deployment);
+        }
+
         private static (PodTemplateInjectionHandler handler, IStateContainer state, IResourcePatcher patcher, IResourceHasher hasher) CreateGraph()
         {
             var state = Substitute.For<IStateContainer>();
@@ -160,6 +180,20 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting
             await handler.Handle(new InjectorMatched(target, injectorPair), CancellationToken.None);
 
             await patcher.DidNotReceive().Patch<V1Deployment>(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Action<V1Deployment>>());
+        }
+
+        [Fact]
+        public async Task Handle_patches_when_workload_identity_annotations_do_not_match_even_under_OnCreate()
+        {
+            var (handler, state, patcher, _) = CreateGraph();
+            var target = ForgedIdentityTarget();
+            state.GetById<AgentInjectorResource>(InjName, InjNamespace, Arg.Any<CancellationToken>())
+                .Returns(new ValueTask<AgentInjectorResource?>(
+                    AutoFixture.Create<AgentInjectorResource>() with { ReconcilePolicy = ReconcilePolicy.OnCreate }));
+
+            await handler.Handle(new InjectorMatched(target, null), CancellationToken.None);
+
+            await patcher.Received().Patch<V1Deployment>(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Action<V1Deployment>>());
         }
     }
 }
