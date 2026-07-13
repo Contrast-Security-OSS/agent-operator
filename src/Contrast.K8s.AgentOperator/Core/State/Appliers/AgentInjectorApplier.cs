@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Contrast.K8s.AgentOperator.Core;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Primitives;
 using Contrast.K8s.AgentOperator.Entities;
@@ -45,6 +46,7 @@ public class AgentInjectorApplier : BaseApplier<V1Beta1AgentInjector, AgentInjec
         var configurationReference = spec.Configuration?.Name != null ? new AgentConfigurationReference(@namespace, spec.Configuration.Name) : null;
         var pullSecretName = spec.Image.PullSecretName != null ? new SecretReference(@namespace, spec.Image.PullSecretName, ".dockerconfigjson") : null;
         var pullPolicy = spec.Image.PullPolicy ?? "Always";
+        var reconcilePolicy = ReconcilePolicyConverter.GetPolicyFromString(spec.ReconcilePolicy);
 
         var resource = new AgentInjectorResource(
             enabled,
@@ -54,7 +56,8 @@ public class AgentInjectorApplier : BaseApplier<V1Beta1AgentInjector, AgentInjec
             connectionReference,
             configurationReference,
             pullSecretName,
-            pullPolicy
+            pullPolicy,
+            reconcilePolicy
         );
         return resource;
     }
