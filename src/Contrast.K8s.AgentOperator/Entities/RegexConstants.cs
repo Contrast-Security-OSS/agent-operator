@@ -15,4 +15,7 @@ public static class RegexConstants
 
     [RegexPattern]
     public const string PullPolicyRegex = @"^(Always|IfNotPresent|Never)$";
+
+    [RegexPattern]
+    public const string ReconcilePolicyRegex = @"^(Always|OnCreate)$";
 }
