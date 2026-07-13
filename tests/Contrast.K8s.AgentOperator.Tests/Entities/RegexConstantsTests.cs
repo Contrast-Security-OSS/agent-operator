@@ -68,4 +68,16 @@ public class RegexConstantsTests
         // Assert
         result.Should().BeTrue();
     }
+
+    [Theory]
+    [InlineData("Always", true)]
+    [InlineData("OnCreate", true)]
+    [InlineData("always", false)]
+    [InlineData("oncreate", false)]
+    [InlineData("", false)]
+    [InlineData("Sometimes", false)]
+    public void ReconcilePolicyRegex_matches_expected(string value, bool expected)
+    {
+        Regex.IsMatch(value, RegexConstants.ReconcilePolicyRegex).Should().Be(expected);
+    }
 }
