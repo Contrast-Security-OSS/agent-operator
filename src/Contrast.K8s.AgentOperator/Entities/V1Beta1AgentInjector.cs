@@ -39,6 +39,10 @@ public partial class V1Beta1AgentInjector : CustomKubernetesEntity<V1Beta1AgentI
 
         [Description("The configuration the injected agent will use.")]
         public AgentInjectorConfigurationSpec? Configuration { get; set; } = new();
+
+        [Pattern(RegexConstants.ReconcilePolicyRegex)]
+        [Description("When to reconcile matched workloads. 'Always' (the default) re-patches every matched workload whenever injector settings, versions, connections, configurations, or referenced secrets change, which rolls all of them at once. 'OnCreate' patches a workload only when it first becomes matched, then new settings apply to pods as they are naturally recreated, avoiding fleet-wide restarts. Helm users must manually apply the updated CRDs before setting this field, otherwise it is silently ignored. Defaults to 'Always'.")]
+        public string? ReconcilePolicy { get; set; }
     }
 
     public class AgentInjectorImageSpec
