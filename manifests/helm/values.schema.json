@@ -340,13 +340,22 @@
                     "default": "contrast",
                     "type": "string"
                 },
+                "dnsPolicy": {
+                    "description": "DNS policy for the operator pod. Leave unset for the Kubernetes default. Defaults to ClusterFirstWithHostNet when hostNetwork is true.",
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "enum": [
+                        "ClusterFirst",
+                        "ClusterFirstWithHostNet",
+                        "Default",
+                        "None",
+                        null
+                    ]
+                },
                 "enableAgentStdout": {
                     "description": "Globally enable agents logging to stdout",
-                    "default": false,
-                    "type": "boolean"
-                },
-                "useImageVolumes": {
-                    "description": "Use Kubernetes image volumes (KEP-4639) instead of init containers to mount agent files. Requires Kubernetes 1.35+.",
                     "default": false,
                     "type": "boolean"
                 },
@@ -378,6 +387,11 @@
                     "description": "Max number of events to queue from the K8s event stream.",
                     "default": 10000,
                     "type": "integer"
+                },
+                "hostNetwork": {
+                    "description": "Run the operator pod on the host network so the API server can reach the injection webhook on a routable node IP. Needed on clusters where pods only have non-routable IPs (for example EKS with an overlay CNI). Requires the operator namespace to run under the privileged Pod Security Standard, so use a dedicated namespace.",
+                    "default": false,
+                    "type": "boolean"
                 },
                 "initContainer": {
                     "description": "Resource management for the agent initContainers",
@@ -543,6 +557,11 @@
                 },
                 "telemetryOptOut": {
                     "description": "Opt-Out of telemetry collection",
+                    "default": false,
+                    "type": "boolean"
+                },
+                "useImageVolumes": {
+                    "description": "Use Kubernetes image volumes (KEP-4639) instead of init containers to mount agent files. Requires Kubernetes 1.35+.",
                     "default": false,
                     "type": "boolean"
                 },
