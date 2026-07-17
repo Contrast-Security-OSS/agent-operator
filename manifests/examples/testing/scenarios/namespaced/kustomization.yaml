@@ -29,3 +29,4 @@ resources:
   - ./chaining-flex.yaml
   - ./chaining-java.yaml
   - ./chaining-python.yaml
+  - ./reconcile-oncreate.yaml
