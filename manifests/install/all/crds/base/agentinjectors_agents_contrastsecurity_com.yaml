@@ -95,7 +95,7 @@ spec:
                     type: string
                 type: object
               reconcilePolicy:
-                description: When to reconcile matched workloads. 'Always' (the default) re-patches every matched workload whenever injector settings, versions, connections, configurations, or referenced secrets change, which rolls all of them at once. 'OnCreate' patches a workload only when it first becomes matched, then new settings apply to pods as they are naturally recreated, avoiding fleet-wide restarts. Helm users must manually apply the updated CRDs before setting this field, otherwise it is silently ignored. Defaults to 'Always'.
+                description: When to reconcile matched workloads. 'Always' (the default) re-patches every matched workload whenever injector settings, versions, connections, configurations, or referenced secrets change, which rolls all of them at once. 'OnCreate' patches a workload only when it first becomes matched, then new settings apply to pods as they are naturally recreated, avoiding fleet-wide restarts. Defaults to 'Always'.
                 nullable: true
                 pattern: ^(Always|OnCreate)$
                 type: string
