@@ -1,0 +1,39 @@
+---
+apiVersion: agents.contrastsecurity.com/v1beta1
+kind: AgentInjector
+metadata:
+  name: reconcile-oncreate
+spec:
+  enabled: true
+  type: dummy
+  selector:
+    labels:
+      - name: app
+        value: reconcile-oncreate
+  connection:
+    name: testing-agent-connection
+  configuration:
+    name: testing-agent-configuration
+  reconcilePolicy: OnCreate
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reconcile-oncreate
+  labels:
+    app: reconcile-oncreate
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: reconcile-oncreate
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: reconcile-oncreate
+    spec:
+      containers:
+        - image: k8s.gcr.io/pause:3.3
+          name: pause
