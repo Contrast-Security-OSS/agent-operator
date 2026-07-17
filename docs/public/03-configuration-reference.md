@@ -3,12 +3,17 @@
 The topic describes the schema for every configuration entity type the Contrast Agent Operator accepts. Some entities are optional.
 
 - [Configuration reference](#configuration-reference)
+  - [Note for the Helm Chart](#note-for-the-helm-chart)
   - [AgentConfiguration](#agentconfiguration)
   - [AgentConnection](#agentconnection)
   - [AgentInjector](#agentinjector)
   - [ClusterAgentConfiguration](#clusteragentconfiguration)
   - [ClusterAgentConnection](#clusteragentconnection)
   - [ClusterAgentInjector](#clusteragentinjector)
+
+## Note for the Helm Chart
+Major releases may contain CRD changes, and Helm does not upgrade CRDs on `helm upgrade`. Please run `kubectl apply -f https://github.com/Contrast-Security-OSS/agent-operator/releases/latest/download/crds.yaml` before upgrading the helm chart.
+
 
 ## AgentConfiguration
 
@@ -148,7 +153,6 @@ spec:
 - The AgentInjector supports selecting Deployment, StatefulSet, DaemonSet, Rollout (Argo), and DeploymentConfig (on OpenShift) workloads. Injecting pods directly is not supported.
 - `spec.reconcilePolicy: OnCreate` avoids fleet-wide rolling restarts. Under `OnCreate`, removing a workload's selector label or disabling the injector does not remove the agent from already-injected workloads, and pods in one workload may run different agent versions until they are naturally recreated. To force convergence, set `reconcilePolicy: Always`.
 - Under `OnCreate`, changing the identity of the injector a workload is bound to still rolls that workload. Deleting, renaming, or replacing the bound injector, or changing its agent `type`, makes the operator re-patch (and restart) the affected workloads so injection is rebound to the current injector rather than silently lost. This is the one change that still causes a restart under `OnCreate`. Ordinary changes to a bound injector (version, image, connection, configuration, or secret contents) never restart. In the default Helm configuration (`useClusterAgentInjectors: true`), the injector name a workload binds to is derived from the namespace and agent `type`, so renaming an injector in `values.yaml` does not trigger this.
-- Helm users must manually apply the updated CRDs (`kubectl apply` the AgentInjector and ClusterAgentInjector CRDs) before setting `reconcilePolicy`. Helm does not upgrade CRDs on `helm upgrade`, and Kubernetes silently drops the unknown field against an un-upgraded CRD, so the operator would see the default `Always` with no error. The kubectl/kustomize install path applies CRDs automatically and needs no manual step. If only one of the two CRDs is applied (for example ClusterAgentInjector but not AgentInjector) and `reconcilePolicy` is set, the generated namespaced AgentInjectors will continuously re-sync because the pruned field reads back as the default `Always`; always apply both updated CRDs together.
 - If the selected workload creates many containers in a single Pod, `spec.selector.images` can be used to filter which containers are injected.
 
 **labelSelector**
