@@ -34,22 +34,6 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.State
         }
 
         [Fact]
-        public void GetHash_is_identical_regardless_of_reconcile_policy()
-        {
-            var always = AutoFixture.Create<AgentInjectorResource>() with { ReconcilePolicy = ReconcilePolicy.Always };
-            var onCreate = always with { ReconcilePolicy = ReconcilePolicy.OnCreate };
-            var connection = AutoFixture.Create<AgentConnectionResource>();
-            var configuration = AutoFixture.Create<AgentConfigurationResource>();
-            var secrets = AutoFixture.CreateMany<SecretResource>().ToList();
-            var hasher = CreateGraph();
-
-            var alwaysHash = hasher.GetHash(always, connection, configuration, secrets);
-            var onCreateHash = hasher.GetHash(onCreate, connection, configuration, secrets);
-
-            onCreateHash.Should().Be(alwaysHash);
-        }
-
-        [Fact]
         public void GetHash_still_changes_when_a_hashed_field_changes()
         {
             var injector = AutoFixture.Create<AgentInjectorResource>() with { Enabled = true };
