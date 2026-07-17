@@ -91,6 +91,10 @@ public class ClusterAgentInjectorSyncingHandler
             ? new V1Beta1AgentInjector.AgentInjectorConfigurationSpec { Name = desiredResource.ConfigurationReference.Name }
             : null;
 
+        var reconcilePolicy = desiredResource.ReconcilePolicy != null
+            ? ReconcilePolicyConverter.GetStringFromPolicy(desiredResource.ReconcilePolicy.Value)
+            : null;
+
         var spec = new V1Beta1AgentInjector.AgentInjectorSpec
         {
             Enabled = desiredResource.Enabled,
@@ -111,7 +115,7 @@ public class ClusterAgentInjectorSyncingHandler
             },
             Connection = connection,
             Configuration = configuration,
-            ReconcilePolicy = ReconcilePolicyConverter.GetStringFromPolicy(desiredResource.ReconcilePolicy)
+            ReconcilePolicy = reconcilePolicy
         };
 
         return ValueTask.FromResult(new V1Beta1AgentInjector

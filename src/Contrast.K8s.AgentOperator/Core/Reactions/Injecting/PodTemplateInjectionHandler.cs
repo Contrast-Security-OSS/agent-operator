@@ -44,24 +44,22 @@ public class PodTemplateInjectionHandler : INotificationHandler<InjectorMatched>
         }
 
         var (target, injector) = notification;
-        var desiredState = await GetDesiredState(injector, target, cancellationToken);
-
-        if (!ChangesNeeded(target, desiredState))
-        {
-            return;
-        }
 
         if (await ShouldDeferForOnCreate(target, cancellationToken))
         {
             return;
         }
 
-        Logger.Info($"Workload '{target.Identity}' will be patched (Injector: '{injector?.Identity.ToString() ?? "None"}').");
-        await PatchToDesiredState(desiredState, target);
+        var desiredState = await GetDesiredState(injector, target, cancellationToken);
+        if (ChangesNeeded(target, desiredState))
+        {
+            Logger.Info($"Workload '{target.Identity}' will be patched (Injector: '{injector?.Identity.ToString() ?? "None"}').");
+            await PatchToDesiredState(desiredState, target);
+        }
     }
 
-    // OnCreate preserves working bindings, never broken ones. Rule 1 (no annotations)
-    // and rule 3 (annotated injector no longer resolves) both fall through to a patch.
+    // Defer patching to pod creation, only defer if AgentInjector's ReconcilePolicy is set to OnCreate
+    // Patching 
     private async ValueTask<bool> ShouldDeferForOnCreate(ResourceIdentityPair<IResourceWithPodTemplate> target,
                                                          CancellationToken cancellationToken)
     {
@@ -79,8 +77,8 @@ public class PodTemplateInjectionHandler : INotificationHandler<InjectorMatched>
         // workload's manifest), re-patch to correct them rather than deferring forever.
         var annotatedWorkloadName = annotations.GetAnnotation(InjectionConstants.WorkloadNameAttributeName);
         var annotatedWorkloadNamespace = annotations.GetAnnotation(InjectionConstants.WorkloadNamespaceAttributeName);
-        if (!string.Equals(annotatedWorkloadName, target.Identity.Name, StringComparison.Ordinal)
-            || !string.Equals(annotatedWorkloadNamespace, target.Identity.Namespace, StringComparison.Ordinal))
+        if (!string.Equals(annotatedWorkloadName, target.Identity.Name, StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(annotatedWorkloadNamespace, target.Identity.Namespace, StringComparison.OrdinalIgnoreCase))
         {
             return false;
         }
