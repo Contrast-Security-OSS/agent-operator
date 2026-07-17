@@ -23,9 +23,11 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.State.Appliers
 
         [Theory]
         [InlineData("OnCreate", ReconcilePolicy.OnCreate)]
-        [InlineData("Always", ReconcilePolicy.Always)]
-        [InlineData(null, ReconcilePolicy.Always)]
-        public async Task CreateFrom_maps_reconcile_policy(string? specValue, ReconcilePolicy expected)
+        // Unset and 'Always' map to null so the default injector hashes identically to pre-field
+        // operator versions and does not restart existing workloads on upgrade.
+        [InlineData("Always", null)]
+        [InlineData(null, null)]
+        public async Task CreateFrom_maps_reconcile_policy(string? specValue, ReconcilePolicy? expected)
         {
             var imageGenerator = Substitute.For<IImageGenerator>();
             imageGenerator.GenerateImage(

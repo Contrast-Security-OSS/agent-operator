@@ -34,6 +34,27 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.State
         }
 
         [Fact]
+        public void GetHash_is_stable_for_the_default_reconcile_policy()
+        {
+            // A default (null) policy must serialize with the reconcilePolicy property omitted, so
+            // its hash matches operator versions that predate the field. If this drifts, every
+            // existing workload is re-patched on upgrade, causing a cluster-wide rolling restart.
+            var defaulted = AutoFixture.Create<AgentInjectorResource>() with { ReconcilePolicy = null };
+            var connection = AutoFixture.Create<AgentConnectionResource>();
+            var configuration = AutoFixture.Create<AgentConfigurationResource>();
+            var secrets = AutoFixture.CreateMany<SecretResource>().ToList();
+            var hasher = CreateGraph();
+
+            var defaultHash = hasher.GetHash(defaulted, connection, configuration, secrets);
+            var onCreateHash = hasher.GetHash(defaulted with { ReconcilePolicy = ReconcilePolicy.OnCreate },
+                                              connection, configuration, secrets);
+
+            // OnCreate is the only value that participates in the hash, so flipping OnCreate back to
+            // the default still changes the hash and rolls the workload, which is intended.
+            onCreateHash.Should().NotBe(defaultHash);
+        }
+
+        [Fact]
         public void GetHash_still_changes_when_a_hashed_field_changes()
         {
             var injector = AutoFixture.Create<AgentInjectorResource>() with { Enabled = true };
