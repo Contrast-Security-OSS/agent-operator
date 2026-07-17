@@ -7,12 +7,16 @@ namespace Contrast.K8s.AgentOperator.Core;
 
 public static class ReconcilePolicyConverter
 {
-    public static ReconcilePolicy GetPolicyFromString(string? value)
+    // Only 'OnCreate' is a meaningful policy value. Unset and 'Always' both map to null so that
+    // the default injector serializes without a reconcilePolicy property, keeping its hash identical
+    // to operator versions that predate this field. Otherwise every existing workload would see a
+    // changed injector-hash on upgrade and be re-patched, forcing a cluster-wide rolling restart.
+    public static ReconcilePolicy? GetPolicyFromString(string? value)
     {
         return value?.ToLowerInvariant() switch
         {
             "oncreate" => ReconcilePolicy.OnCreate,
-            _ => ReconcilePolicy.Always
+            _ => null
         };
     }
 
