@@ -13,12 +13,14 @@ namespace Contrast.K8s.AgentOperator.Tests.Core
         [Theory]
         [InlineData("OnCreate", ReconcilePolicy.OnCreate)]
         [InlineData("oncreate", ReconcilePolicy.OnCreate)]
-        [InlineData("Always", ReconcilePolicy.Always)]
-        [InlineData("always", ReconcilePolicy.Always)]
-        [InlineData(null, ReconcilePolicy.Always)]
-        [InlineData("", ReconcilePolicy.Always)]
-        [InlineData("nonsense", ReconcilePolicy.Always)]
-        public void GetPolicyFromString_maps_as_expected(string? input, ReconcilePolicy expected)
+        // Unset and 'Always' both map to null so the default injector hashes identically to
+        // pre-field operator versions and does not restart existing workloads on upgrade.
+        [InlineData("Always", null)]
+        [InlineData("always", null)]
+        [InlineData(null, null)]
+        [InlineData("", null)]
+        [InlineData("nonsense", null)]
+        public void GetPolicyFromString_maps_as_expected(string? input, ReconcilePolicy? expected)
         {
             ReconcilePolicyConverter.GetPolicyFromString(input).Should().Be(expected);
         }
