@@ -59,6 +59,21 @@ operator:
   #telemetryOptOut: false
   # Operator Log Level
   operatorLogLevel: Info
+  # Run the operator pod on the node's host network so the Kubernetes API server can
+  # reach the injection webhook on a routable node IP. Needed on clusters where pods
+  # only have non-routable IPs the control plane cannot reach (for example EKS with an
+  # overlay CNI such as Calico in overlay mode), which otherwise causes the webhook call
+  # to fail silently and pods to start without the agent.
+  # Enabling host networking requires the operator namespace to run under the privileged
+  # Pod Security Standard, which removes PSS enforcement for that whole namespace, so run
+  # the operator in its own dedicated namespace when using this. The operator container
+  # keeps its hardened securityContext (runAsNonRoot, readOnlyRootFilesystem, drop ALL)
+  # regardless of this setting.
+  hostNetwork: false
+  # DNS policy for the operator pod. Leave unset for the Kubernetes default. When
+  # hostNetwork is true this defaults to ClusterFirstWithHostNet so the operator can
+  # still resolve in-cluster names via CoreDNS. Set explicitly only to override.
+  #dnsPolicy: ClusterFirstWithHostNet
   # Metadata for the operator deployment.
   labels: {}
   annotations: {}

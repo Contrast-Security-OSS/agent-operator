@@ -34,6 +34,12 @@ spec:
         {{- toYaml .Values.operator.podAnnotations | nindent 8 }}
     {{- end }}
     spec:
+      {{- if .Values.operator.hostNetwork }}
+      hostNetwork: true
+      dnsPolicy: {{ .Values.operator.dnsPolicy | default "ClusterFirstWithHostNet" }}
+      {{- else if .Values.operator.dnsPolicy }}
+      dnsPolicy: {{ .Values.operator.dnsPolicy }}
+      {{- end }}
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -49,6 +55,22 @@ spec:
                       - amd64
                       - arm64
         podAntiAffinity:
+          {{- if .Values.operator.hostNetwork }}
+          # With hostNetwork the operator binds a host port, so at most one operator pod
+          # can run per node. Make the anti-affinity required to enforce that.
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app.kubernetes.io/name
+                    operator: In
+                    values:
+                      - operator
+                  - key: app.kubernetes.io/part-of
+                    operator: In
+                    values:
+                      - contrast-agent-operator
+              topologyKey: kubernetes.io/hostname
+          {{- else }}
           preferredDuringSchedulingIgnoredDuringExecution:
             - weight: 100
               podAffinityTerm:
@@ -63,6 +85,7 @@ spec:
                       values:
                         - contrast-agent-operator
                 topologyKey: kubernetes.io/hostname
+          {{- end }}
       serviceAccountName: contrast-agent-operator-service-account
       {{- if .Values.imageCredentials.pullSecretName }}
       imagePullSecrets:
