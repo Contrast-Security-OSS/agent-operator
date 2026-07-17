@@ -59,7 +59,6 @@ public class PodTemplateInjectionHandler : INotificationHandler<InjectorMatched>
     }
 
     // Defer patching to pod creation, only defer if AgentInjector's ReconcilePolicy is set to OnCreate
-    // Patching 
     private async ValueTask<bool> ShouldDeferForOnCreate(ResourceIdentityPair<IResourceWithPodTemplate> target,
                                                          CancellationToken cancellationToken)
     {
