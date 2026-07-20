@@ -22,7 +22,7 @@ public class ReconcileOnCreateTests : IClassFixture<TestingContext>
     }
 
     [Fact]
-    public async Task Pod_has_volume_and_config_env_var()
+    public async Task When_reconcile_oncreate_then_pod_is_injected()
     {
         var client = await _context.GetClient();
 
