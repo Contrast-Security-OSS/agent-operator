@@ -102,6 +102,26 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Matching
             result.Should().BeEmpty();
         }
 
+        [Fact]
+        public void IsMatch_true_when_labels_match()
+        {
+            var matcher = CreateMatcher();
+            var result = matcher.IsMatch(
+                Injector(new LabelPattern("contrast-agent", "java")),
+                Workload(new MetadataLabel("contrast-agent", "java")));
+            result.Should().BeTrue();
+        }
+
+        [Fact]
+        public void IsMatch_false_when_label_absent()
+        {
+            var matcher = CreateMatcher();
+            var result = matcher.IsMatch(
+                Injector(new LabelPattern("contrast-agent", "java")),
+                Workload(new MetadataLabel("other", "value")));
+            result.Should().BeFalse();
+        }
+
         public AgentInjectorMatcher CreateMatcher()
         {
             return new AgentInjectorMatcher(new GlobMatcher());
@@ -113,6 +133,23 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Matching
                 name ?? AutoFixture.Create<string>(),
                 @namespace ?? AutoFixture.Create<string>()
             );
+        }
+
+        private static ResourceIdentityPair<AgentInjectorResource> Injector(params LabelPattern[] labels)
+        {
+            var resource = AutoFixture.Create<AgentInjectorResource>() with
+            {
+                Selector = new ResourceWithPodSpecSelector(new[] { "*" }, labels, new[] { "ns" })
+            };
+            var identity = NamespacedResourceIdentity.Create<AgentInjectorResource>("inj", "ns");
+            return new ResourceIdentityPair<AgentInjectorResource>(identity, resource);
+        }
+
+        private static ResourceIdentityPair<IResourceWithPodTemplate> Workload(params MetadataLabel[] labels)
+        {
+            var deployment = AutoFixture.Create<DeploymentResource>() with { Labels = labels };
+            var identity = NamespacedResourceIdentity.Create<DeploymentResource>("wl", "ns");
+            return new ResourceIdentityPair<IResourceWithPodTemplate>(identity, deployment);
         }
     }
 }

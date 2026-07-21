@@ -26,6 +26,12 @@ public class AgentInjectorMatcher
         return readyInjectors.Where(injector => InjectorMatchesTarget(injector, target));
     }
 
+    public bool IsMatch(ResourceIdentityPair<AgentInjectorResource> injector,
+                        ResourceIdentityPair<IResourceWithPodTemplate> target)
+    {
+        return InjectorMatchesTarget(injector, target);
+    }
+
     private bool InjectorMatchesTarget(ResourceIdentityPair<AgentInjectorResource> injector,
                                        ResourceIdentityPair<IResourceWithPodTemplate> target)
     {
