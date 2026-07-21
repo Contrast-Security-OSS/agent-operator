@@ -133,8 +133,13 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting
         // Single place that makes GetInjectorBundle (called inside GetDesiredState)
         // resolve to a non-null bundle and pins the computed hash. If GetInjectorBundle's
         // internals change, adjust here only. Returns the matched injector pair.
+        // injectorName/injectorNamespace default to the standard InjName/InjNamespace
+        // identity but can be overridden to stand up a SECOND, distinct resolvable
+        // injector (e.g. to exercise a rebind onto a different injector than the one
+        // named in a workload's stale annotations).
         private static ResourceIdentityPair<AgentInjectorResource> SetupResolvableBundle(
-            IStateContainer state, IResourceHasher hasher, ReconcilePolicy policy, string hash)
+            IStateContainer state, IResourceHasher hasher, ReconcilePolicy policy, string hash,
+            string injectorName = InjName, string injectorNamespace = InjNamespace)
         {
             var injectorResource = AutoFixture.Create<AgentInjectorResource>() with
             {
@@ -145,7 +150,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting
                     new[] { new LabelPattern(MatchKey, MatchValue) },
                     new[] { "workload-ns" })
             };
-            state.GetById<AgentInjectorResource>(InjName, InjNamespace, Arg.Any<CancellationToken>())
+            state.GetById<AgentInjectorResource>(injectorName, injectorNamespace, Arg.Any<CancellationToken>())
                 .Returns(new ValueTask<AgentInjectorResource?>(injectorResource));
             state.GetById<AgentConnectionResource>(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
                 .Returns(new ValueTask<AgentConnectionResource?>(AutoFixture.Create<AgentConnectionResource>()));
@@ -153,7 +158,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting
                     Arg.Any<AgentConfigurationResource?>(), Arg.Any<System.Collections.Generic.IEnumerable<SecretResource>>())
                 .Returns(hash);
 
-            var identity = NamespacedResourceIdentity.Create<AgentInjectorResource>(InjName, InjNamespace);
+            var identity = NamespacedResourceIdentity.Create<AgentInjectorResource>(injectorName, injectorNamespace);
             return new ResourceIdentityPair<AgentInjectorResource>(identity, injectorResource);
         }
 
@@ -272,6 +277,54 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting
             await handler.Handle(new InjectorMatched(target, null), CancellationToken.None);
 
             await patcher.Received().Patch<V1Deployment>(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Action<V1Deployment>>());
+        }
+
+        [Fact]
+        public async Task Handle_patches_when_annotated_binding_invalid_but_different_injector_matches_under_OnCreate()
+        {
+            // Rebind / non-null fall-through: every other new test in this file passes
+            // injector == null on the notification. Here ShouldDeferForOnCreate returns
+            // false because the ANNOTATED injector A (InjName/InjNamespace) is disabled,
+            // so its OnCreate binding is no longer active. But the InjectorMatched
+            // notification carries a DIFFERENT, resolvable, enabled injector B (the
+            // matcher found a fresh, live match elsewhere). GetDesiredState resolves
+            // against the notification's injector B (not the stale annotated A),
+            // producing a new hash that differs from the annotated "old-hash" and
+            // triggering a re-patch that rebinds the workload onto B.
+            var (handler, state, patcher, hasher) = CreateGraph();
+            var target = AnnotatedTarget();
+            state.GetById<AgentInjectorResource>(InjName, InjNamespace, Arg.Any<CancellationToken>())
+                .Returns(new ValueTask<AgentInjectorResource?>(EnabledOnCreateInjectorSelectingTarget() with { Enabled = false }));
+
+            const string otherInjectorName = "inj-b";
+            const string otherInjectorNamespace = "inj-ns-b";
+            var injectorB = SetupResolvableBundle(state, hasher, ReconcilePolicy.OnCreate, "new-hash",
+                otherInjectorName, otherInjectorNamespace);
+
+            await handler.Handle(new InjectorMatched(target, injectorB), CancellationToken.None);
+
+            await patcher.Received().Patch<V1Deployment>(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Action<V1Deployment>>());
+        }
+
+        [Fact]
+        public async Task Handle_defers_when_binding_still_valid_but_injector_transiently_not_ready_under_OnCreate()
+        {
+            // Same gate path as Handle_defers_patch_when_annotated_injector_is_OnCreate,
+            // but named/commented to make the TRANSIENT-not-ready scenario explicit and
+            // distinct from a genuine un-match. The annotated injector is present,
+            // enabled, OnCreate, and still selector-matches this workload — the binding
+            // is fully valid. The notification's injector is null only because it is
+            // momentarily not ready (e.g. dependent resources not yet resolved
+            // elsewhere in the pipeline), not because the workload stopped matching.
+            // The gate must preserve the binding rather than stripping it.
+            var (handler, state, patcher, _) = CreateGraph();
+            var target = AnnotatedTarget();
+            state.GetById<AgentInjectorResource>(InjName, InjNamespace, Arg.Any<CancellationToken>())
+                .Returns(new ValueTask<AgentInjectorResource?>(EnabledOnCreateInjectorSelectingTarget()));
+
+            await handler.Handle(new InjectorMatched(target, null), CancellationToken.None);
+
+            await patcher.DidNotReceive().Patch<V1Deployment>(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Action<V1Deployment>>());
         }
     }
 }

@@ -122,6 +122,16 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Matching
             result.Should().BeFalse();
         }
 
+        [Fact]
+        public void IsMatch_false_when_namespace_does_not_match()
+        {
+            var matcher = CreateMatcher();
+            var result = matcher.IsMatch(
+                Injector(new LabelPattern("contrast-agent", "java")),
+                Workload("other-ns", new MetadataLabel("contrast-agent", "java")));
+            result.Should().BeFalse();
+        }
+
         public AgentInjectorMatcher CreateMatcher()
         {
             return new AgentInjectorMatcher(new GlobMatcher());
@@ -147,8 +157,15 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Matching
 
         private static ResourceIdentityPair<IResourceWithPodTemplate> Workload(params MetadataLabel[] labels)
         {
+            return Workload("ns", labels);
+        }
+
+        // Overload allowing a non-default namespace on the workload's identity, to
+        // exercise the selector's namespace dimension independently of labels.
+        private static ResourceIdentityPair<IResourceWithPodTemplate> Workload(string @namespace, params MetadataLabel[] labels)
+        {
             var deployment = AutoFixture.Create<DeploymentResource>() with { Labels = labels };
-            var identity = NamespacedResourceIdentity.Create<DeploymentResource>("wl", "ns");
+            var identity = NamespacedResourceIdentity.Create<DeploymentResource>("wl", @namespace);
             return new ResourceIdentityPair<IResourceWithPodTemplate>(identity, deployment);
         }
     }
