@@ -97,6 +97,10 @@ public class PodTemplateInjectionHandler : INotificationHandler<InjectorMatched>
             return false;
         }
 
+        // Checks whether the injector that stamped this workload STILL selects it, not the
+        // current match MatchInjectorsHandler already resolved. On an un-match (label removed)
+        // the incoming injector is null but the annotated one is still enabled+OnCreate, so
+        // without this we'd defer and orphan the injection instead of stripping it.
         var annotatedPair = new ResourceIdentityPair<AgentInjectorResource>(
             NamespacedResourceIdentity.Create<AgentInjectorResource>(annotatedName, annotatedNamespace),
             annotatedInjector);
