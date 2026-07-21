@@ -9,6 +9,7 @@ using AutoFixture;
 using Contrast.K8s.AgentOperator.Core.Events;
 using Contrast.K8s.AgentOperator.Core.Kube;
 using Contrast.K8s.AgentOperator.Core.Reactions.Injecting;
+using Contrast.K8s.AgentOperator.Core.Reactions.Matching;
 using Contrast.K8s.AgentOperator.Core.State;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Interfaces;
@@ -25,6 +26,8 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting
 
         private const string InjName = "inj";
         private const string InjNamespace = "inj-ns";
+        private const string MatchKey = "contrast-agent";
+        private const string MatchValue = "java";
 
         // Builds a Deployment target already carrying operator annotations, so that
         // ChangesNeeded is true against an empty desired state (injector == null in
@@ -41,6 +44,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting
             };
             var deployment = AutoFixture.Create<DeploymentResource>() with
             {
+                Labels = new List<MetadataLabel> { new(MatchKey, MatchValue) },
                 PodTemplate = AutoFixture.Create<PodTemplate>() with { Annotations = annotations }
             };
             var identity = NamespacedResourceIdentity.Create<DeploymentResource>("workload", "workload-ns");
@@ -67,6 +71,27 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting
             return new ResourceIdentityPair<IResourceWithPodTemplate>(identity, deployment);
         }
 
+        // Same annotations as AnnotatedTarget (for THIS workload), but the deployment
+        // carries no matching selector label — e.g. the label was removed.
+        private static ResourceIdentityPair<IResourceWithPodTemplate> AnnotatedTargetWithoutMatchLabel()
+        {
+            var annotations = new List<MetadataAnnotations>
+            {
+                new(InjectionConstants.InjectorHashAttributeName, "old-hash"),
+                new(InjectionConstants.InjectorNameAttributeName, InjName),
+                new(InjectionConstants.InjectorNamespaceAttributeName, InjNamespace),
+                new(InjectionConstants.WorkloadNameAttributeName, "workload"),
+                new(InjectionConstants.WorkloadNamespaceAttributeName, "workload-ns"),
+            };
+            var deployment = AutoFixture.Create<DeploymentResource>() with
+            {
+                Labels = new List<MetadataLabel>(),   // no matching label
+                PodTemplate = AutoFixture.Create<PodTemplate>() with { Annotations = annotations }
+            };
+            var identity = NamespacedResourceIdentity.Create<DeploymentResource>("workload", "workload-ns");
+            return new ResourceIdentityPair<IResourceWithPodTemplate>(identity, deployment);
+        }
+
         private static (PodTemplateInjectionHandler handler, IStateContainer state, IResourcePatcher patcher, IResourceHasher hasher) CreateGraph()
         {
             var state = Substitute.For<IStateContainer>();
@@ -74,8 +99,24 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting
                 .Returns(new ValueTask<bool>(false));
             var patcher = Substitute.For<IResourcePatcher>();
             var hasher = Substitute.For<IResourceHasher>();
-            var handler = new PodTemplateInjectionHandler(hasher, state, patcher);
+            var matcher = new AgentInjectorMatcher(new GlobMatcher());
+            var handler = new PodTemplateInjectionHandler(hasher, state, patcher, matcher);
             return (handler, state, patcher, hasher);
+        }
+
+        // Builds an enabled OnCreate injector whose selector matches AnnotatedTarget
+        // (namespace "workload-ns", label MatchKey=MatchValue).
+        private static AgentInjectorResource EnabledOnCreateInjectorSelectingTarget()
+        {
+            return AutoFixture.Create<AgentInjectorResource>() with
+            {
+                Enabled = true,
+                ReconcilePolicy = ReconcilePolicy.OnCreate,
+                Selector = new ResourceWithPodSpecSelector(
+                    new[] { "*" },
+                    new[] { new LabelPattern(MatchKey, MatchValue) },
+                    new[] { "workload-ns" })
+            };
         }
 
         // A Deployment with no operator annotations, used for the rule-1 opt-in patch.
@@ -95,7 +136,15 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting
         private static ResourceIdentityPair<AgentInjectorResource> SetupResolvableBundle(
             IStateContainer state, IResourceHasher hasher, ReconcilePolicy policy, string hash)
         {
-            var injectorResource = AutoFixture.Create<AgentInjectorResource>() with { ReconcilePolicy = policy };
+            var injectorResource = AutoFixture.Create<AgentInjectorResource>() with
+            {
+                ReconcilePolicy = policy,
+                Enabled = true,
+                Selector = new ResourceWithPodSpecSelector(
+                    new[] { "*" },
+                    new[] { new LabelPattern(MatchKey, MatchValue) },
+                    new[] { "workload-ns" })
+            };
             state.GetById<AgentInjectorResource>(InjName, InjNamespace, Arg.Any<CancellationToken>())
                 .Returns(new ValueTask<AgentInjectorResource?>(injectorResource));
             state.GetById<AgentConnectionResource>(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
@@ -114,8 +163,7 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting
             var (handler, state, patcher, _) = CreateGraph();
             var target = AnnotatedTarget();
             state.GetById<AgentInjectorResource>(InjName, InjNamespace, Arg.Any<CancellationToken>())
-                .Returns(new ValueTask<AgentInjectorResource?>(
-                    AutoFixture.Create<AgentInjectorResource>() with { ReconcilePolicy = ReconcilePolicy.OnCreate }));
+                .Returns(new ValueTask<AgentInjectorResource?>(EnabledOnCreateInjectorSelectingTarget()));
 
             // injector == null: nothing matches now, desired state is empty, a patch to
             // strip annotations would otherwise occur.
@@ -190,6 +238,36 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Injecting
             state.GetById<AgentInjectorResource>(InjName, InjNamespace, Arg.Any<CancellationToken>())
                 .Returns(new ValueTask<AgentInjectorResource?>(
                     AutoFixture.Create<AgentInjectorResource>() with { ReconcilePolicy = ReconcilePolicy.OnCreate }));
+
+            await handler.Handle(new InjectorMatched(target, null), CancellationToken.None);
+
+            await patcher.Received().Patch<V1Deployment>(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Action<V1Deployment>>());
+        }
+
+        [Fact]
+        public async Task Handle_patches_when_workload_no_longer_matches_selector_under_OnCreate()
+        {
+            // Label removed: annotated injector is enabled + OnCreate, but its selector no
+            // longer matches this workload, so the binding is stale and must be stripped.
+            var (handler, state, patcher, _) = CreateGraph();
+            var target = AnnotatedTargetWithoutMatchLabel();
+            state.GetById<AgentInjectorResource>(InjName, InjNamespace, Arg.Any<CancellationToken>())
+                .Returns(new ValueTask<AgentInjectorResource?>(EnabledOnCreateInjectorSelectingTarget()));
+
+            await handler.Handle(new InjectorMatched(target, null), CancellationToken.None);
+
+            await patcher.Received().Patch<V1Deployment>(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Action<V1Deployment>>());
+        }
+
+        [Fact]
+        public async Task Handle_patches_when_annotated_injector_disabled_under_OnCreate()
+        {
+            // Disabled injector: binding is no longer active, strip.
+            var (handler, state, patcher, _) = CreateGraph();
+            var target = AnnotatedTarget();
+            state.GetById<AgentInjectorResource>(InjName, InjNamespace, Arg.Any<CancellationToken>())
+                .Returns(new ValueTask<AgentInjectorResource?>(
+                    EnabledOnCreateInjectorSelectingTarget() with { Enabled = false }));
 
             await handler.Handle(new InjectorMatched(target, null), CancellationToken.None);
 
