@@ -90,7 +90,9 @@ public class PodTemplateInjectionHandler : INotificationHandler<InjectorMatched>
         // Only preserve a still-valid OnCreate binding. If the annotated injector is gone,
         // disabled, or no longer selects this workload (label removed/changed), the binding
         // is no longer active — fall through so the empty desired state strips the injection.
-        if (annotatedInjector is not { Enabled: true, ReconcilePolicy: ReconcilePolicy.OnCreate })
+        if (annotatedInjector == null
+            || !annotatedInjector.Enabled
+            || annotatedInjector.ReconcilePolicy != ReconcilePolicy.OnCreate)
         {
             return false;
         }
@@ -98,7 +100,7 @@ public class PodTemplateInjectionHandler : INotificationHandler<InjectorMatched>
         var annotatedPair = new ResourceIdentityPair<AgentInjectorResource>(
             NamespacedResourceIdentity.Create<AgentInjectorResource>(annotatedName, annotatedNamespace),
             annotatedInjector);
-        if (!_matcher.IsMatch(annotatedPair, target))
+        if (!_matcher.InjectorMatchesTarget(annotatedPair, target))
         {
             return false;
         }

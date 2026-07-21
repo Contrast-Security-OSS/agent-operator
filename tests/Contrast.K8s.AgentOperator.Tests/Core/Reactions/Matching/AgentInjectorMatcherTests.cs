@@ -103,30 +103,30 @@ namespace Contrast.K8s.AgentOperator.Tests.Core.Reactions.Matching
         }
 
         [Fact]
-        public void IsMatch_true_when_labels_match()
+        public void InjectorMatchesTarget_true_when_labels_match()
         {
             var matcher = CreateMatcher();
-            var result = matcher.IsMatch(
+            var result = matcher.InjectorMatchesTarget(
                 Injector(new LabelPattern("contrast-agent", "java")),
                 Workload(new MetadataLabel("contrast-agent", "java")));
             result.Should().BeTrue();
         }
 
         [Fact]
-        public void IsMatch_false_when_label_absent()
+        public void InjectorMatchesTarget_false_when_label_absent()
         {
             var matcher = CreateMatcher();
-            var result = matcher.IsMatch(
+            var result = matcher.InjectorMatchesTarget(
                 Injector(new LabelPattern("contrast-agent", "java")),
                 Workload(new MetadataLabel("other", "value")));
             result.Should().BeFalse();
         }
 
         [Fact]
-        public void IsMatch_false_when_namespace_does_not_match()
+        public void InjectorMatchesTarget_false_when_namespace_does_not_match()
         {
             var matcher = CreateMatcher();
-            var result = matcher.IsMatch(
+            var result = matcher.InjectorMatchesTarget(
                 Injector(new LabelPattern("contrast-agent", "java")),
                 Workload("other-ns", new MetadataLabel("contrast-agent", "java")));
             result.Should().BeFalse();
