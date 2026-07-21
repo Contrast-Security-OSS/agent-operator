@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Contrast.K8s.AgentOperator.Core.Events;
 using Contrast.K8s.AgentOperator.Core.Kube;
+using Contrast.K8s.AgentOperator.Core.Reactions.Matching;
 using Contrast.K8s.AgentOperator.Core.State;
 using Contrast.K8s.AgentOperator.Core.State.Resources;
 using Contrast.K8s.AgentOperator.Core.State.Resources.Interfaces;
@@ -28,12 +29,14 @@ public class PodTemplateInjectionHandler : INotificationHandler<InjectorMatched>
     private readonly IResourceHasher _hasher;
     private readonly IStateContainer _state;
     private readonly IResourcePatcher _patcher;
+    private readonly AgentInjectorMatcher _matcher;
 
-    public PodTemplateInjectionHandler(IResourceHasher hasher, IStateContainer state, IResourcePatcher patcher)
+    public PodTemplateInjectionHandler(IResourceHasher hasher, IStateContainer state, IResourcePatcher patcher, AgentInjectorMatcher matcher)
     {
         _hasher = hasher;
         _state = state;
         _patcher = patcher;
+        _matcher = matcher;
     }
 
     public async Task Handle(InjectorMatched notification, CancellationToken cancellationToken)
@@ -83,14 +86,26 @@ public class PodTemplateInjectionHandler : INotificationHandler<InjectorMatched>
         }
 
         var annotatedInjector = await _state.GetById<AgentInjectorResource>(annotatedName, annotatedNamespace, cancellationToken);
-        if (annotatedInjector is { ReconcilePolicy: ReconcilePolicy.OnCreate })
+
+        // Only preserve a still-valid OnCreate binding. If the annotated injector is gone,
+        // disabled, or no longer selects this workload (label removed/changed), the binding
+        // is no longer active — fall through so the empty desired state strips the injection.
+        if (annotatedInjector is not { Enabled: true, ReconcilePolicy: ReconcilePolicy.OnCreate })
         {
-            Logger.Info($"Workload '{target.Identity}' has drifted but its annotated injector '{annotatedName}/{annotatedNamespace}' "
-                        + "uses reconcilePolicy 'OnCreate'. Deferring re-patch; new settings will apply as pods are recreated.");
-            return true;
+            return false;
         }
 
-        return false;
+        var annotatedPair = new ResourceIdentityPair<AgentInjectorResource>(
+            NamespacedResourceIdentity.Create<AgentInjectorResource>(annotatedName, annotatedNamespace),
+            annotatedInjector);
+        if (!_matcher.IsMatch(annotatedPair, target))
+        {
+            return false;
+        }
+
+        Logger.Info($"Workload '{target.Identity}' has drifted but its annotated injector '{annotatedName}/{annotatedNamespace}' "
+                    + "uses reconcilePolicy 'OnCreate'. Deferring re-patch; new settings will apply as pods are recreated.");
+        return true;
     }
 
     private static bool ChangesNeeded(ResourceIdentityPair<IResourceWithPodTemplate> target, DesiredState desiredState)
