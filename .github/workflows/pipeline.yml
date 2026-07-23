@@ -204,6 +204,18 @@ jobs:
           path: |
             manifests/helm/dist/output.yaml
           retention-days: 7
+  #
+  # SBOM Stage
+  #
+  generate-sbom:
+    needs:
+      - build-image
+      - build-helm-chart
+    if: ${{ github.event_name != 'pull_request' && github.actor != 'dependabot[bot]' }}
+    uses: ./.github/workflows/sbom.yml
+    with:
+      image-digest: ${{ needs.build-image.outputs.digest }}
+    secrets: inherit
   test-image:
     runs-on: ${{ matrix.runner }}
     needs:
@@ -408,6 +420,7 @@ jobs:
       - generate-version
       - build-image
       - release-internal
+      - generate-sbom
     permissions:
       contents: write
       packages: write
@@ -462,6 +475,11 @@ jobs:
         with:
           name: helm-schema
           path: ./artifacts/schema
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        id: download-sbom
+        with:
+          name: sbom
+          path: ./artifacts/sbom
       - name: Publish
         uses: ncipollo/release-action@339a81892b84b4eeb0f6e744e4574d79d0d9b8dd # v1.21.0
         with:
@@ -476,7 +494,7 @@ jobs:
             quay.io/contrast/agent-operator:${{ env.BUILD_VERSION }}
             quay.io/contrast/agent-operator@${{ needs.build-image.outputs.digest }}
             ```
-          artifacts: "${{ steps.download-manifests.outputs.download-path }}/*.yaml,${{ steps.download-schema.outputs.download-path }}/*.json"
+          artifacts: "${{ steps.download-manifests.outputs.download-path }}/*.yaml,${{ steps.download-schema.outputs.download-path }}/*.json,${{ steps.download-sbom.outputs.download-path }}/*.json"
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
           immutableCreate: true
