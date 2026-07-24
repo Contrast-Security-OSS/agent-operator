@@ -426,7 +426,7 @@ jobs:
       packages: write
     env:
       BUILD_VERSION: ${{ needs.generate-version.outputs.version }}
-    if: ${{ needs.generate-version.outputs.version != '0.0.1' }}
+    if: ${{ needs.generate-version.outputs.version != '0.0.1' && needs.generate-sbom.result == 'success' }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Login (GitHub)

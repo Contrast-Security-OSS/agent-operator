@@ -30,18 +30,22 @@ jobs:
         uses: actions/setup-dotnet@87b7050bc53ea08284295505d98d2aa94301e852 # v4.2.0
         with:
           dotnet-version: 10.0.x
+          cache: 'nuget'
       - name: Install Syft
-        run: |
-          curl -sSfL "https://raw.githubusercontent.com/anchore/syft/v1.49.0/install.sh" | sh -s -- -b /usr/local/bin v1.49.0
-        shell: bash
+        uses: anchore/sbom-action/download-syft@43a17d6e7add2b5535efe4dcae9952337c479a93 # v0.20.11
+        with:
+          syft-version: v1.49.0
       - name: Restore NuGet Packages
         run: dotnet restore
         shell: bash
       - name: Generate Source SBOM
         run: |
           set -xe
+          # dotnet restore above produces obj/project.assets.json; syft reads it for transitive deps
           syft dir:. \
             --name agent-operator \
+            --exclude './.git' \
+            --exclude './.github' \
             -o cyclonedx-json=sbom-source.cdx.json
         shell: bash
       - name: Generate Image SBOMs
@@ -59,8 +63,9 @@ jobs:
       - name: Generate Helm Chart SBOM
         run: |
           set -xe
-          CHART=$(ls ./helm-dist/*.tgz | head -1)
-          syft "$CHART" \
+          CHART=(./helm-dist/*.tgz)
+          [[ -f "${CHART[0]}" ]] || { echo "No .tgz found in ./helm-dist" >&2; exit 1; }
+          syft "${CHART[0]}" \
             -o cyclonedx-json=sbom-helm.cdx.json
         shell: bash
       - name: Upload SBOMs
