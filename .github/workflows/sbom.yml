@@ -1,0 +1,80 @@
+# Contrast Security, Inc licenses this file to you under the Apache 2.0 License.
+# See the LICENSE file in the project root for more information.
+
+name: "Generate SBOMs"
+
+on:
+  workflow_call:
+    inputs:
+      image-digest:
+        description: "Container image digest from build-image"
+        required: true
+        type: string
+
+jobs:
+  generate-sbom:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: read
+    env:
+      IMAGE: ghcr.io/contrast-security-oss/agent-operator/operator@${{ inputs.image-digest }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Login (GitHub)
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@87b7050bc53ea08284295505d98d2aa94301e852 # v4.2.0
+        with:
+          dotnet-version: 10.0.x
+          cache: 'nuget'
+      - name: Install Syft
+        uses: anchore/sbom-action/download-syft@43a17d6e7add2b5535efe4dcae9952337c479a93 # v0.20.11
+        with:
+          syft-version: v1.49.0
+      - name: Restore NuGet Packages
+        run: dotnet restore
+        shell: bash
+      - name: Generate Source SBOM
+        run: |
+          set -xe
+          # dotnet restore above produces obj/project.assets.json; syft reads it for transitive deps
+          syft dir:. \
+            --name agent-operator \
+            --exclude './.git' \
+            --exclude './.github' \
+            -o cyclonedx-json=sbom-source.cdx.json
+        shell: bash
+      - name: Generate Image SBOMs
+        run: |
+          set -xe
+          syft "$IMAGE" \
+            -o cyclonedx-json=sbom-image.cdx.json \
+            -o spdx-json=sbom-image.spdx.json
+        shell: bash
+      - name: Download Helm Chart
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: helm-chart
+          path: ./helm-dist
+      - name: Generate Helm Chart SBOM
+        run: |
+          set -xe
+          CHART=(./helm-dist/*.tgz)
+          [[ -f "${CHART[0]}" ]] || { echo "No .tgz found in ./helm-dist" >&2; exit 1; }
+          syft "${CHART[0]}" \
+            -o cyclonedx-json=sbom-helm.cdx.json
+        shell: bash
+      - name: Upload SBOMs
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+        with:
+          name: sbom
+          path: |
+            sbom-source.cdx.json
+            sbom-image.cdx.json
+            sbom-image.spdx.json
+            sbom-helm.cdx.json
+          retention-days: 7
